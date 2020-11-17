@@ -1,4 +1,5 @@
 import sys
+import sqlite3
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QMainWindow, QWidget, QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogButtonBox, \
@@ -17,25 +18,29 @@ class LoginForm(QDialog):
         self.button_box: QDialogButtonBox = self.button_box
         #self.button_box.Ok
 
-class mecagoenlaputa(QWidget):
+class LoginRegisterWindow(QWidget):
     def __init__(self):
-        super(mecagoenlaputa, self).__init__()
+        super(LoginRegisterWindow, self).__init__()
         tab: QTabWidget = QTabWidget()
         layout = QVBoxLayout()
         layout.addWidget(tab)
         widget = QDialog()
         widget2 = QDialog()
-        uic.loadUi("login_dialog.ui",widget)
+        uic.loadUi("login_form.ui",widget)
         uic.loadUi("register_dialog.ui", widget2)
         tab.addTab(widget,"Login")
         tab.addTab(widget2,"Registro")
         self.setLayout(layout)
 
+class test(QWidget):
+    def __init__(self):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
 
-    window = mecagoenlaputa()
+    window = LoginRegisterWindow()
+    window = QWidget()
+
     window.show()
     print(dir(window))
     app.exec()
