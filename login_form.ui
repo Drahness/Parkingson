@@ -137,7 +137,7 @@
     </property>
    </widget>
   </widget>
-  <widget class="QPushButton" name="pushButton_2">
+  <widget class="QPushButton" name="negative_button">
    <property name="geometry">
     <rect>
      <x>140</x>
@@ -150,7 +150,7 @@
     <string>Cancelar</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="positive_button">
    <property name="geometry">
     <rect>
      <x>50</x>
@@ -167,8 +167,8 @@
  <tabstops>
   <tabstop>usernamefield</tabstop>
   <tabstop>passwordfield</tabstop>
-  <tabstop>pushButton</tabstop>
-  <tabstop>pushButton_2</tabstop>
+  <tabstop>positive_button</tabstop>
+  <tabstop>negative_button</tabstop>
  </tabstops>
  <resources/>
  <connections/>

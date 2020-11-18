@@ -32,3 +32,53 @@ class KeyValueMutable(KeyValueWidget):
     def __init__(self, key: str, is_hidden: bool):
         super().__init__(key, "")
         self.value: QTextEdit = QTextEdit("b")
+
+
+class TimerThreadingClass(threading.Thread):
+    def __init__(self, stop_at: datetime = None):
+        super().__init__()
+        if stop_at is not None:
+            self.stop_at = stop_at
+        else:
+            self.stop_at = datetime.datetime.now() + timedelta(hours=100)
+        self.start_point = datetime.datetime.now()
+        self.is_running = False
+        self.laps: list = []
+
+    def run(self):
+        self.is_running = True
+        while datetime.datetime.now() < self.stop_at and self.is_running:
+            pass
+        self.is_running = False
+
+    def lap(self):
+        self.laps.append(self.get_actual_time())
+        self.start_point = datetime.datetime.now()
+
+    def cancel(self):
+        self.stop_at = datetime.datetime.now()
+
+    def get_actual_time(self) -> timedelta:
+        return datetime.datetime.now()-self.start_point
+
+    def __str__(self):
+        returning = '{:02}:{:02}:{:02}'
+        now = self.get_actual_time()
+        return str(now)
+
+
+def run_timer():
+    t = Timer()
+    t.start()
+    while t.is_running:
+        print("Hilo principal")
+        print(str(t))
+        s = input()
+        if s == "c":
+            t.cancel()
+        elif s == "l":
+            t.lap()
+        elif s == "get":
+            print(t.laps)
+            for x in t.laps:
+                print(type(x))
