@@ -1,5 +1,15 @@
+import datetime
+import hashlib
+import sqlite3
+import threading
+from binascii import hexlify
+from sqlite3.dbapi2 import Connection
+from crypt import METHOD_SHA512
+from crypt import *
+from cryptography import fernet, x509
+
 from PyQt5.QtCore import Qt, QObject
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTextEdit, QHBoxLayout, QFrame
+from PyQt5.QtWidgets import QWidget, QLabel, QTextEdit, QHBoxLayout, QFrame
 
 
 class KeyValueWidget(QWidget):
@@ -18,8 +28,9 @@ class KeyValueWidget(QWidget):
     @property
     def value(self):
         return self._value
+
     @value.setter
-    def value(self,value):
+    def value(self, value):
         if isinstance(value, QObject):
             self.main_layout = QHBoxLayout()
             self._value = value
@@ -40,7 +51,7 @@ class TimerThreadingClass(threading.Thread):
         if stop_at is not None:
             self.stop_at = stop_at
         else:
-            self.stop_at = datetime.datetime.now() + timedelta(hours=100)
+            self.stop_at = datetime.datetime.now() + datetime.timedelta(hours=100)
         self.start_point = datetime.datetime.now()
         self.is_running = False
         self.laps: list = []
@@ -58,8 +69,8 @@ class TimerThreadingClass(threading.Thread):
     def cancel(self):
         self.stop_at = datetime.datetime.now()
 
-    def get_actual_time(self) -> timedelta:
-        return datetime.datetime.now()-self.start_point
+    def get_actual_time(self) -> datetime.timedelta:
+        return datetime.datetime.now() - self.start_point
 
     def __str__(self):
         returning = '{:02}:{:02}:{:02}'
@@ -68,7 +79,7 @@ class TimerThreadingClass(threading.Thread):
 
 
 def run_timer():
-    t = Timer()
+    t = TimerThreadingClass()
     t.start()
     while t.is_running:
         print("Hilo principal")
@@ -82,3 +93,20 @@ def run_timer():
             print(t.laps)
             for x in t.laps:
                 print(type(x))
+
+
+def cypher(password: str) -> bytes:
+    return hashlib.sha3_512(data).digest()
+
+if __name__ == "__main__":
+    data = "asdasfdasfndsgikjdsbg"
+    data = data.encode('utf-8')
+    sha3_512 = hashlib.sha3_512(data)
+    sha3_512_digest = sha3_512.digest()
+    sha3_512_hex_digest = sha3_512.hexdigest()
+    print('Printing digest output')
+    print(sha3_512_digest)
+    print('Printing hexadecimal output')
+    print(sha3_512_hex_digest)
+    print('Printing binary hexadecimal output')
+    print(hexlify(sha3_512_digest))
