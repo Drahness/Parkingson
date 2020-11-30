@@ -4,8 +4,8 @@ import sqlite3
 import threading
 from binascii import hexlify
 from sqlite3.dbapi2 import Connection
-from crypt import METHOD_SHA512
-from crypt import *
+# from crypt import METHOD_SHA512
+# from crypt import *
 from cryptography import fernet, x509
 
 from PyQt5.QtCore import Qt, QObject
@@ -74,7 +74,7 @@ class TimerThreadingClass(threading.Thread):
 
     def __str__(self):
         returning = '{:02}:{:02}:{:02}'
-        now = self.get_actual_time()
+        now = self.get_actual_time().__format__('{:02}:{:02}:{:02}')
         return str(now)
 
 
@@ -96,10 +96,12 @@ def run_timer():
 
 
 def cypher(password: str) -> bytes:
-    return hashlib.sha3_512(data).digest()
+    return hashlib.sha3_512(password.encode('utf-8')).digest()
 
 if __name__ == "__main__":
     data = "asdasfdasfndsgikjdsbg"
+    for x in range(0,1000):
+        data += chr(x)
     data = data.encode('utf-8')
     sha3_512 = hashlib.sha3_512(data)
     sha3_512_digest = sha3_512.digest()

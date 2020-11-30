@@ -1,4 +1,5 @@
 import sqlite3
+import os
 #
 #self.conn.execute("""CREATE TABLE pacients ( name VARCHAR(20),
 #dni VARCHAR(9),
@@ -6,6 +7,9 @@ import sqlite3
 #apellido2 VARCHAR(20),
 #estadio tinyint );""")
 #self.conn.execute("""CREATE TABLE users ( username VARCHAR(50), password VARCHAR(?)""")
+from collections import Iterable
+
+
 class DAO():
     def __init__(self):
         pass
@@ -17,16 +21,21 @@ class DAO():
         pass
 
     def delete(self, id):
-
-class Cursor():
-    def __init__(self, name="test/default.db"):
+        pass
+class Connection:
+    def __init__(self,credentials: dict):
+        
+class Cursor:
+    def __init__(self, name=f"test{os.sep}default.db"):
+        if not os.path.exists("test"):
+            os.mkdir("test")
         self.conn = sqlite3.connect(name)
         self.autocommit = True
         self.cursor = self.conn.cursor()
 
-    def execute(self, string):
-        print(f"Operation: {string}")
-        self.cursor.execute(string)
+    def execute(self, string,parameters):
+        print(f"Operation: {string}, {parameters}")
+        self.cursor.execute(string,parameters)
         if self.autocommit:
             self.conn.commit()
         return self.cursor.fetchall()
@@ -34,30 +43,8 @@ class Cursor():
     def set_auto_commit(self, boolean: bool):
         self.autocommit = boolean
 
-    def select_parametrized(self, table: str, where: dict={},and_or: list=[], fields: list = None):
-        if fields is None:
-            query = f"SELECT * "
-        else:
-            query = f"SELECT {str(fields)[1:-1]} "
-        query += f"{Cursor.__get_string_where(where)}"
-
-        self.execute(query)
-
-    def update_parametrized(self, table: str, column_newvalue, where: dict = {}):
-        if where is None:
-            self.execute(f"UPDATE {table} SET {Cursor.__get_string_update(column_newvalue)}")
-        else:
-            self.execute(f"UPDATE {table} SET {Cursor.__get_string_update(column_newvalue)} WHERE {Cursor.__get_string_where(where)}")
-
-    def insert_parametrized(self, table: str, parameters: list):
-        insert = format_list(parameters)
-        self.execute(f"INSERT INTO {table} VALUES ({insert})")
-
-    def delete_parametrized(self, table: str, and_or: list = [], pair_key_value: dict = {}):
-        if len(pair_key_value) == 0:
-            self.execute(f"DELETE FROM {table}")
-        else:
-            self.execute(f"DELETE FROM {table} WHERE {Cursor.__get_string_where(and_or, pair_key_value)}")
+    def insert(self,sql,parameters: Iterable=""):
+        self.conn.execute(sql,parameters)
 
     @staticmethod
     def __get_string_update(pair_key_value: dict):
@@ -83,19 +70,19 @@ class Cursor():
             i += 1
         return values
 
-    """G"""
+    """"""
 
-    def create_table(self, tablename, column_type: dict, aditional_parameters=None):
-        if aditional_parameters is None:
-            aditional_parameters = {}
-        if len(aditional_parameters) != len(column_type):
+    def create_table(self, tablename, column_name_and_type: dict, column_name_and_aditional_parameters=None):
+        if column_name_and_aditional_parameters is None:
+            column_name_and_aditional_parameters = {}
+        if len(column_name_and_aditional_parameters) != len(column_name_and_type):
             raise RuntimeError(
-                f"Parameters uneven\naditional_parameters: {aditional_parameters}\ntype_value: {column_type}")
+                f"Parameters uneven\naditional_parameters: {column_name_and_aditional_parameters}\ntype_value: {column_name_and_type}")
         create = F"CREATE TABLE {tablename}"
         values = ""
-        for column, type in column_type.items():
+        for column, type in column_name_and_type.items():
             try:
-                param = aditional_parameters[column]
+                param = column_name_and_aditional_parameters[column]
             except KeyError:
                 param = ""
             if len(values) == 0:
@@ -117,12 +104,15 @@ def format_dict(dictionary: dict, center="=") -> str:
 if __name__ == "__main__":
     cur = Cursor()
     table = "aaaaaa"
-    #cur.create_table(table, {"id": "INT","a":"VARHCAR"}, {"id": "AUTOINCREMENTAL","a":"Unique"})
-    #cur.insert(table, [1,"a"])
-   # cur.update(table, {"INT": "12"},{"INT":1})
-   # cur.select(table, {"INT": "12"})
-   # cur.delete(table)
-    print(cur.execute(f"select * from {table}"))
+    #cur.create_table(table, {"id": "INT",
+     #                        "a":"VARHCAR",
+      #                       },
+       #                     {"id": "AUTOINCREMENTAL",
+        #                     "a":"Unique"
+         #                    })
+#CREATE TABLE aaaaaa (INT id AUTOINCREMENTAL,VARHCAR a Unique)
+
+    print(cur.conn.execute(f"INSERT INTO {table} (a) VALUES (?)","Hola pollas"))
     print(format_list([1, 5, 2, 5, 5, 3, 5, 8, 599, 65, 9, 54, 9]))
     print(format_dict({1: 5, 561: "a"}))
     # cur.select()
