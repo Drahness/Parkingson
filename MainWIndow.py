@@ -1,22 +1,23 @@
-# This is a sample Python script.
 import sys
 
-from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow
+
 from GUI.LoginForm import LoginRegisterWindow
 from Utils import cypher
 
 
 class UI(QMainWindow):
+    """ Clase que importara los ajustes de Javi."""
     def __init__(self):
         super().__init__()
         self.validUser = False
         self.login_form: LoginRegisterWindow = LoginRegisterWindow()
         self.user_credentials = None
+
         self.credentials()
-        print(self.user_credentials)
 
     def credentials(self):
+        """ Funcion que pide las credenciales. Si le dan a cancelar, sale del programa."""
         self.login_form.show()
         #       print(self.login_form.exec_()) print 1 on success, 0 on reject.
         if self.login_form.exec_() == 1:
@@ -25,12 +26,3 @@ class UI(QMainWindow):
         else:
             sys.exit(0)
 
-
-# Press the green button in the gutter to run the script.
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-
-    mainWindow = UI()
-
-    app.exec()

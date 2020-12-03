@@ -1,12 +1,6 @@
 import datetime
 import hashlib
-import sqlite3
 import threading
-from binascii import hexlify
-from sqlite3.dbapi2 import Connection
-# from crypt import METHOD_SHA512
-# from crypt import *
-from cryptography import fernet, x509
 
 from PyQt5.QtCore import Qt, QObject
 from PyQt5.QtWidgets import QWidget, QLabel, QTextEdit, QHBoxLayout, QFrame
@@ -95,20 +89,8 @@ def run_timer():
                 print(type(x))
 
 
-def cypher(password: str) -> bytes:
-    return hashlib.sha3_512(password.encode('utf-8')).digest()
+def cypher(password: str) -> str:
+    return hashlib.sha3_512(password.encode('utf-8')).digest().decode('utf-8')
 
 if __name__ == "__main__":
-    data = "asdasfdasfndsgikjdsbg"
-    for x in range(0,1000):
-        data += chr(x)
-    data = data.encode('utf-8')
-    sha3_512 = hashlib.sha3_512(data)
-    sha3_512_digest = sha3_512.digest()
-    sha3_512_hex_digest = sha3_512.hexdigest()
-    print('Printing digest output')
-    print(sha3_512_digest)
-    print('Printing hexadecimal output')
-    print(sha3_512_hex_digest)
-    print('Printing binary hexadecimal output')
-    print(hexlify(sha3_512_digest))
+    pass

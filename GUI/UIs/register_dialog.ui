@@ -1,23 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>362</width>
-    <height>282</height>
+    <width>281</width>
+    <height>295</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>281</width>
+    <height>295</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>281</width>
+    <height>295</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Dialog</string>
   </property>
   <widget class="QFrame" name="frame_2">
    <property name="geometry">
     <rect>
-     <x>80</x>
-     <y>130</y>
+     <x>40</x>
+     <y>140</y>
      <width>111</width>
      <height>31</height>
     </rect>
@@ -42,8 +54,8 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>56</width>
-      <height>13</height>
+      <width>91</width>
+      <height>16</height>
      </rect>
     </property>
     <property name="text">
@@ -51,34 +63,12 @@
     </property>
    </widget>
   </widget>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>220</y>
-     <width>351</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="inputMethodHints">
-    <set>Qt::ImhNone</set>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-   <property name="centerButtons">
-    <bool>true</bool>
-   </property>
-  </widget>
   <widget class="QLineEdit" name="passwordfield">
    <property name="geometry">
     <rect>
-     <x>80</x>
-     <y>170</y>
-     <width>181</width>
+     <x>40</x>
+     <y>180</y>
+     <width>191</width>
      <height>21</height>
     </rect>
    </property>
@@ -92,9 +82,9 @@
   <widget class="QLineEdit" name="usernamefield">
    <property name="geometry">
     <rect>
-     <x>80</x>
-     <y>100</y>
-     <width>181</width>
+     <x>40</x>
+     <y>110</y>
+     <width>191</width>
      <height>21</height>
     </rect>
    </property>
@@ -105,8 +95,8 @@
   <widget class="QFrame" name="frame">
    <property name="geometry">
     <rect>
-     <x>80</x>
-     <y>60</y>
+     <x>40</x>
+     <y>70</y>
      <width>111</width>
      <height>31</height>
     </rect>
@@ -122,8 +112,8 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>36</width>
-      <height>13</height>
+      <width>91</width>
+      <height>16</height>
      </rect>
     </property>
     <property name="text">
@@ -134,17 +124,46 @@
   <widget class="QLabel" name="title">
    <property name="geometry">
     <rect>
-     <x>140</x>
-     <y>20</y>
-     <width>61</width>
-     <height>31</height>
+     <x>0</x>
+     <y>30</y>
+     <width>281</width>
+     <height>24</height>
     </rect>
    </property>
    <property name="styleSheet">
     <string notr="true">font-size: 20px ;</string>
    </property>
    <property name="text">
-    <string>Login                                       </string>
+    <string>Registro</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="Rpositive">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>240</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Registrar</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="Rnegative">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>240</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Cancelar</string>
    </property>
   </widget>
  </widget>
