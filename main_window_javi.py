@@ -22,11 +22,11 @@ class App(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("CronometroOrtsLayouts")
-        self.chronometer_widget = CentralWidgetParkingson(self)
+        self.central_widget = CentralWidgetParkingson(self)
         # sc = MplCanvas(self, width=5, height=4, dpi=100)
         # sc.axes.plot([0,1,2,3,4], [10,1,20,3,40])
 
-        self.setCentralWidget(self.chronometer_widget)
+        self.setCentralWidget(self.central_widget)
         self.show()
 
 
