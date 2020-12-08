@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import threading
 
+import os
 from PyQt5.QtCore import Qt, QObject
 from PyQt5.QtWidgets import QWidget, QLabel, QTextEdit, QHBoxLayout, QFrame
 
@@ -90,7 +91,7 @@ def run_timer():
 
 
 def cypher(password: str) -> str:
-    return hashlib.sha3_512(password.encode('utf-8')).digest().decode('utf-8')
+    return hashlib.sha3_512(password.encode('utf-8')).hexdigest()
 
 if __name__ == "__main__":
-    pass
+    os.makedirs("aaaa/polaas/xd")

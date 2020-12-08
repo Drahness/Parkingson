@@ -1,30 +1,45 @@
 import sqlite3
 import os
 
-
+from .models import Model, Usuari, Pacients
 from collections import Iterable
 
 
 class Connection:
-    def __init__(self, name=f"test{os.sep}default.db"):
+    def __init__(self, version: int = 1, name=f"test{os.sep}default.db"):
+        self.first_init = False
         if not os.path.exists("../test"):
             os.mkdir("../test")
+            self.first_init = True
+        if not os.path.exists(name):
+            self.first_init = True
         self.conn = sqlite3.connect(name)
         self.autocommit = True
         self.cursor = self.conn.cursor()
+        if self.first_init:
+            self.execute(Pacients.get_table_structure())
+            self.execute(Usuari.get_table_structure())
+            # self.execute("CREATE TABLE DBVersion (version INTEGER)")
+            # self.execute("INSERT INTO DBVersion (?)", str(version))
 
-    def execute(self, string, parameters):
-        print(f"Operation: {string}, {parameters}")
-        self.cursor.execute(string, parameters)
+    def execute(self, sql, parameters: Iterable = None) -> list:
+        print(f"Operation: {sql}, {parameters}")
+        if parameters is None:
+            self.cursor.execute(sql)
+        else:
+            self.cursor.execute(sql, parameters)
         if self.autocommit:
             self.conn.commit()
         return self.cursor.fetchall()
 
-    def set_auto_commit(self, boolean: bool):
+    def set_auto_commit(self, boolean: bool) -> None:
         self.autocommit = boolean
 
-    def insert(self, sql, parameters: Iterable = ""):
-        self.conn.execute(sql, parameters)
+    def insert(self, sql, parameters: Iterable = None):
+        if parameters is None:
+            self.cursor.execute(sql)
+        else:
+            self.cursor.execute(sql, parameters)
 
     @staticmethod
     def __get_string_update(pair_key_value: dict):
@@ -35,7 +50,9 @@ class Connection:
         return values
 
     @staticmethod
-    def __get_string_where(pair_key_value: dict, parameters: list = []):
+    def __get_string_where(pair_key_value: dict, parameters=None):
+        if parameters is None:
+            parameters = []
         values = ""
         if len(pair_key_value) == 0:
             pass
@@ -70,6 +87,11 @@ class Connection:
         create += f" ({values})"
         self.execute(create)
 
+    def check_existence(self, model: Model) -> bool:
+        self.execute(f"SELECT name FROM sqlite_master WHERE type = 'table' AND name = {model.get_tablename()};")
+        existence = self.cursor.fetchall()
+        return existence.count(model.get_tablename()) == 1
+
 
 def format_list(lista: list) -> str:
     return str(lista)[1:-1]
@@ -80,17 +102,4 @@ def format_dict(dictionary: dict, center="=") -> str:
 
 
 if __name__ == "__main__":
-    cur = Connection()
-    table = "aaaaaa"
-    # cur.create_table(table, {"id": "INT",
-    #                        "a":"VARHCAR",
-    #                       },
-    #                     {"id": "AUTOINCREMENTAL",
-    #                     "a":"Unique"
-    #                    })
-    # CREATE TABLE aaaaaa (INT id AUTOINCREMENTAL,VARHCAR a Unique)
-
-    print(cur.conn.execute(f"INSERT INTO {table} (a) VALUES (?)"))
-    print(format_list([1, 5, 2, 5, 5, 3, 5, 8, 599, 65, 9, 54, 9]))
-    print(format_dict({1: 5, 561: "a"}))
-    # cur.select()
+    pass

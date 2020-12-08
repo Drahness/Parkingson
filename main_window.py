@@ -4,10 +4,12 @@ from PyQt5.QtWidgets import QMainWindow
 
 from GUI.LoginForm import LoginRegisterWindow
 from Utils import cypher
+from database.database_controller import Connection
 
 
 class UI(QMainWindow):
     """ Clase que importara los ajustes de Javi."""
+
     def __init__(self):
         super().__init__()
         self.validUser = False
@@ -15,6 +17,7 @@ class UI(QMainWindow):
         self.user_credentials = None
 
         self.credentials()
+        self.connection = Connection(name="test\\haaasd.db")
 
     def credentials(self):
         """ Funcion que pide las credenciales. Si le dan a cancelar, sale del programa."""
@@ -25,4 +28,4 @@ class UI(QMainWindow):
             self.user_credentials = self.login_form.result
         else:
             sys.exit(0)
-
+        self.login_form.show()

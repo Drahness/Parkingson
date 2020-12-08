@@ -3,7 +3,7 @@ import sys
 from GUI import GUI_Resources
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogButtonBox, QTabWidget
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTabWidget
 
 
 class LoginRegisterWindow(QDialog):
@@ -34,34 +34,34 @@ class LoginRegisterWindow(QDialog):
         tab.addTab(self.register_widget, "Registro")
         self.setLayout(layout)
 
-        self.loginTab.positive.clicked.connect(self.positive_login)
-        self.loginTab.negative.clicked.connect(self.cancelButtons)
-        self.registerTab.Rnegative.clicked.connect(self.cancelButtons)
-        self.registerTab.Rpositive.clicked.connect(self.positive_register)
+        self.loginTab.positive.clicked.connect(self.__positive_login)
+        self.loginTab.negative.clicked.connect(self.__cancelButtons)
+        self.registerTab.Rnegative.clicked.connect(self.__cancelButtons)
+        self.registerTab.Rpositive.clicked.connect(self.__positive_register)
 
-    def cancelButtons(self):
+    def __cancelButtons(self):
         print("CANCEL")
         self.result = False
-        self.closeForm()
+        self.__closeForm()
         self.reject()
 
-    def positive_register(self):
+    def __positive_register(self):
         print("REGISTER")
         self.result = {"order": "regiser",
                        "username": self.registerTab.usernamefield.text(),
                        "password": self.registerTab.passwordfield.text()}
-        self.closeForm()
+        self.__closeForm()
         self.accept()
 
-    def positive_login(self):
+    def __positive_login(self):
         print("LOGIN")
         self.result = {"order": "login",
                        "username": self.loginTab.usernamefield.text(),
                        "password": self.loginTab.passwordfield.text()}
-        self.closeForm()
+        self.__closeForm()
         self.accept()
 
-    def closeForm(self):
+    def __closeForm(self):
         self.registerTab.close()
         self.loginTab.close()
         self.login_widget.close()
