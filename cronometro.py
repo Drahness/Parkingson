@@ -3,11 +3,11 @@ from PyQt5.QtWidgets import *
 from PyQt5 import QtCore, QtGui 
 from PyQt5.QtGui import * 
 from PyQt5.QtCore import * 
-import sys 
+import sys
+from QtRoundProgressBar import TstWidget
   
   
-class Cronometro(QMainWindow): 
-  
+class Cronometro(QMainWindow):
     def __init__(self): 
         super().__init__() 
   
@@ -15,17 +15,16 @@ class Cronometro(QMainWindow):
         self.setWindowTitle("Python Stop watch") 
   
         # setting geometry 
-        self.setGeometry(100, 100, 400, 500) 
+        self.setGeometry(100, 100, 400, 500)
   
         # calling method 
         self.UiComponents() 
-  
+
         # showing all the widgets 
         #self.show() 
   
     # method for widgets 
-    def UiComponents(self): 
-  
+    def UiComponents(self):
         # counter 
         self.count = 0
   
@@ -33,22 +32,23 @@ class Cronometro(QMainWindow):
         self.flag = False
   
         # creating a label to show the time 
-        self.label = QLabel(self) 
-  
+        self.label = TstWidget(self)
+        #self.label = QLabel(self)
         # setting geometry of label 
-        self.label.setGeometry(75, 100, 250, 70) 
+        self.label.setGeometry(250, 250, 250, 250)
   
         # adding border to the label 
-        self.label.setStyleSheet("border : 4px solid black;") 
+        self.label.setStyleSheet("border : 4px solid black;")
   
         # setting text to the label 
-        self.label.setText(str(self.count)) 
-  
+        #self.label.setText(str(self.count))
+        self.label.bar.setValue(self.count)
+
         # setting font to the label 
         self.label.setFont(QFont('Arial', 25)) 
   
         # setting alignment to the text of label 
-        self.label.setAlignment(Qt.AlignCenter) 
+        #self.label.setAlignment(Qt.AlignCenter)
   
         # creating start button 
         start = QPushButton("Start", self) 
@@ -99,8 +99,8 @@ class Cronometro(QMainWindow):
         text = str(self.count / 10) 
   
         # showing text 
-        self.label.setText(text) 
-  
+        #self.label.setText(text)
+        self.label.bar.setValue(float(text))
   
     def Start(self): 
   
@@ -121,5 +121,11 @@ class Cronometro(QMainWindow):
         self.count = 0
   
         # setting text to label 
-        self.label.setText(str(self.count)) 
+        #self.label.setText(str(self.count))
+        self.label.bar.setValue(self.count)
   
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = Cronometro()
+    ex.show()
+    sys.exit(app.exec_())

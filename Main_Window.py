@@ -1,12 +1,11 @@
 import sys
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor, QPalette
-from PyQt5.QtWidgets import (
-    QWidget, QApplication, QMainWindow, QVBoxLayout,
-    QHBoxLayout, QPushButton, QSizePolicy, QTabWidget
-)
-from Graph import MplCanvas  # Si se te instala numpy 1.19.4 puede tirar error en windows.
+from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTabWidget, \
+    QApplication
+
+from Graph import MplCanvas
 
 
 class Color(QWidget):
@@ -38,12 +37,15 @@ class CentralWidgetParkingson(QWidget):
     pacients_list_view: QWidget  # Mostrara los pacientes en lista
     actions_buttons: dict  # Continene los botones de la app
 
+    general_layout: QVBoxLayout
+    buttons_layout: QHBoxLayout  # el layout de los botones de arriba
+    content_layout: QHBoxLayout  # los layout de los tabs y el listview
+
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
-
-        general_layout = QVBoxLayout()
-        buttons_layout = QHBoxLayout()
-        content_layout = QHBoxLayout()
+        self.general_layout = QVBoxLayout()
+        self.buttons_layout = QHBoxLayout()
+        self.content_layout = QHBoxLayout()
 
         self.actions_buttons = {
             'add': QPushButton('Anadir'),
@@ -55,11 +57,11 @@ class CentralWidgetParkingson(QWidget):
         self.actions_buttons['delete'].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.actions_buttons['edit'].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        buttons_layout.addWidget(self.actions_buttons['add'])
-        buttons_layout.addWidget(self.actions_buttons['delete'])
-        buttons_layout.addWidget(self.actions_buttons['edit'])
-        buttons_layout.setAlignment(Qt.AlignLeft)
-        buttons_layout.setSpacing(20)
+        self.buttons_layout.addWidget(self.actions_buttons['add'])
+        self.buttons_layout.addWidget(self.actions_buttons['delete'])
+        self.buttons_layout.addWidget(self.actions_buttons['edit'])
+        self.buttons_layout.setAlignment(Qt.AlignLeft)
+        self.buttons_layout.setSpacing(20)
 
         self.pacients_list_view = Color("green")
 
@@ -80,14 +82,14 @@ class CentralWidgetParkingson(QWidget):
         self.pacients_list_view.setMinimumSize(200, 400)
         self.pacients_list_view.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
-        content_layout.addWidget(self.pacients_list_view, stretch=3, alignment=Qt.AlignTop)
-        content_layout.addWidget(self.parent_tab_widget, stretch=9)
+        self.content_layout.addWidget(self.pacients_list_view, stretch=3, alignment=Qt.AlignTop)
+        self.content_layout.addWidget(self.parent_tab_widget, stretch=9)
 
-        general_layout.addLayout(buttons_layout)
-        general_layout.addLayout(content_layout)
+        self.general_layout.addLayout(self.buttons_layout)
+        self.general_layout.addLayout(self.content_layout)
 
         self.setMinimumSize(900, 600)
-        self.setLayout(general_layout)
+        self.setLayout(self.general_layout)
 
 
 if __name__ == '__main__':
