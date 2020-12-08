@@ -8,16 +8,14 @@ from database.database_controller import Connection
 
 
 class UI(QMainWindow):
-    """ Clase que importara los ajustes de Javi."""
-
+    """ Clase que importara los ajustes de Javi. Con la main window"""
     def __init__(self):
         super().__init__()
         self.validUser = False
         self.login_form: LoginRegisterWindow = LoginRegisterWindow()
         self.user_credentials = None
-
         self.credentials()
-        self.connection = Connection(name="test\\haaasd.db")
+        self.connection = Connection()
 
     def credentials(self):
         """ Funcion que pide las credenciales. Si le dan a cancelar, sale del programa."""

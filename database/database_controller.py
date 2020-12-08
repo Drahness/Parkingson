@@ -6,14 +6,14 @@ from collections import Iterable
 
 
 class Connection:
-    def __init__(self, version: int = 1, name=f"test{os.sep}default.db"):
+    def __init__(self, version: int = 1, path: str = "db", dbname=f"default.db"):
         self.first_init = False
-        if not os.path.exists("../test"):
-            os.mkdir("../test")
+        if not os.path.exists(path):
+            os.makedirs(path)
             self.first_init = True
-        if not os.path.exists(name):
+        if not os.path.exists(dbname):
             self.first_init = True
-        self.conn = sqlite3.connect(name)
+        self.conn = sqlite3.connect(path+os.sep+dbname)
         self.autocommit = True
         self.cursor = self.conn.cursor()
         if self.first_init:
