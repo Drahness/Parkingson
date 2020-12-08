@@ -5,7 +5,7 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTabWidget, \
     QApplication
 
-from Graph import MplCanvas
+from graph import MplCanvas
 
 
 class Color(QWidget):
@@ -18,6 +18,7 @@ class Color(QWidget):
 
 
 class App(QMainWindow):
+    """ Esta clase no la voy a usar """
     def __init__(self):
         super().__init__()
         self.setWindowTitle("CronometroOrtsLayouts")
