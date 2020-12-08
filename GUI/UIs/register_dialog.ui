@@ -78,6 +78,9 @@
    <property name="echoMode">
     <enum>QLineEdit::Password</enum>
    </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QLineEdit" name="usernamefield">
    <property name="geometry">
@@ -90,6 +93,9 @@
    </property>
    <property name="text">
     <string/>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QFrame" name="frame">
@@ -141,6 +147,9 @@
    </property>
   </widget>
   <widget class="QPushButton" name="Rpositive">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>50</x>
@@ -154,6 +163,9 @@
    </property>
   </widget>
   <widget class="QPushButton" name="Rnegative">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>140</x>
@@ -164,6 +176,22 @@
    </property>
    <property name="text">
     <string>Cancelar</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>10</y>
+     <width>47</width>
+     <height>13</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color:red</string>
+   </property>
+   <property name="text">
+    <string>WIP</string>
    </property>
   </widget>
  </widget>

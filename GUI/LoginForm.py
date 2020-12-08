@@ -24,47 +24,38 @@ class LoginRegisterWindow(QDialog):
         layout = QVBoxLayout()
         layout.addWidget(tab)
 
-        self.login_widget = QDialog()
-        self.register_widget = QDialog()
+        self.login_widget = GUI_Resources.get_login_tab()
+        self.register_widget = GUI_Resources.get_register_tab()
 
-        self.loginTab = uic.loadUi(GUI_Resources.LOGIN_DIALOG, self.login_widget)
-        self.registerTab = uic.loadUi(GUI_Resources.REGISTER_DIALOG, self.register_widget)
+        #self.loginTab = uic.loadUi(GUI_Resources.LOGIN_DIALOG, self.login_widget)
+        #self.registerTab = uic.loadUi(GUI_Resources.REGISTER_DIALOG, self.register_widget)
 
         tab.addTab(self.login_widget, "Login")
         tab.addTab(self.register_widget, "Registro")
         self.setLayout(layout)
 
-        self.loginTab.positive.clicked.connect(self.__positive_login)
-        self.loginTab.negative.clicked.connect(self.__cancelButtons)
-        self.registerTab.Rnegative.clicked.connect(self.__cancelButtons)
-        self.registerTab.Rpositive.clicked.connect(self.__positive_register)
+        self.login_widget.positive.clicked.connect(self.__positive_login)
+        self.login_widget.negative.clicked.connect(self.__cancelButtons)
+        self.register_widget.Rnegative.clicked.connect(self.__cancelButtons)
+        self.register_widget.Rpositive.clicked.connect(self.__positive_register)
 
     def __cancelButtons(self):
-        print("CANCEL")
-        self.result = False
-        self.__closeForm()
-        self.reject()
+        sys.exit(0)
 
     def __positive_register(self):
         print("REGISTER")
-        self.result = {"order": "regiser",
-                       "username": self.registerTab.usernamefield.text(),
-                       "password": self.registerTab.passwordfield.text()}
-        self.__closeForm()
+        self.result = {"order": "register",
+                       "username": self.register_widget.usernamefield.text(),
+                       "password": self.register_widget.passwordfield.text()}
+
         self.accept()
 
     def __positive_login(self):
         print("LOGIN")
         self.result = {"order": "login",
-                       "username": self.loginTab.usernamefield.text(),
-                       "password": self.loginTab.passwordfield.text()}
-        self.__closeForm()
+                       "username": self.login_widget.usernamefield.text(),
+                       "password": self.login_widget.passwordfield.text()}
         self.accept()
-
-    def __closeForm(self):
-        self.registerTab.close()
-        self.loginTab.close()
-        self.login_widget.close()
 
 
 if __name__ == '__main__':
