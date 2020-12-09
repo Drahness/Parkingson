@@ -6,7 +6,8 @@ from typing import Type
 
 import Utils
 from collections import Iterable
-from .models import Model, UsuariModel, PacientsModel
+from .models import Model, UsuariModel, PacientsModel, PruebasModel
+
 
 class Connection:
     DB_PATH: str
@@ -25,6 +26,10 @@ class Connection:
                 self.create_table(PacientsModel.get_tablename(), PacientsModel.get_columns_dict())
             if not self.check_existence(UsuariModel):
                 self.create_table(UsuariModel.get_tablename(), UsuariModel.get_columns_dict())
+            if not self.check_existence(PruebasModel.get_tablename()[0]):
+                self.create_table(PruebasModel.get_tablename()[0], PruebasModel.get_columns_dict()[0])
+            if not self.check_existence(PruebasModel.get_tablename()[1]):
+                self.create_table(PruebasModel.get_tablename()[1], PruebasModel.get_columns_dict()[1])
             self.execute(f"INSERT OR IGNORE INTO users VALUES ('Admin','{Utils.cypher('Admin')}')")
 
     def execute(self, sql, parameters: Iterable = None) -> list:
@@ -49,18 +54,22 @@ class Connection:
     def create_table(self, tablename: str, columns: ColumnDict, indexes=None):
         self.dao.create_table(tablename, columns, indexes)
 
-    def check_existence(self, model: Type[Model]) -> bool:
-        self.execute(f"SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{model.get_tablename()}'")
-        existence = self.cursor.fetchall()
-        return existence.count(model.get_tablename()) == 1
+    def check_existence(self, model: Type[Model] or str) -> bool:
+        instance_of_something = False
+        table = ""
+        if isinstance(model, str):
+            instance_of_something = True
+            table = model
+        elif issubclass(model, Model):
+            instance_of_something = True
+            table = model.get_tablename()
+        if instance_of_something:
+            self.execute(f"SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{table}'")
+            existence = self.cursor.fetchall()
+            return existence.count(table) == 1
+        else:
+            raise AssertionError(f"Bad arguments. expected {type(str)} or {type(Model)} got {type(model)}")
 
-
-def format_list(lista: list) -> str:
-    return str(lista)[1:-1]
-
-
-def format_dict(dictionary: dict, center="=") -> str:
-    return str(dictionary)[1:-1].replace(":", center)
 
 
 if __name__ == "__main__":

@@ -3,9 +3,10 @@ import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTabWidget, \
-    QApplication
+    QApplication, QListView
 
 from GUI.graph import MplCanvas
+from .GUI_Resources import get_cronometro_widget
 
 
 class Color(QWidget):
@@ -65,15 +66,15 @@ class CentralWidgetParkingson(QWidget):
         self.buttons_layout.setAlignment(Qt.AlignLeft)
         self.buttons_layout.setSpacing(20)
 
-        self.pacients_list_view = Color("green")
+        self.pacients_list_view = QListView()
 
         self.parent_tab_widget = QTabWidget()
-        self.pacients_tab = Color("red")  # Tab1 Color
+        self.pacients_tab = QWidget()  # Tab1 Color
 
         self.rendimiento_tab = MplCanvas(self, width=5, height=4, dpi=100)  # Tab2 Grafica
         self.rendimiento_tab.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
 
-        self.cronometro_tab = Color("green")  # Tab3 Color
+        self.cronometro_tab = get_cronometro_widget()  # Tab3 Color
 
         self.parent_tab_widget.resize(300, 300)  # Tab Parent
 

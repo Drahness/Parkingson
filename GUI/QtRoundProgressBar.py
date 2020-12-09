@@ -1,3 +1,4 @@
+import datetime
 import sys
 
 from PyQt5 import QtCore, QtGui, Qt
@@ -256,7 +257,6 @@ class QRoundProgressBar(QWidget):
 
     def valueFormatChanged(self):
         self.updateFlags = 0
-
         if "%v" in self.format:
             self.updateFlags |= self.UF_VALUE
 
@@ -294,16 +294,51 @@ class QRoundProgressBarRebasable(QRoundProgressBar):
         super(QRoundProgressBarRebasable, self).__init__()
 
     def setValue(self, val):
-        super(QRoundProgressBarRebasable, self).setValue(val % self.max)
+        if isinstance(val, datetime.timedelta):
+            super(QRoundProgressBarRebasable, self).setValue(val)
+        else:
+            super(QRoundProgressBarRebasable, self).setValue(val % self.max)
 
+    # TODO Necesita ser overridado.
+    def valueFormatChanged(self):
+        self.updateFlags = 0
+        if "%v" in self.format:
+            self.updateFlags |= self.UF_VALUE
 
-class TstWidget(QWidget):
+        if "%p" in self.format:
+            self.updateFlags |= self.UF_PERCENT
+
+        if "%m" in self.format:
+            self.updateFlags |= self.UF_MAX
+
+        self.update()
+
+    # TODO Necesita ser overridado.
+    def valueToText(self, value):
+        textToDraw = self.format
+
+        format_string = '{' + ':.{}f'.format(self.decimals) + '}'
+
+        if self.updateFlags & self.UF_VALUE:
+            textToDraw = textToDraw.replace("%v", format_string.format(value))
+
+        if self.updateFlags & self.UF_PERCENT:
+            percent = (value - self.min) / (self.max - self.min) * 100.0
+            textToDraw = textToDraw.replace("%p", format_string.format(percent))
+
+        if self.updateFlags & self.UF_MAX:
+            m = self.max - self.min + 1
+            textToDraw = textToDraw.replace("%m", format_string.format(m))
+
+        return textToDraw
+
+class __TstWidget(QWidget):
     """ Clase para probar el QRoundProgressBar, no utilizar. Solo basarse en esta"""
     def __init__(self,parent=None):
         super(type(self), self).__init__(parent)
 
         self.bar = QRoundProgressBarRebasable()
-        self.bar.setFixedSize(200, 200)
+        #self.bar.setFixedSize(200, 200)
 
         self.bar.setDataPenWidth(2)  # es la anchura de las barras exteriores
         self.bar.setOutlinePenWidth(2)  # ??
@@ -314,7 +349,6 @@ class TstWidget(QWidget):
         self.bar.resetFormat()  # ResetFormat a ""
         self.bar.setNullPosition(90)  # ??
         self.bar.setBarStyle(QRoundProgressBar.StyleDonut)
-
         #self.bar.setDataColors([(0., QtGui.QColor.fromRgb(255,0,0)), (0.5, QtGui.QColor.fromRgb(255,255,0)), (1., QtGui.QColor.fromRgb(0,255,0))])
         self.bar.setDataColors([(0, QtGui.QColor.fromRgb(100,100,0))])
         # Metodo para darle un color, se le pasa una lista, con tuplas dentro.
@@ -329,6 +363,6 @@ class TstWidget(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = TstWidget()
+    window = __TstWidget()
     window.show()
     app.exec_()

@@ -93,5 +93,12 @@ def run_timer():
 def cypher(password: str) -> str:
     return hashlib.sha3_512(password.encode('utf-8')).hexdigest()
 
+def format_list(lista: list) -> str:
+    return str(lista)[1:-1]
+
+
+def format_dict(dictionary: dict, center="=") -> str:
+    return str(dictionary)[1:-1].replace(":", center)
+
 if __name__ == "__main__":
     os.makedirs("aaaa/polaas/xd")
