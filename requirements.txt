@@ -1,3 +1,5 @@
 PyQt5~=5.15.1
 cryptography~=3.2.1
 sqlitedao
+numpy==1.19.3
+matplotlib
