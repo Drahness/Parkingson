@@ -2,6 +2,8 @@ from pathlib import Path
 
 from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog
+from .LoginForm import LoginRegisterWindow
+from .main_window_javi import CentralWidgetParkingson
 
 GUI_FOLDER = Path("GUI")
 UIS_FOLDER = GUI_FOLDER / Path("UIs")
@@ -27,3 +29,9 @@ def get_error_dialog_msg(msg: str) -> QDialog:
     dialog = get_error_dialog()
     dialog.label.setText(msg)
     return dialog
+
+def get_login_register_dialog() -> QDialog:
+    return LoginRegisterWindow()
+
+def get_main_widget():
+    return CentralWidgetParkingson()

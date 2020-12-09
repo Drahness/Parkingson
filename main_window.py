@@ -2,7 +2,6 @@ import os
 from PyQt5.QtWidgets import QMainWindow, QListView, QWidget, QLabel, QDialog
 
 from GUI import GUI_Resources
-from GUI.LoginForm import LoginRegisterWindow
 from Utils import cypher
 from database.database_controller import Connection
 from database.models import UsuariModel
@@ -16,11 +15,12 @@ class UI(QMainWindow):
         UI.instance = self
         UI.DB = "db"+os.sep+f"default.db"
         self.validUser = False
-        self.login_form: LoginRegisterWindow = LoginRegisterWindow()
+        self.login_form = GUI_Resources.get_login_register_dialog()
         self.user_credentials = None
         self.credentials()
         self.connection = Connection()
-
+        self.setCentralWidget(GUI_Resources.get_main_widget())
+        self.show()
         # self.cen = QListView()
         # self.modelTest = models.PacientsModel()
         # self.cen.setModel(self.modelTest)
@@ -42,7 +42,7 @@ class UI(QMainWindow):
             while not UsuariModel.valid_user(username, password):
                 q_widget.show()
                 q_widget.exec_()
-                self.login_form = LoginRegisterWindow()
+                self.login_form = GUI_Resources.get_login_register_dialog()
                 self.login_form.show()
                 if self.login_form.exec_() == 1:
                     password = cypher(self.login_form.result["password"])

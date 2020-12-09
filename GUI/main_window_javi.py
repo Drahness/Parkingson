@@ -5,10 +5,11 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTabWidget, \
     QApplication
 
-from graph import MplCanvas
+from GUI.graph import MplCanvas
 
 
 class Color(QWidget):
+    """No la voy a usar"""
     def __init__(self, color):
         super().__init__()
         self.setAutoFillBackground(True)
@@ -42,7 +43,7 @@ class CentralWidgetParkingson(QWidget):
     buttons_layout: QHBoxLayout  # el layout de los botones de arriba
     content_layout: QHBoxLayout  # los layout de los tabs y el listview
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super(QWidget, self).__init__(parent)
         self.general_layout = QVBoxLayout()
         self.buttons_layout = QHBoxLayout()
