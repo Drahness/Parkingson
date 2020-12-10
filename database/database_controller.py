@@ -6,30 +6,31 @@ from typing import Type
 
 import Utils
 from collections import Iterable
-from .models import Model, UsuariModel, PacientsModel, PruebasModel
+from .models import ListModel, UsuariListModel, PacientsListModel, PruebasListModel
 
 
 class Connection:
-    DB_PATH: str
-    def __init__(self, path: str = "db", dbname=f"default.db", version: int = 1):
+    INSTANCE_MAP = {}
+
+    def __init__(self, path: str = "db", dbname=f"default.db"):
         self.first_init = False
-        Connection.DB_PATH = path + os.sep + dbname
-        if not os.path.exists(Connection.DB_PATH):
+        filepath = path + os.sep + dbname
+        if not os.path.exists(filepath):
             os.makedirs(path, exist_ok=True)
             self.first_init = True
-        self.conn = sqlite3.connect(Connection.DB_PATH)
-        self.dao = SqliteDao.get_instance(Connection.DB_PATH)
+        self.conn = sqlite3.connect(filepath)
+        self.dao = SqliteDao.get_instance(filepath)
         self.autocommit = True
         self.cursor = self.conn.cursor()
         if self.first_init:
-            if not self.check_existence(PacientsModel):
-                self.create_table(PacientsModel.get_tablename(), PacientsModel.get_columns_dict())
-            if not self.check_existence(UsuariModel):
-                self.create_table(UsuariModel.get_tablename(), UsuariModel.get_columns_dict())
-            if not self.check_existence(PruebasModel.get_tablename()[0]):
-                self.create_table(PruebasModel.get_tablename()[0], PruebasModel.get_columns_dict()[0])
-            if not self.check_existence(PruebasModel.get_tablename()[1]):
-                self.create_table(PruebasModel.get_tablename()[1], PruebasModel.get_columns_dict()[1])
+            if not self.check_existence(PacientsListModel):
+                self.create_table(PacientsListModel.get_tablename(), PacientsListModel.get_columns_dict())
+            if not self.check_existence(UsuariListModel):
+                self.create_table(UsuariListModel.get_tablename(), UsuariListModel.get_columns_dict())
+            if not self.check_existence(PruebasListModel.get_tablename()[0]):
+                self.create_table(PruebasListModel.get_tablename()[0], PruebasListModel.get_columns_dict()[0])
+            if not self.check_existence(PruebasListModel.get_tablename()[1]):
+                self.create_table(PruebasListModel.get_tablename()[1], PruebasListModel.get_columns_dict()[1])
             self.execute(f"INSERT OR IGNORE INTO users VALUES ('Admin','{Utils.cypher('Admin')}')")
 
     def execute(self, sql, parameters: Iterable = None) -> list:
@@ -47,20 +48,20 @@ class Connection:
 
     def insert(self, sql, parameters: Iterable = None):
         if parameters is None:
-            self.cursor.execute(sql)
+            self.execute(sql)
         else:
-            self.cursor.execute(sql, parameters)
+            self.execute(sql, parameters)
 
     def create_table(self, tablename: str, columns: ColumnDict, indexes=None):
         self.dao.create_table(tablename, columns, indexes)
 
-    def check_existence(self, model: Type[Model] or str) -> bool:
+    def check_existence(self, model: Type[ListModel] or str) -> bool:
         instance_of_something = False
         table = ""
         if isinstance(model, str):
             instance_of_something = True
             table = model
-        elif issubclass(model, Model):
+        elif issubclass(model, ListModel):
             instance_of_something = True
             table = model.get_tablename()
         if instance_of_something:
@@ -68,9 +69,10 @@ class Connection:
             existence = self.cursor.fetchall()
             return existence.count(table) == 1
         else:
-            raise AssertionError(f"Bad arguments. expected {type(str)} or {type(Model)} got {type(model)}")
+            raise AssertionError(f"Bad arguments. expected {type(str)} or {type(ListModel)} got {type(model)}")
 
-
-
-if __name__ == "__main__":
-    pass
+    @staticmethod
+    def get_instance(path: str, db: str):
+        if path not in Connection.INSTANCE_MAP:
+            Connection.INSTANCE_MAP[path+os.sep+db] = Connection(path, db)
+        return Connection.INSTANCE_MAP[path+os.sep+db]

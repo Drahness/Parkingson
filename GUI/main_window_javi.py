@@ -37,13 +37,16 @@ class CentralWidgetParkingson(QWidget):
     cronometro_tab: QWidget  # Una vez seleccionado paciente, lo testara
     rendimiento_tab: QWidget  # Una vez seleccionado paciente, mostrara su rendimiento
 
-    pacients_list_view: QWidget  # Mostrara los pacientes en lista
+    pacients_list_view: QListView  # Mostrara los pacientes en lista
     actions_buttons: dict  # Continene los botones de la app
 
     general_layout: QVBoxLayout
     buttons_layout: QHBoxLayout  # el layout de los botones de arriba
     content_layout: QHBoxLayout  # los layout de los tabs y el listview
 
+    ADD_button_key = "add"
+    DELETE_button_key = "delete"
+    EDIT_button_key = "edit"
     def __init__(self, parent=None):
         super(QWidget, self).__init__(parent)
         self.general_layout = QVBoxLayout()
@@ -63,6 +66,7 @@ class CentralWidgetParkingson(QWidget):
         self.buttons_layout.addWidget(self.actions_buttons['add'])
         self.buttons_layout.addWidget(self.actions_buttons['delete'])
         self.buttons_layout.addWidget(self.actions_buttons['edit'])
+
         self.buttons_layout.setAlignment(Qt.AlignLeft)
         self.buttons_layout.setSpacing(20)
 

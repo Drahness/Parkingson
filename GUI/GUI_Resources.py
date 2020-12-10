@@ -10,6 +10,14 @@ LOGIN_DIALOG = UIS_FOLDER / Path("login_dialog.ui")
 REGISTER_DIALOG = UIS_FOLDER / Path("register_dialog.ui")
 ERROR_DIALOG = UIS_FOLDER / Path("error_dialog.ui")
 CRONOMETRO_WIDGET = UIS_FOLDER / Path("cronometro.ui")
+BASIC_FORM = UIS_FOLDER / Path("basic_form.ui")
+
+
+def get_basic_form(to: QDialog = None) -> QDialog:
+    if to is None:
+        return uic.loadUi(BASIC_FORM, QDialog())
+    else:
+        return uic.loadUi(BASIC_FORM, to)
 
 
 def get_login_tab(to: QDialog = None) -> QDialog:

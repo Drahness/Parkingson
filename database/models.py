@@ -1,14 +1,17 @@
 import typing
 
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt
-from sqlitedao import ColumnDict, SqliteDao, TableItem
+from sqlitedao import ColumnDict, SqliteDao
+
+from database.DB_Resources import get_db_connection
 
 
-class Model(QAbstractListModel):
+class ListModel(QAbstractListModel):
     def __init__(self, items: list, base: type):
         from main_window import UI
-        super(Model, self).__init__()
+        super(ListModel, self).__init__()
         self.instance_class = base
+        base.TABLENAME = self.get_tablename()
         self.items = items or []
         if items is None:
             dao: SqliteDao = SqliteDao.get_instance(UI.DB)
@@ -36,37 +39,21 @@ class Model(QAbstractListModel):
     def rowCount(self, parent: QModelIndex = ...) -> int:
         return len(self.items)
 
-    def append(self, pacient: any):
+    def append(self, pacient):
         if not isinstance(pacient, self.instance_class):
             raise TypeError(f"Method append expected {self.instance_class}, got {type(pacient)}")
         self.items.append(pacient)
         self.layoutChanged.emit()
+        pacient.insert(get_db_connection())
 
 
-class Usuari(TableItem):
-    username: str
-    password: str
-
-    def __init__(self,
-                 username: str = None,
-                 password: str = None,
-                 dictionary: dict = None):
-        super().__init__()
-        if dictionary is not None:
-            username = dictionary["username"]
-            password = dictionary["password"]
-        self.username = username
-        self.password = password
-
-    def __str__(self):
-        return f"{self.username}"
-
-
-class UsuariModel(Model):
+class UsuariListModel(ListModel):
     """ No se si la voy a usar"""
+    INSTANCE = None
 
     def __init__(self, items: list = None):
-        super(UsuariModel, self).__init__(items, Usuari)
+        from database.entities import Usuari
+        super(UsuariListModel, self).__init__(items, Usuari)
 
     @staticmethod
     def get_tablename() -> tuple or str:
@@ -85,40 +72,20 @@ class UsuariModel(Model):
         dao: SqliteDao = SqliteDao.get_instance(UI.DB)
         return len(dao.search_table("users", {"username": username, "password": password})) > 0
 
-
-class Pacients:
-    model: type
-    dni: str
-    apellidos: str
-    estadio: int
-    nombre: str
-
-    def __init__(self,
-                 dni: str = None,
-                 apellidos: str = None,
-                 estadio: int = None,
-                 nombre: str = None,
-                 dictionary: dict = None):
-        if dictionary is not None:
-            dni = dictionary["dni"]
-            apellidos = dictionary["apellidos"]
-            estadio = dictionary["estadio"]
-            nombre = dictionary["nombre"]
-        self.model = PacientsModel
-        self.dni = dni
-        self.apellidos = apellidos
-        self.estadio = estadio
-        self.nombre = nombre
-
-    def __str__(self):
-        return f"{self.dni}:{self.apellidos}, {self.nombre}"
+    @staticmethod
+    def get_instance(items=None):
+        if UsuariListModel.INSTANCE is None:
+            UsuariListModel.INSTANCE = UsuariListModel(items)
+        return UsuariListModel.INSTANCE
 
 
-class PacientsModel(Model):
+class PacientsListModel(ListModel):
     ID = "dni"
+    INSTANCE = None
 
     def __init__(self, items: list = None):
-        super(PacientsModel, self).__init__(items, Pacients)
+        from database.entities import Pacient
+        super(PacientsListModel, self).__init__(items, Pacient)
         pass
 
     @staticmethod
@@ -134,24 +101,16 @@ class PacientsModel(Model):
         columns.add_column("estadio", "integer")
         return columns
 
+    @staticmethod
+    def get_instance(items=None):
+        if PacientsListModel.INSTANCE is None:
+            PacientsListModel.INSTANCE = PacientsListModel(items)
+        return PacientsListModel.INSTANCE
 
-class Prueba:
-    def __init__(self,
-                 identifier: int = None,
-                 laps: list = None,
-                 pacient_id: str = None,
-                 dictionary: dict = None):
-        if dictionary is not None:
-            identifier = dictionary["identifier"]
-            laps = dictionary["laps"]
-            pacient_id = dictionary["pacient_id"]
-        self.identifier = identifier
-        self.laps = laps
-        self.pacient_id = pacient_id
-
-
-class PruebasModel(Model):
+class PruebasListModel(ListModel):
+    INSTANCE = None
     def __init__(self, items: list = None):
+        from database.entities import Prueba
         if items is None:
             items = []
             from main_window import UI
@@ -165,7 +124,7 @@ class PruebasModel(Model):
                 for lap in list_laps:
                     final_list.append(lap["tiempo"])
                 dictionary["laps"] = final_list
-        super(PruebasModel, self).__init__(items, Prueba)
+        super(PruebasListModel, self).__init__(items, Prueba)
 
     @staticmethod
     def get_tablename() -> tuple or str:
@@ -177,10 +136,16 @@ class PruebasModel(Model):
         first_table.add_column("id", "Integer", "PRIMARY KEY AUTOINCREMENT")
         first_table.add_column("pacient_id", "text")
         first_table.add_column("FOREIGN KEY(pacient)",
-                               f"REFERENCES {PacientsModel.get_tablename()}({PacientsModel.ID})")
+                               f"REFERENCES {PacientsListModel.get_tablename()}({PacientsListModel.ID})")
 
         second_table = ColumnDict()
         second_table.add_column("id", "Integer")
         second_table.add_column("tiempo", "Integer")
         second_table.add_column("num_lap", "Integer")
         return first_table, second_table
+
+    @staticmethod
+    def get_instance(items=None):
+        if PruebasListModel.INSTANCE is None:
+            PruebasListModel.INSTANCE = PruebasListModel(items)
+        return PruebasListModel.INSTANCE
