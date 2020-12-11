@@ -2,13 +2,14 @@ import os
 import sys
 
 from PyQt5.QtCore import QThreadPool
+from PyQt5.QtGui import QResizeEvent
 from PyQt5.QtWidgets import QMainWindow, QDialog, QVBoxLayout
 
 from GUI import GUI_Resources
-from GUI.form import Form
+from GUI.form import SimpleForm
 from database.database_controller import Connection
-from database.entities import Pacient
-from database.models import UsuariListModel, PacientsListModel
+from database.entities import Usuari, Pacient
+from database.models import PacientsListModel, ListModel
 
 
 class UI(QMainWindow):
@@ -33,11 +34,17 @@ class UI(QMainWindow):
         self.central.actions_buttons[self.central.DELETE_button_key].clicked.connect(self.del_pacient_slot)
         self.central.actions_buttons[self.central.EDIT_button_key].clicked.connect(self.mod_pacient_slot)
 
+        self.central.pacients_list_view.clicked.connect(self.on_pacient_click)
+        self.central.pacients_list_view.doubleClicked.connect(self.on_pacient_double_click)
+
+        self.central.pacients_tab.finishedSignal.connect(self.enable_buttons)
+        self.setFixedSize(1020,600)
+        #self.iconSizeChanged.connect(self.iconSizeChanged)
         if self.user_credentials["result"]:
-            self.central.pacients_list_view.setModel(PacientsListModel())
             self.setCentralWidget(self.central)
             self.show()
-            self.central.pacients_list_view.setModel(PacientsListModel.get_instance())
+            self.listview_model: ListModel = PacientsListModel.get_instance()
+            self.central.pacients_list_view.setModel(self.listview_model)
         else:
             sys.exit(0)
         # self.cen = QListView()
@@ -53,11 +60,11 @@ class UI(QMainWindow):
         reintenta la conexion indefinidamente"""
         self.login_form.show()
         if not self.DEBUG:
-            self.login_form.login_validator = UsuariListModel.valid_user
+            self.login_form.login_validator = Usuari.valid_user
         else:
             self.login_form.login_validator = UI.validator_debug
         result = self.login_form.exec_()
-        if result == 1 and self.login_form.result["result"]:
+        if result == 1 and self.login_form.result.get("result", False):
             self.user_credentials = self.login_form.result
         else:
             sys.exit(0)
@@ -67,35 +74,47 @@ class UI(QMainWindow):
         return True
 
     @staticmethod
-    def get_instace():
+    def get_instance():
         return UI.instance
+
+    def enable_buttons(self,enable):
+        self.central.actions_buttons[self.central.ADD_button_key].setEnabled(enable)
+        self.central.actions_buttons[self.central.DELETE_button_key].setEnabled(enable)
+        self.central.actions_buttons[self.central.EDIT_button_key].setEnabled(enable)
+
 
     """"""
 
     def add_pacient_slot(self):
-        qdial = QDialog()
-        lay = QVBoxLayout()
-        qdial.setLayout(lay)
-        form = Form({"nombre": "", "dni": "", "estadio": "int", "apellidos": ""}, True)
-        """lay.addWidget(form)
-        aceptar = QPushButton()
-        cancelar = QPushButton()
-        aceptar.clicked.connect(QDialog.accept)
-        cancelar.clicked.connect(QDialog.reject)
-        lay2 = QHBoxLayout()
-        qwid = QWidget()
-        lay.addWidget(qwid)
-        lay2.addWidget(aceptar)
-        lay2.addWidget(cancelar)
-        qwid.setLayout(lay2) """
+        form = SimpleForm(Pacient.get_columns_dict(), True)
         if form.exec_() == 1:
-            PacientsListModel.get_instance().append(Pacient(dictionary=form.get_values()))
+            self.listview_model.append(self.listview_model.instance_class(dictionary=form.get_values()))
 
-    def del_pacient_slot(self):
+    def on_pacient_click(self,*args):
+        self.sender()
+        row = args[0].row()
+        p = self.listview_model.instance_class.get_object(row)
+        self.central.pacients_tab.set_pacient(p)
+        print("click")
+
+    def on_pacient_double_click(self, *args):
+        print("double click")
+
+    def del_pacient_slot(self, *args):
+        print("del")
+
+    def mod_pacient_slot(self, *args):
+        self.central.pacients_tab.set_enabled(True)
+
+    def pacient_selected_slot(self, *args):
+        print("selected")
+
+    def iconSizeChanged(self, *args):
+        print("icon")
         pass
 
-    def mod_pacient_slot(self):
-        pass
-
-    def pacient_selected_slot(self):
+    def resizeEvent(self, event: QResizeEvent):
+        #print(f"resize ")
+        #print(f"old {event.oldSize()}")
+        #print(f"new {event.size()}")
         pass

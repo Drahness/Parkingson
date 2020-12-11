@@ -22,7 +22,7 @@ class LoginRegisterWindow(QDialog):
 
     def __init__(self):
         super(LoginRegisterWindow, self).__init__()
-        self.result = {"result": False}
+        self.result = {}
         tab: QTabWidget = QTabWidget()
         layout = QVBoxLayout()
         layout.addWidget(tab)

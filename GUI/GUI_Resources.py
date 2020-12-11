@@ -1,16 +1,28 @@
+import os
 from pathlib import Path
 
 from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog, QWidget
 
-GUI_FOLDER = Path("GUI")
-UIS_FOLDER = GUI_FOLDER / Path("UIs")
+paths = Path(os.path.abspath(__name__)).parents
+MAIN_FOLDER = None
+for parent in Path(os.path.abspath(__name__)).parents:
+    folder = parent / Path("GUI")
+    if folder.exists():
+        MAIN_FOLDER = parent
 
+if MAIN_FOLDER is None:
+    raise ModuleNotFoundError("Malformed modules.")
+
+GUI_FOLDER = MAIN_FOLDER / Path("GUI")
+UIS_FOLDER = GUI_FOLDER / Path("UIs")
 LOGIN_DIALOG = UIS_FOLDER / Path("login_dialog.ui")
 REGISTER_DIALOG = UIS_FOLDER / Path("register_dialog.ui")
 ERROR_DIALOG = UIS_FOLDER / Path("error_dialog.ui")
 CRONOMETRO_WIDGET = UIS_FOLDER / Path("cronometro.ui")
 BASIC_FORM = UIS_FOLDER / Path("basic_form.ui")
+PACIENT_WIDGET = UIS_FOLDER / Path("pacients_widget.ui")
+NO_EDITABLE_PACIENT_WIDGET = UIS_FOLDER / Path("pacients_widget_noeditable.ui")
 
 
 def get_basic_form(to: QDialog = None) -> QDialog:
@@ -73,3 +85,24 @@ def get_cronometro_bar_widget():
 def get_cronometro_widget():
     from GUI.cronometro import Cronometro
     return Cronometro()
+
+
+def get_pacient_widget_ui(to: QWidget):
+    if to is None:
+        pacient_widget: QWidget = uic.loadUi(PACIENT_WIDGET, QWidget())
+    else:
+        pacient_widget: QWidget = uic.loadUi(PACIENT_WIDGET, to)
+    return pacient_widget
+
+
+def get_pacient_widget_ui_noeditable(to: QWidget):
+    if to is None:
+        pacient_widget: QWidget = uic.loadUi(NO_EDITABLE_PACIENT_WIDGET, QWidget())
+    else:
+        pacient_widget: QWidget = uic.loadUi(NO_EDITABLE_PACIENT_WIDGET, to)
+    return pacient_widget
+
+
+def get_pacient_widget(editable: bool):
+    from GUI.form import PacientWidget
+    return PacientWidget(editable)

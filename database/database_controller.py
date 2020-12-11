@@ -6,6 +6,8 @@ from typing import Type
 
 import Utils
 from collections import Iterable
+
+from .entities import Entity, Pacient, Usuari, Prueba
 from .models import ListModel, UsuariListModel, PacientsListModel, PruebasListModel
 
 
@@ -13,25 +15,35 @@ class Connection:
     INSTANCE_MAP = {}
 
     def __init__(self, path: str = "db", dbname=f"default.db"):
-        self.first_init = False
         filepath = path + os.sep + dbname
         if not os.path.exists(filepath):
             os.makedirs(path, exist_ok=True)
-            self.first_init = True
         self.conn = sqlite3.connect(filepath)
         self.dao = SqliteDao.get_instance(filepath)
         self.autocommit = True
         self.cursor = self.conn.cursor()
-        if self.first_init:
-            if not self.check_existence(PacientsListModel):
-                self.create_table(PacientsListModel.get_tablename(), PacientsListModel.get_columns_dict())
-            if not self.check_existence(UsuariListModel):
-                self.create_table(UsuariListModel.get_tablename(), UsuariListModel.get_columns_dict())
-            if not self.check_existence(PruebasListModel.get_tablename()[0]):
-                self.create_table(PruebasListModel.get_tablename()[0], PruebasListModel.get_columns_dict()[0])
-            if not self.check_existence(PruebasListModel.get_tablename()[1]):
-                self.create_table(PruebasListModel.get_tablename()[1], PruebasListModel.get_columns_dict()[1])
-            self.execute(f"INSERT OR IGNORE INTO users VALUES ('Admin','{Utils.cypher('Admin')}')")
+
+        if self.first_init():
+            if not self.check_existence(Pacient):
+                self.create_table(Pacient.get_tablename(), Pacient.get_columns_dict())
+            if not self.check_existence(Usuari):
+                self.create_table(Usuari.get_tablename(), Usuari.get_columns_dict())
+            if not self.check_existence(Prueba.get_tablename()[0]):
+                self.create_table(Prueba.get_tablename()[0], Prueba.get_columns_dict()[0])
+            if not self.check_existence(Prueba.get_tablename()[1]):
+                self.create_table(Prueba.get_tablename()[1], Prueba.get_columns_dict()[1])
+            self.execute(f"INSERT OR IGNORE INTO {Usuari.get_tablename()} VALUES ('Admin','{Utils.cypher('Admin')}')")
+            self.execute(f"UPDATE first_init SET boolean_init = 1")
+
+    def first_init(self):
+        try:
+            return self.execute(f"SELECT * FROM first_init")[0] == 0
+        except:
+            columns = ColumnDict()
+            columns.add_column("boolean_init","INTEGER")
+            self.create_table("first_init",columns)
+            self.execute(f"INSERT OR IGNORE INTO first_init VALUES (0)")
+            return True
 
     def execute(self, sql, parameters: Iterable = None) -> list:
         print(f"Operation: {sql}, {parameters}")
@@ -43,10 +55,13 @@ class Connection:
             self.conn.commit()
         return self.cursor.fetchall()
 
+    def commit(self):
+        self.conn.commit()
+
     def set_auto_commit(self, boolean: bool) -> None:
         self.autocommit = boolean
 
-    def insert(self, sql, parameters: Iterable = None):
+    def insert(self, sql, parameters: Iterable = None) -> None:
         if parameters is None:
             self.execute(sql)
         else:
@@ -55,24 +70,19 @@ class Connection:
     def create_table(self, tablename: str, columns: ColumnDict, indexes=None):
         self.dao.create_table(tablename, columns, indexes)
 
-    def check_existence(self, model: Type[ListModel] or str) -> bool:
-        instance_of_something = False
-        table = ""
+    def check_existence(self, model: Type[Entity] or str) -> bool:
         if isinstance(model, str):
-            instance_of_something = True
             table = model
-        elif issubclass(model, ListModel):
-            instance_of_something = True
+        elif issubclass(model, Entity):
             table = model.get_tablename()
-        if instance_of_something:
-            self.execute(f"SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{table}'")
-            existence = self.cursor.fetchall()
-            return existence.count(table) == 1
         else:
-            raise AssertionError(f"Bad arguments. expected {type(str)} or {type(ListModel)} got {type(model)}")
+            raise AssertionError(f"Bad arguments. expected {str} or {type(Entity)} got {type(model)}")
+        self.execute(f"SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{table}'")
+        existence = self.cursor.fetchall()
+        return existence.count(table) == 1
 
     @staticmethod
     def get_instance(path: str, db: str):
         if path not in Connection.INSTANCE_MAP:
-            Connection.INSTANCE_MAP[path+os.sep+db] = Connection(path, db)
-        return Connection.INSTANCE_MAP[path+os.sep+db]
+            Connection.INSTANCE_MAP[path + os.sep + db] = Connection(path, db)
+        return Connection.INSTANCE_MAP[path + os.sep + db]

@@ -93,12 +93,22 @@ def run_timer():
 def cypher(password: str) -> str:
     return hashlib.sha3_512(password.encode('utf-8')).hexdigest()
 
+
 def format_list(lista: list) -> str:
     return str(lista)[1:-1]
 
 
 def format_dict(dictionary: dict, center="=") -> str:
     return str(dictionary)[1:-1].replace(":", center)
+
+
+def get_from_dict(dictionary: dict, key: any) -> any or None:
+    """ Metodo para coger cosas de un diccionario, y si da error devuelve None"""
+    try:
+        return dictionary[key]
+    except KeyError:
+        return None
+
 
 if __name__ == "__main__":
     os.makedirs("aaaa/polaas/xd")
