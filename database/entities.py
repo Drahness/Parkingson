@@ -3,13 +3,15 @@ from sqlitedao import ColumnDict, SqliteDao
 
 from database.DB_Resources import get_db_connection
 import datetime
+from dateutil.parser import parse
 
 
 class Entity:
     __loaded_instances: dict = {}
 
-    def __init__(self, dictionary: dict = None):
+    def __init__(self,id: any , dictionary: dict = None):
         self.dictionary = dictionary
+        self.id = id
         pass
 
     @classmethod
@@ -63,6 +65,8 @@ class Entity:
         list_of_instances = self._get_list_of_instances()
         list_of_instances.remove(self)
 
+    def get_id(self):
+        return self.id
 
 class Prueba(Entity):
     def __init__(self, identifier: int = None,
@@ -70,14 +74,13 @@ class Prueba(Entity):
                  pacient_id: str = None,
                  datetime_of_test: datetime.datetime = None,
                  dictionary: dict = None):
-        super().__init__()
         if dictionary is not None:
             self.dictionary = dictionary
             identifier = dictionary["identifier"]
             laps = dictionary["laps"]
             pacient_id = dictionary["pacient_id"]
             datetime_of_test = dictionary["datetime"]
-
+        super().__init__(pacient_id)
         self.identifier = identifier  # Integer
         self.laps = laps
         self.pacient_id = pacient_id
@@ -187,7 +190,6 @@ class Pacient(Entity):
                  nacimiento: datetime.date = None,
                  notas: str = None,
                  dictionary: dict = None):
-        super().__init__()
         if dictionary is not None:
             self.dictionary = dictionary
             dni = dictionary.get("dni")
@@ -196,12 +198,14 @@ class Pacient(Entity):
             estadio = dictionary.get("estadio")
             nombre = dictionary.get("nombre")
             notas = dictionary.get("notas")
+        super().__init__(dni)
         self.dni = dni
         self.apellidos = apellidos
         self.estadio = estadio
         self.nombre = nombre
-        self.nacimiento = nacimiento if not isinstance(nacimiento, str) else datetime.date.fromisoformat(nacimiento)
+        self.nacimiento = nacimiento if not isinstance(nacimiento, str) else parse(nacimiento)
         self.notas = notas
+
 
     def insert(self, conexion):
         conexion.insert("INSERT INTO pacients (dni,apellidos,estadio,nombre,nacimiento,notas) VALUES (?,?,?,?,?,?)",
@@ -258,6 +262,16 @@ class Pacient(Entity):
     def __str__(self):
         return f"{self.dni}:{self.apellidos}, {self.nombre}"
 
+    @property
+    def nacimiento(self):
+        return self._nacimiento
+
+    @nacimiento.setter
+    def nacimiento(self, value):
+        if isinstance(value, QDate):
+            self._nacimiento = value.toPyDate()
+        else:
+            self._nacimiento = value
 
 class Usuari(Entity):
     username: str
@@ -272,6 +286,7 @@ class Usuari(Entity):
             self.dictionary = dictionary
             username = dictionary["username"]
             password = dictionary["password"]
+        super().__init__(username)
         self.username = username
         self.password = password
 

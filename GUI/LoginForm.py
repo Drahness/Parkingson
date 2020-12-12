@@ -26,7 +26,7 @@ class LoginRegisterWindow(QDialog):
         tab: QTabWidget = QTabWidget()
         layout = QVBoxLayout()
         layout.addWidget(tab)
-        self._login_validator = None  # method
+        self._login_validator = self.validator_debug  # method
         self.login_widget = GUI_Resources.get_login_tab()
         self.register_widget = GUI_Resources.get_register_tab()
 
@@ -68,15 +68,20 @@ class LoginRegisterWindow(QDialog):
             self.login_widget.passwordfield.selectAll()
 
     @property
-    def login_validator(self):
+    def get_login_validator(self):
         "Esta property, es utilizada para checkear las credenciales en el login."
         return self._login_validator
 
     @login_validator.setter
-    def login_validator(self, method):
+    def set_login_validator(self, method):
         """Tienes que pasarle una referencia a un metodo que tenga dos argumentos.
         username,password"""
         self._login_validator = method
+
+    @staticmethod
+    def validator_debug(a, aa):
+        return True
+
 
 
 if __name__ == '__main__':

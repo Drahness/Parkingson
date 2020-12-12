@@ -8,7 +8,6 @@ import Utils
 from collections import Iterable
 
 from .entities import Entity, Pacient, Usuari, Prueba
-from .models import ListModel, UsuariListModel, PacientsListModel, PruebasListModel
 
 
 class Connection:

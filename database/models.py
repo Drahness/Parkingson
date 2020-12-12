@@ -2,7 +2,9 @@ import typing
 
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt
 from typing import Type
+import traceback
 
+from GUI.GUI_Resources import get_error_dialog_msg
 from database.DB_Resources import get_db_connection
 from database.entities import Entity
 
@@ -28,9 +30,14 @@ class ListModel(QAbstractListModel):
         return len(self.items)
 
     def append(self, entity):
-        self.__check_instance(entity)
-        self.layoutChanged.emit()
-        entity.insert(get_db_connection())
+        try:
+            self.__check_instance(entity)
+            entity.insert(get_db_connection())
+            self.layoutChanged.emit()
+        except Exception as e:
+            string = f"""Error mientras se añadia la entidad {type(entity)} con identificador {entity.get_id()}. Error:
+            {traceback.format_exc()}"""
+            get_error_dialog_msg(string).exec_()
 
     def __check_instance(self, entity):
         if not isinstance(entity, self.instance_class):
@@ -41,12 +48,25 @@ class ListModel(QAbstractListModel):
         if not issubclass(type, Entity):
             raise TypeError(f"Base class {type} must be a subclass of {type(Entity)}")
 
-    def delete(self, pacient):
-        pass
+    def delete(self, entity):
+        try:
+            self.__check_instance(entity)
+            entity.delete(get_db_connection())
+            self.layoutChanged.emit()
+        except Exception as e:
+            string = f"""Error mientras se eliminaba la entidad {type(entity)} con identificador {entity.get_id()}. Error:
+            {traceback.format_exc()}"""
+            get_error_dialog_msg(string).exec_()
 
-    ## TODO Ver como seria este metodo.
-    def modify(self, identifier, newInstance):
-        pass
+    def update(self,entity, id_to_update):
+        try:
+            self.__check_instance(entity)
+            entity.update(get_db_connection(), id_to_update)
+            self.layoutChanged.emit()
+        except Exception as e:
+            string = f"""Error mientras se modificaba la entidad {type(entity)} con identificador {entity.get_id()}. Error: 
+{traceback.format_exc()}"""
+            get_error_dialog_msg(string).exec_()
 
     @classmethod
     def get_instance(cls):

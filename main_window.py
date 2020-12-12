@@ -6,6 +6,7 @@ from PyQt5.QtGui import QResizeEvent
 from PyQt5.QtWidgets import QMainWindow, QDialog, QVBoxLayout
 
 from GUI import GUI_Resources
+ from GUI.GUI_Resources import get_error_dialog_msg, get_confirmation_dialog_ui
 from GUI.form import SimpleForm
 from database.database_controller import Connection
 from database.entities import Usuari, Pacient
@@ -37,9 +38,10 @@ class UI(QMainWindow):
         self.central.pacients_list_view.clicked.connect(self.on_pacient_click)
         self.central.pacients_list_view.doubleClicked.connect(self.on_pacient_double_click)
 
-        self.central.pacients_tab.finishedSignal.connect(self.enable_buttons)
-        self.setFixedSize(1020,600)
-        #self.iconSizeChanged.connect(self.iconSizeChanged)
+        self.central.pacients_tab.finishedSignal.connect(self.on_finished)
+        self.central.pacients_tab.resultSignal.connect(self.on_result)
+        self.setFixedSize(1020, 600)
+        # self.iconSizeChanged.connect(self.iconSizeChanged)
         if self.user_credentials["result"]:
             self.setCentralWidget(self.central)
             self.show()
@@ -61,8 +63,6 @@ class UI(QMainWindow):
         self.login_form.show()
         if not self.DEBUG:
             self.login_form.login_validator = Usuari.valid_user
-        else:
-            self.login_form.login_validator = UI.validator_debug
         result = self.login_form.exec_()
         if result == 1 and self.login_form.result.get("result", False):
             self.user_credentials = self.login_form.result
@@ -70,51 +70,48 @@ class UI(QMainWindow):
             sys.exit(0)
 
     @staticmethod
-    def validator_debug(a, aa):
-        return True
-
-    @staticmethod
     def get_instance():
         return UI.instance
 
-    def enable_buttons(self,enable):
+    def on_finished(self, enable):
         self.central.actions_buttons[self.central.ADD_button_key].setEnabled(enable)
         self.central.actions_buttons[self.central.DELETE_button_key].setEnabled(enable)
         self.central.actions_buttons[self.central.EDIT_button_key].setEnabled(enable)
 
-
+    def on_result(self, acepted: bool, row: int):
+        if acepted:  # si es true, significa que han acabado de editar
+            if row == -1:  # estan creando un usuario
+                self.listview_model.append(self.central.pacients_tab.pacient)
+            else:  # estan editando un usuario, el PyQt da un numero aleatorio a row cuando es None
+                self.listview_model.update(self.central.pacients_tab.pacient, self.central.pacients_tab.last_pacient)
     """"""
 
     def add_pacient_slot(self):
-        form = SimpleForm(Pacient.get_columns_dict(), True)
-        if form.exec_() == 1:
-            self.listview_model.append(self.listview_model.instance_class(dictionary=form.get_values()))
+        self.central.pacients_tab.set_pacient(Pacient(),-1)
+        self.central.pacients_tab.set_enabled(True)
+        pass
 
-    def on_pacient_click(self,*args):
+    def on_pacient_click(self, *args):
         self.sender()
         row = args[0].row()
         p = self.listview_model.instance_class.get_object(row)
-        self.central.pacients_tab.set_pacient(p)
-        print("click")
+        self.central.pacients_tab.set_pacient(p, row)
 
     def on_pacient_double_click(self, *args):
         print("double click")
 
     def del_pacient_slot(self, *args):
-        print("del")
+        if self.central.pacients_tab.pacient_selected():
+            pacient = self.listview_model.items[self.central.pacients_tab.index]
+            dialog = get_confirmation_dialog_ui(f"Quieres eliminar el usuario {pacient}")
+            if dialog.exec_() == 1:
+                self.listview_model.delete(pacient)
 
     def mod_pacient_slot(self, *args):
-        self.central.pacients_tab.set_enabled(True)
+        if self.central.pacients_tab.pacient_selected():
+            self.central.pacients_tab.set_enabled(True)
 
     def pacient_selected_slot(self, *args):
         print("selected")
 
-    def iconSizeChanged(self, *args):
-        print("icon")
-        pass
 
-    def resizeEvent(self, event: QResizeEvent):
-        #print(f"resize ")
-        #print(f"old {event.oldSize()}")
-        #print(f"new {event.size()}")
-        pass

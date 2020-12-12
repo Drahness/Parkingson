@@ -42,12 +42,16 @@ class SimpleForm(QDialog):
 
     def get_values(self) -> dict:
         for key, value in self.values.items():
-            self.values[key] = value.text()
+            if isinstance(value, datetime.date) or isinstance(value, datetime.datetime):
+                self.values[key] = value
+            else:
+                self.values[key] = value.text()
         return self.values
 
 
 class WidgetSelector:
     """ Helper class to SimpleForm class"""
+
     def __init__(self, key, value, editable: bool = True):
         self.key = QLabel(str(key))
         self.value = None
@@ -79,11 +83,13 @@ class WidgetSelector:
 
 class PacientWidget(QWidget):
     default_date = datetime.date(1990, 12, 12)
-    finishedSignal: pyqtSignal = pyqtSignal(bool)
+    finishedSignal: pyqtSignal = pyqtSignal(bool)  # maybe another name is better
+    resultSignal: pyqtSignal = pyqtSignal(bool,int)
+    """ bool if canceled or accepted. int, the row of the pacient or -1 if new pacient """
     def __init__(self, editable: bool, pacient: dict or Pacient = None):
         super().__init__()
         get_pacient_widget_ui(self)
-
+        self.last_pacient = None
         self.pacient = pacient
         self.index: int = None
         self.calendarWidget.clicked.connect(self.on_calendar_changed)
@@ -109,25 +115,26 @@ class PacientWidget(QWidget):
         print(name)
         if name == "accept_button":
             self.save_pacient()
-            self.set_enabled(False)
+            self.resultSignal.emit(True, self.index)
         elif name == "cancel_button":
-            self.set_enabled(False)
+            self.resultSignal.emit(False, -1)
+        self.set_enabled(False)
 
-    def set_pacient(self, pacient, row: int=None):
+    def set_pacient(self, pacient, row: int = None):
         self.index = row
         if pacient is not None:
             if isinstance(pacient, dict):
                 dni = pacient.get("dni")
                 nombre = pacient.get("nombre")
                 apellidos = pacient.get("apellidos")
-                estadio = pacient.get("estadio")
+                estadio = pacient.get("estadio", default=0)
                 nacimiento = pacient.get("nacimiento", default=self.default_date)
                 notas = pacient.get("notas")
             elif isinstance(pacient, Pacient):
                 dni = pacient.dni
                 nombre = pacient.nombre
                 apellidos = pacient.apellidos
-                estadio = pacient.estadio
+                estadio = pacient.estadio or 0
                 nacimiento = pacient.nacimiento or self.default_date
                 notas = pacient.notas
             else:
@@ -136,13 +143,13 @@ class PacientWidget(QWidget):
             dni = None
             nombre = None
             apellidos = None
-            estadio = None
+            estadio = 0
             nacimiento = self.default_date
             notas = None
         self.pacient = pacient
+        self.last_pacient = dni
         self.calendarWidget: QCalendarWidget = self.calendarWidget
         self.nacimiento_field: QDateEdit = self.nacimiento_field
-        self.estadio_field.setValidator(QIntValidator())
         self.dni_field.setText(dni)
         self.apellidos_field.setText(apellidos)
         self.nombre_field.setText(nombre)
@@ -150,9 +157,9 @@ class PacientWidget(QWidget):
         self.nacimiento_field.setDate(nacimiento)
         self.notas_field.setText(notas)
         self.calendarWidget.setSelectedDate(nacimiento)
+        self.estadio_field.setValidator(QIntValidator())
 
     def set_enabled(self, enabled: bool):
-        self.finishedSignal.emit(not enabled)
         self.dni_field.setEnabled(enabled)
         self.apellidos_field.setEnabled(enabled)
         self.nombre_field.setEnabled(enabled)
@@ -162,10 +169,14 @@ class PacientWidget(QWidget):
         self.calendarWidget.setEnabled(enabled)
         self.cancel_button.setVisible(enabled)
         self.accept_button.setVisible(enabled)
+        self.finishedSignal.emit(not enabled)
 
     def on_calendar_changed(self, *args):
         self.calendarWidget.setSelectedDate(args[0])
         self.nacimiento_field.setDate(args[0])
+
+    def pacient_selected(self) -> bool:
+        return self.pacient is not None
 
 
 if __name__ == "__main__":
