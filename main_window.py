@@ -77,6 +77,7 @@ class UI(QMainWindow):
         self.central.actions_buttons[self.central.ADD_button_key].setEnabled(enable)
         self.central.actions_buttons[self.central.DELETE_button_key].setEnabled(enable)
         self.central.actions_buttons[self.central.EDIT_button_key].setEnabled(enable)
+        self.central.pacients_list_view.setEnabled(enable)
 
     def on_result(self, acepted: bool, row: int):
         if acepted:  # si es true, significa que han acabado de editar
