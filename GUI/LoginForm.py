@@ -35,11 +35,11 @@ class LoginRegisterWindow(QDialog):
         self.setLayout(layout)
 
         self.login_widget.positive.clicked.connect(self.__positive_login)
-        self.login_widget.negative.clicked.connect(self.__cancelButtons)
-        self.register_widget.Rnegative.clicked.connect(self.__cancelButtons)
+        self.login_widget.negative.clicked.connect(self.__cancel_buttons)
+        self.register_widget.Rnegative.clicked.connect(self.__cancel_buttons)
         self.register_widget.Rpositive.clicked.connect(self.__positive_register)
 
-    def __cancelButtons(self):
+    def __cancel_buttons(self):
         sys.exit(0)
 
     def __positive_register(self):
@@ -48,7 +48,6 @@ class LoginRegisterWindow(QDialog):
                        "username": self.register_widget.usernamefield.text(),
                        "password": Utils.cypher(self.register_widget.passwordfield.text())}
         self.accept()
-
 
     def __positive_login(self):
         print("LOGIN")
@@ -68,12 +67,12 @@ class LoginRegisterWindow(QDialog):
             self.login_widget.passwordfield.selectAll()
 
     @property
-    def get_login_validator(self):
+    def login_validator(self):
         "Esta property, es utilizada para checkear las credenciales en el login."
         return self._login_validator
 
     @login_validator.setter
-    def set_login_validator(self, method):
+    def login_validator(self, method):
         """Tienes que pasarle una referencia a un metodo que tenga dos argumentos.
         username,password"""
         self._login_validator = method
@@ -81,7 +80,6 @@ class LoginRegisterWindow(QDialog):
     @staticmethod
     def validator_debug(a, aa):
         return True
-
 
 
 if __name__ == '__main__':

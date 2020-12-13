@@ -1,16 +1,11 @@
 import sys
 import matplotlib
-matplotlib.use('Qt5Agg')
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor, QPalette
-from PyQt5.QtWidgets import (
-    QWidget, QApplication, QMainWindow, QVBoxLayout,
-    QHBoxLayout, QPushButton, QSizePolicy, QTabWidget
-)
+matplotlib.use('Qt5Agg')
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+
 
 class MplCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=5, height=4, dpi=100):

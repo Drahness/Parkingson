@@ -11,11 +11,13 @@ from database.entities import Entity
 
 class ListModel(QAbstractListModel):
     INSTANCES = {}
+
     def __init__(self, base: Type[Entity]):
         super(ListModel, self).__init__()
         self.instance_class = base
         self.__check_subclass(base)
         self.items = base.load(get_db_connection())  # Al ser singleon, solo carga una vez y se matiene sincronizado.
+        # TODO hacer que load sea mas dinamico, recargandose con algun cambio en la BBDD
 
     """Retornara el objeto convertido a string sin mas"""
 
@@ -35,9 +37,8 @@ class ListModel(QAbstractListModel):
             entity.insert(get_db_connection())
             self.layoutChanged.emit()
         except Exception as e:
-            string = f"""Error mientras se añadia la entidad {type(entity)} con identificador {entity.get_id()}. Error:
-            {traceback.format_exc()}"""
-            get_error_dialog_msg(string).exec_()
+            string = f"""Error mientras se eliminaba la entidad {type(entity).__name__} con identificador {entity.get_id()}"""
+            get_error_dialog_msg(e, string, "Error de insertacion").exec_()
 
     def __check_instance(self, entity):
         if not isinstance(entity, self.instance_class):
@@ -54,19 +55,17 @@ class ListModel(QAbstractListModel):
             entity.delete(get_db_connection())
             self.layoutChanged.emit()
         except Exception as e:
-            string = f"""Error mientras se eliminaba la entidad {type(entity)} con identificador {entity.get_id()}. Error:
-            {traceback.format_exc()}"""
-            get_error_dialog_msg(string).exec_()
+            string = f"""Error mientras se eliminaba la entidad {type(entity).__name__} con identificador {entity.get_id()}"""
+            get_error_dialog_msg(e, string, "Error de eliminacion").exec_()
 
-    def update(self,entity, id_to_update):
+    def update(self, entity, id_to_update):
         try:
             self.__check_instance(entity)
             entity.update(get_db_connection(), id_to_update)
             self.layoutChanged.emit()
         except Exception as e:
-            string = f"""Error mientras se modificaba la entidad {type(entity)} con identificador {entity.get_id()}. Error: 
-{traceback.format_exc()}"""
-            get_error_dialog_msg(string).exec_()
+            string = f"""Error mientras se eliminaba la entidad {type(entity).__name__} con identificador {entity.get_id()}"""
+            get_error_dialog_msg(e, string, "Error de actualizacion").exec_()
 
     @classmethod
     def get_instance(cls):
@@ -74,9 +73,12 @@ class ListModel(QAbstractListModel):
             ListModel.INSTANCES[cls] = cls()
         return ListModel.INSTANCES[cls]
 
+    def __len__(self) -> int:
+        return len(self.items)
 
 class UsuariListModel(ListModel):
     """ No se si la voy a usar"""
+
     def __init__(self):
         from database.entities import Usuari
         super(UsuariListModel, self).__init__(Usuari)

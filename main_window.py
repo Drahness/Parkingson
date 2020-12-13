@@ -1,12 +1,12 @@
 import os
 import sys
 
-from PyQt5.QtCore import QThreadPool
+from PyQt5.QtCore import QThreadPool, QModelIndex
 from PyQt5.QtGui import QResizeEvent
 from PyQt5.QtWidgets import QMainWindow, QDialog, QVBoxLayout
 
 from GUI import GUI_Resources
- from GUI.GUI_Resources import get_error_dialog_msg, get_confirmation_dialog_ui
+from GUI.GUI_Resources import get_error_dialog_msg, get_confirmation_dialog_ui
 from GUI.form import SimpleForm
 from database.database_controller import Connection
 from database.entities import Usuari, Pacient
@@ -82,8 +82,11 @@ class UI(QMainWindow):
         if acepted:  # si es true, significa que han acabado de editar
             if row == -1:  # estan creando un usuario
                 self.listview_model.append(self.central.pacients_tab.pacient)
+                self.central.pacients_list_view.setCurrentIndex(self.listview_model.index(len(self.listview_model),0))
+                # QModelIndex no se lo que es pero para llamarlo lo necesito
             else:  # estan editando un usuario, el PyQt da un numero aleatorio a row cuando es None
                 self.listview_model.update(self.central.pacients_tab.pacient, self.central.pacients_tab.last_pacient)
+                self.central.pacients_list_view.setCurrentIndex(self.listview_model.index(row,0))
     """"""
 
     def add_pacient_slot(self):

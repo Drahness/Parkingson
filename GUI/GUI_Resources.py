@@ -1,8 +1,9 @@
 import os
+import traceback
 from pathlib import Path
 
 from PyQt5 import uic
-from PyQt5.QtWidgets import QDialog, QWidget
+from PyQt5.QtWidgets import QDialog, QWidget, QErrorMessage, QMessageBox
 
 paths = Path(os.path.abspath(__name__)).parents
 MAIN_FOLDER = None
@@ -54,10 +55,15 @@ def get_error_dialog(to: QDialog = None) -> QDialog:
         return uic.loadUi(ERROR_DIALOG, to)
 
 
-def get_error_dialog_msg(msg: str, to: QDialog = None) -> QDialog:
-    dialog = get_error_dialog(to)
-    dialog.label.setText(msg)
-    return dialog
+def get_error_dialog_msg(e: Exception,string_before_trace: str = None, title: str = None) -> QMessageBox:
+    title = title or type(e).__name__
+    string_before_trace = string_before_trace or ""
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Critical)
+    msg.setText(string_before_trace+"\n\n"+type(e).__name__+":")
+    msg.setInformativeText(traceback.format_exc())
+    msg.setWindowTitle(title)
+    return msg
 
 
 def get_login_register_dialog():
@@ -117,4 +123,3 @@ def get_confirmation_dialog_ui(msg: str, to: QDialog = None):
 
     confirmation_dialog.confirm_label.setText(msg)
     return confirmation_dialog
-
