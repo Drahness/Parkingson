@@ -1,6 +1,7 @@
 from PyQt5.QtCore import QDate
 from sqlitedao import ColumnDict, SqliteDao
 
+from Utils import get_timedeltas
 from database.DB_Resources import get_db_connection
 import datetime
 from dateutil.parser import parse
@@ -9,7 +10,7 @@ from dateutil.parser import parse
 class Entity:
     __loaded_instances: dict = {}
 
-    def __init__(self,id: any , dictionary: dict = None):
+    def __init__(self, id: any, dictionary: dict = None):
         self.dictionary = dictionary
         self.id = id
         pass
@@ -68,8 +69,9 @@ class Entity:
     def get_id(self):
         return self.id
 
+
 class Prueba(Entity):
-    def __init__(self, identifier: int = None,
+    def __init__(self,  # identifier: int = None,
                  laps: list = None,
                  pacient_id: str = None,
                  datetime_of_test: datetime.datetime = None,
@@ -81,26 +83,33 @@ class Prueba(Entity):
             pacient_id = dictionary["pacient_id"]
             datetime_of_test = dictionary["datetime"]
         super().__init__(pacient_id)
-        self.identifier = identifier  # Integer
-        self.laps = laps
+        self.identifier = None  # Integer
+        self.laps = get_timedeltas(laps)
         self.pacient_id = pacient_id
         self.datetime = datetime_of_test
 
     def insert(self, conexion) -> int:
         conexion.set_auto_commit(False)
-        identifier = conexion.execute("SELECT seq FROM sqlite_sequence WHERE name = ?", [self.get_tablename()])[0]
-        self.identifier = identifier
-        conexion.insert("INSERT INTO pruebas (pacient_id,datetime) VALUES (?,?,?)", [self.identifier,
-                                                                                     self.pacient_id,
-                                                                                     self.datetime])
+        result = conexion.execute("SELECT seq FROM sqlite_sequence WHERE name = ?", [self.get_tablename()[0]])
+
+        if len(result) == 0:
+            result = 0
+        else:
+            result = result[0][0] + 1
+        self.identifier = result
+        conexion.insert("INSERT INTO pruebas (identifier,pacient_id,datetime) VALUES (?,?,?)", [self.identifier,
+                                                                                                self.pacient_id,
+                                                                                                self.datetime])
         for i_lap in range(0, len(self.laps)):
-            conexion.insert("INSERT INTO pruebas_data (identifier,tiempo,num_lap)", [self.identifier,
-                                                                                     self.laps[i_lap],
-                                                                                     i_lap])
+            curr_lap = self.laps[i_lap]
+            conexion.insert("INSERT INTO pruebas_data (identifier,tiempo,num_lap) VALUES (?,?,?)", [self.identifier,
+                                                                                                    curr_lap.seconds + curr_lap.microseconds / (
+                                                                                                            10 ** 6),
+                                                                                                    i_lap])
         conexion.commit()
         conexion.set_auto_commit(True)
         self.append()
-        return identifier
+        return result
 
     def update(self, conexion, to_updated):
         if isinstance(to_updated, str):
@@ -143,13 +152,13 @@ class Prueba(Entity):
         for dictionary in dictionaries:
             tests_list = []
             list_laps = dao.search_table(table_name=Prueba.get_tablename()[1],
-                                         search_dict={"pacient_id": dictionary["pacient_id"]},
+                                         search_dict={"identifier": dictionary["identifier"]},
                                          order_by=["num_lap"])
             for lap in list_laps:
                 tests_list.append(lap["tiempo"])
             dictionary["laps"] = tests_list
             items.append(cls(dictionary=dictionary))
-        return dictionaries
+        return items
 
     @staticmethod
     def get_tables_count() -> int:
@@ -162,16 +171,16 @@ class Prueba(Entity):
     @staticmethod
     def get_columns_dict() -> tuple or ColumnDict:
         first_table = ColumnDict()
-        first_table.add_column("identifier", "Integer", "PRIMARY KEY AUTOINCREMENT")
-        first_table.add_column("pacient_id", "text")
+        first_table.add_column("identifier", "INTEGER", "PRIMARY KEY AUTOINCREMENT")
+        first_table.add_column("pacient_id", "TEXT")
         first_table.add_column("datetime", "datetime")
         first_table.add_column("FOREIGN KEY(pacient_id)",
                                f"REFERENCES {Pacient.get_tablename()}({Pacient.ID})")
 
         second_table = ColumnDict()
-        second_table.add_column("identifier", "Integer")  # id de la prueba
-        second_table.add_column("tiempo", "Integer")  # dateti
-        second_table.add_column("num_lap", "Integer")
+        second_table.add_column("identifier", "INTEGER")  # id de la prueba
+        second_table.add_column("tiempo", "REAL")  # Real en segundos.microsegundos
+        second_table.add_column("num_lap", "INTEGER")
         return first_table, second_table
 
 
@@ -205,7 +214,6 @@ class Pacient(Entity):
         self.nombre = nombre
         self.nacimiento = nacimiento if not isinstance(nacimiento, str) else parse(nacimiento)
         self.notas = notas
-
 
     def insert(self, conexion):
         conexion.insert("INSERT INTO pacients (dni,apellidos,estadio,nombre,nacimiento,notas) VALUES (?,?,?,?,?,?)",
@@ -273,6 +281,7 @@ class Pacient(Entity):
         else:
             self._nacimiento = value
 
+
 class Usuari(Entity):
     username: str
     password: str
@@ -330,3 +339,4 @@ class Usuari(Entity):
     def valid_user(username, password):
         dao = get_db_connection().dao
         return len(dao.search_table("users", {"username": username, "password": password})) > 0
+

@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import math
 import threading
 
 import os
@@ -108,6 +109,18 @@ def get_from_dict(dictionary: dict, key: any) -> any or None:
         return dictionary[key]
     except KeyError:
         return None
+
+def get_timedelta(real_number: float):
+    micro, seconds = math.modf(real_number)
+    return datetime.timedelta(seconds=seconds, microseconds=micro)
+
+
+def get_timedeltas(real_numbers: list):
+    for x in range(0,len(real_numbers)):
+        delta = get_timedelta(real_numbers[x])
+        real_numbers.pop(x)
+        real_numbers.insert(x,delta)
+    return real_numbers
 
 
 if __name__ == "__main__":

@@ -1,107 +1,54 @@
 import datetime
 import sys
 
-from PyQt5.QtCore import QDate, pyqtSignal
-from PyQt5.QtGui import QIntValidator, QDoubleValidator
-from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QFormLayout, QDialog, QDateTimeEdit, \
-    QDateEdit, QApplication, QCalendarWidget, QPushButton
-from sqlitedao import ColumnDict
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QIntValidator
+from PyQt5.QtWidgets import QWidget, QDateEdit, QApplication, QCalendarWidget
 
-from GUI import GUI_Resources
-from GUI.GUI_Resources import get_pacient_widget_ui, get_pacient_widget_ui_noeditable
+from GUI.GUI_Resources import get_pacient_widget_ui
 from database.entities import Pacient
 
 
-class SimpleForm(QDialog):
-    """ A simple dialog, for simple input. Not meant to be in production"""
+class PacientInterface:
+    """Los tabs heredan de esta. Ya que todos tienen casi la misma logica"""
 
-    def __init__(self, json: dict or ColumnDict, editable: bool = True):
-        super(SimpleForm, self).__init__()
-        GUI_Resources.get_basic_form(self)
-        dictionary = json
-        if isinstance(json, ColumnDict):
-            dictionary = {}
-            for column in json:
-                dictionary[column] = json[column]["type"]
-        self.json = dictionary
-        self.values = {}
-        self.formLayout: QFormLayout = self.formLayout
-        self.init(editable)
+    def __init__(self):
+        self.last_pacient = None
+        self.pacient = None
+        self.index = None
+        pass
 
-    def init(self, editable):
-        rows = self.formLayout.count()
+    def on_pacient_selected(self, pacient, index):
+        """The signal pacientSelected will get a Pacient and a row in the model."""
+        self.pacient = pacient
+        self.index = index
 
-        for i in range(0, rows):
-            self.formLayout.removeRow(i)
-        i = 0
-        for key, value in self.json.items():
-            tuple = WidgetSelector(key, value, editable).get_widgets()
-            self.values[tuple[0].text()] = tuple[1]
-            self.formLayout.insertRow(i, tuple[0], tuple[1])
-            i += 1
-
-    def get_values(self) -> dict:
-        for key, value in self.values.items():
-            if isinstance(value, datetime.date) or isinstance(value, datetime.datetime):
-                self.values[key] = value
-            else:
-                self.values[key] = value.text()
-        return self.values
+    def init(self):
+        from main_window import UI
+        UI.get_instance().pacientSelected.connect(self.on_pacient_selected)
 
 
-class WidgetSelector:
-    """ Helper class to SimpleForm class"""
-
-    def __init__(self, key, value, editable: bool = True):
-        self.key = QLabel(str(key))
-        self.value = None
-        if editable:
-            lowered_value = value.lower()
-            if isinstance(value, int) or lowered_value == "int" or lowered_value == "integer":
-                self.value = QLineEdit()
-                self.value.setValidator(QIntValidator())
-            elif isinstance(value, float) or lowered_value == "float" \
-                    or lowered_value == "decimal" or lowered_value == "double":
-                self.value = QLineEdit()
-                self.value.setValidator(QDoubleValidator())
-            elif value is None or lowered_value == "null":
-                self.value = QLineEdit("")
-            elif isinstance(value, datetime.datetime) or lowered_value == "datetime":
-                self.value = QDateTimeEdit()
-            elif isinstance(value, datetime.date) or lowered_value == "date":
-                self.value = QDateEdit()
-            else:  # default is string
-                self.value = QLineEdit("")
-            pass
-        else:
-            self.value = QLabel(str(value))
-            pass
-
-    def get_widgets(self) -> tuple:
-        return self.key, self.value
-
-
-class PacientWidget(QWidget):
+class PacientWidget(QWidget, PacientInterface):
     default_date = datetime.date(1990, 12, 12)
     finishedSignal: pyqtSignal = pyqtSignal(bool)  # maybe another name is better
-    resultSignal: pyqtSignal = pyqtSignal(bool,int)
+    resultSignal: pyqtSignal = pyqtSignal(bool, int)
     """ bool if canceled or accepted. int, the row of the pacient or -1 if new pacient """
-    def __init__(self, editable: bool, pacient: dict or Pacient = None):
+
+    def __init__(self):
         super().__init__()
         get_pacient_widget_ui(self)
-        self.last_pacient = None
-        self.pacient = pacient
-        self.index: int = None
         self.calendarWidget.clicked.connect(self.on_calendar_changed)
         self.nacimiento_field.dateChanged.connect(self.on_calendar_changed)
+        self.calendarWidget: QCalendarWidget = self.calendarWidget
+        self.nacimiento_field: QDateEdit = self.nacimiento_field
         self.accept_button.clicked.connect(self.buttons)
         self.cancel_button.clicked.connect(self.buttons)
-        self.set_pacient(pacient)
-        self.set_enabled(editable)
+        self.on_pacient_selected(None)
+        self.set_enabled(False)
 
-    ## TODO tienes que pasarle a la entidad, que ella updatee la instancia,
-    ## para que este en sincronia con la BBDD
+
     def save_pacient(self):
+        """Updates the instance."""
         self.pacient.dni = self.dni_field.text()
         self.pacient.apellidos = self.apellidos_field.text()
         self.pacient.nombre = self.nombre_field.text()
@@ -120,7 +67,8 @@ class PacientWidget(QWidget):
             self.resultSignal.emit(False, -1)
         self.set_enabled(False)
 
-    def set_pacient(self, pacient, row: int = None):
+    def on_pacient_selected(self, pacient, row: int = None):
+        """Overriden method from PacientInterface"""
         self.index = row
         if pacient is not None:
             if isinstance(pacient, dict):
@@ -143,13 +91,11 @@ class PacientWidget(QWidget):
             dni = None
             nombre = None
             apellidos = None
-            estadio = 0
+            estadio = ""
             nacimiento = self.default_date
             notas = None
         self.pacient = pacient
         self.last_pacient = dni
-        self.calendarWidget: QCalendarWidget = self.calendarWidget
-        self.nacimiento_field: QDateEdit = self.nacimiento_field
         self.dni_field.setText(dni)
         self.apellidos_field.setText(apellidos)
         self.nombre_field.setText(nombre)

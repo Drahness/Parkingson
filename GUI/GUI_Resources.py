@@ -3,7 +3,7 @@ import traceback
 from pathlib import Path
 
 from PyQt5 import uic
-from PyQt5.QtWidgets import QDialog, QWidget, QErrorMessage, QMessageBox
+from PyQt5.QtWidgets import QDialog, QWidget, QMessageBox
 
 paths = Path(os.path.abspath(__name__)).parents
 MAIN_FOLDER = None
@@ -63,6 +63,7 @@ def get_error_dialog_msg(e: Exception,string_before_trace: str = None, title: st
     msg.setText(string_before_trace+"\n\n"+type(e).__name__+":")
     msg.setInformativeText(traceback.format_exc())
     msg.setWindowTitle(title)
+    traceback.print_exc()
     return msg
 
 
@@ -110,9 +111,9 @@ def get_pacient_widget_ui_noeditable(to: QWidget):
     return pacient_widget
 
 
-def get_pacient_widget(editable: bool):
+def get_pacient_widget():
     from GUI.form import PacientWidget
-    return PacientWidget(editable)
+    return PacientWidget()
 
 
 def get_confirmation_dialog_ui(msg: str, to: QDialog = None):

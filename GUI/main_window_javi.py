@@ -74,10 +74,10 @@ class CentralWidgetParkingson(QWidget):
         self.pacients_list_view = QListView()
 
         self.parent_tab_widget = QTabWidget()
-        self.pacients_tab: PacientWidget = get_pacient_widget(False) # Tab1 Color
+        self.pacients_tab: PacientWidget = get_pacient_widget()  # Tab1 Color
 
         self.rendimiento_tab = MplCanvas(self, width=5, height=4, dpi=100)  # Tab2 Grafica
-        self.rendimiento_tab.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
+        #self.rendimiento_tab.axes.plot([(0,1), (1,1), (2,1), (3,1), (4,1)], [(10,1), (1,1), (20,1), (3,1), (500,1)])
 
         self.cronometro_tab = get_cronometro_widget()  # Tab3 Color
 

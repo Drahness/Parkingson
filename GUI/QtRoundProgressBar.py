@@ -38,39 +38,6 @@ class QRoundProgressBar(QWidget):
         self.gradientData = []
         self.donutThicknessRatio = 0.75
 
-    @property
-    def min(self):  # in seconds and microseconds
-        if not isinstance(self._min, datetime.timedelta):
-            return self._min
-        else:
-            return self._min.seconds + (self._min.microseconds / (10 ** 6))
-
-    @property
-    def max(self):  # in seconds and microseconds
-        if not isinstance(self._max, datetime.timedelta):
-            return self._max
-        else:
-            return self._max.seconds + (self._max.microseconds / (10 ** 6))
-
-    @property
-    def value(self):  # in seconds and microseconds
-        if not isinstance(self._value, datetime.timedelta):
-            return self._value
-        else:
-            return self._value.seconds + (self._value.microseconds / (10 ** 6))
-
-    @min.setter
-    def min(self, min):
-        self._min = min
-
-    @max.setter
-    def max(self, max):
-        self._max = max
-
-    @value.setter
-    def value(self, value):
-        self._value = value
-
     def setRange(self, min, max):
         self.min = min
         self.max = max
@@ -149,6 +116,9 @@ class QRoundProgressBar(QWidget):
         self.donutThicknessRatio = max(0., min(val, 1.))
         self.update()
 
+    def getArch(self):
+        return 360.0 / (self.max - self.min) * self.value
+
     def paintEvent(self, event):
         outerRadius = min(self.width(), self.height())
         baseRect = QtCore.QRectF(1, 1, outerRadius - 2, outerRadius - 2)
@@ -167,13 +137,8 @@ class QRoundProgressBar(QWidget):
         # base circle
         self.drawBase(p, baseRect)
 
-        # data circle
-        # TODO crear properties para recibir integers o floats, mejor floats
-        result = (self.max - self.min) * self.value
-        if result != 0:
-            arcStep = 360.0 / result
-        else:
-            arcStep = 0
+        arcStep = self.getArch()
+
         self.drawValue(p, baseRect, self.value, arcStep)
 
         # center circle
@@ -339,15 +304,17 @@ class QRoundTimer(QRoundProgressBar):
 
     def __init__(self):
         super(QRoundTimer, self).__init__()
-        self.actual_time: datetime.timedelta = datetime.timedelta(seconds=40, microseconds=655446)
+        self.actual_time: datetime.timedelta = datetime.timedelta(seconds=0)
         self.value = datetime.timedelta(seconds=0)
 
     def setValue(self, val):
         if isinstance(val, datetime.timedelta):
-            super(QRoundTimer, self).setValue(val.microseconds / 10 ** 6)  # microseconds, in the decimals will change it
+            #super(QRoundTimer, self).setValue(val.seconds + val.microseconds / 10 ** 6)  # microseconds, in the decimals will change it
+            self.value = val.seconds + val.microseconds / 10 ** 6
             self.actual_time = val
         else:
-            super(QRoundTimer, self).setValue(val % self.max)
+            self.value = super(QRoundTimer, self).setValue(val % self.max)
+        self.update()
 
     def valueFormatChanged(self):
         self.updateFlags = 0
@@ -368,7 +335,7 @@ class QRoundTimer(QRoundProgressBar):
     def valueToText(self, value):
         textToDraw = self.format
 
-        format_string = '{' + ':.{}f'.format(self.decimals) + '}'
+        format_string = '{' + ':0={}.{}f'.format(self.decimals+3,self.decimals) + '}'
 
         if self.updateFlags & self.UF_VALUE:
             textToDraw = textToDraw.replace("%v", format_string.format(value))
@@ -382,7 +349,6 @@ class QRoundTimer(QRoundProgressBar):
             textToDraw = textToDraw.replace("%m", format_string.format(m))
 
         if self.updateFlags & self.UF_TIME:
-            # TODO reworkear esto
             actual_seconds = self.actual_time.seconds
             hours, remainder = divmod(actual_seconds, 3600)
             minutes, seconds = divmod(remainder, 60)
@@ -398,13 +364,51 @@ class QRoundTimer(QRoundProgressBar):
 
         return textToDraw
 
+    def getArch(self):
+        max_minus_min = (self.max - self.min)
+        if max_minus_min == 0:
+            return 0
+        return 360.0 / max_minus_min * self.value % 360
+    @property
+    def min(self):  # in seconds and microseconds
+        if not isinstance(self._min, datetime.timedelta):
+            return self._min
+        else:
+            return self._min.seconds + (self._min.microseconds / (10 ** 6))
+
+    @property
+    def max(self):  # in seconds and microseconds
+        if not isinstance(self._max, datetime.timedelta):
+            return self._max
+        else:
+            return self._max.seconds + (self._max.microseconds / (10 ** 6))
+
+    @property
+    def value(self):  # in seconds and microseconds
+        if not isinstance(self._value, datetime.timedelta):
+            return self._value
+        else:
+            return self._value.seconds + (self._value.microseconds / (10 ** 6))
+
+    @min.setter
+    def min(self, min):
+        self._min = min
+
+    @max.setter
+    def max(self, max):
+        self._max = max
+
+    @value.setter
+    def value(self, value):
+        self._value = value
+
+
 
 class __TstWidget(QWidget):
     """ Clase para probar el QRoundProgressBar, no utilizar. Solo basarse en esta"""
 
     def __init__(self, parent=None):
-        super(type(self), self).__init__(parent)
-
+        super().__init__(parent)
         self.bar = QRoundTimer()
         # self.bar.setFixedSize(200, 200)
 
@@ -418,7 +422,8 @@ class __TstWidget(QWidget):
         self.bar.resetFormat()  # ResetFormat a ""
         self.bar.setNullPosition(90)  # ??
         self.bar.setBarStyle(QRoundProgressBar.StyleDonut)
-        # self.bar.setDataColors([(0., QtGui.QColor.fromRgb(255,0,0)), (0.5, QtGui.QColor.fromRgb(255,255,0)), (1., QtGui.QColor.fromRgb(0,255,0))])
+        # self.bar.setDataColors([(0., QtGui.QColor.fromRgb(255,0,0)), (0.5, QtGui.QColor.fromRgb(255,255,0)), (1.,
+        # QtGui.QColor.fromRgb(0,255,0))])
         self.bar.setDataColors([(0, QtGui.QColor.fromRgb(100, 100, 0))])
         # Metodo para darle un color, se le pasa una lista, con tuplas dentro.
         # El primer valor es el principio, y el segundo es el color, si hay varios hace un efecto de gradiente
