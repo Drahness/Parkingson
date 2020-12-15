@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QDate
 from sqlitedao import ColumnDict, SqliteDao
 
-from Utils import get_timedeltas
+from Utils import get_timedeltas, get_timedelta
 from database.DB_Resources import get_db_connection
 import datetime
 from dateutil.parser import parse
@@ -84,9 +84,15 @@ class Prueba(Entity):
             datetime_of_test = dictionary["datetime"]
         super().__init__(pacient_id)
         self.identifier = None  # Integer
-        self.laps = get_timedeltas(laps)
+        if len(laps) > 0 and isinstance(laps[0], float):
+            self.laps = get_timedeltas(laps)
+        else:
+            self.laps = laps
         self.pacient_id = pacient_id
-        self.datetime = datetime_of_test
+        if isinstance(datetime_of_test,str):
+            self.datetime = datetime.datetime.strptime(datetime_of_test, '%Y-%m-%d %H:%M:%S.%f')
+        else:
+            self.datetime = datetime_of_test
 
     def insert(self, conexion) -> int:
         conexion.set_auto_commit(False)
@@ -99,7 +105,7 @@ class Prueba(Entity):
         self.identifier = result
         conexion.insert("INSERT INTO pruebas (identifier,pacient_id,datetime) VALUES (?,?,?)", [self.identifier,
                                                                                                 self.pacient_id,
-                                                                                                self.datetime])
+                                                                                                str(self.datetime)])
         for i_lap in range(0, len(self.laps)):
             curr_lap = self.laps[i_lap]
             conexion.insert("INSERT INTO pruebas_data (identifier,tiempo,num_lap) VALUES (?,?,?)", [self.identifier,

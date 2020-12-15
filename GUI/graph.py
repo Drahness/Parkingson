@@ -39,7 +39,7 @@ class MplCanvas(FigureCanvasQTAgg, PacientInterface):
                          '%H:%M',    # min
                          '%S.%f', ]  # secs
 
-
+    yform = "%M:%S"
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         #fig = Figure(figsize=(width, height), dpi=dpi)
         #self.axes = fig.add_subplot(111)
@@ -65,18 +65,22 @@ class MplCanvas(FigureCanvasQTAgg, PacientInterface):
                     prueba = pruebas[x]
                     indexes.append(x)
                     dates.append(prueba.datetime)
-                    test1.append(prueba.laps[0])
-                    test2.append(prueba.laps[1])
-                    test3.append(prueba.laps[2])
-                self.ax.clear()
-                print(dates)
+                    lap1 = prueba.datetime+prueba.laps[0]  # Zero de lap1
+                    lap2 = lap1+prueba.laps[1]  # Zero de lap2
+                    lap3 = lap2+prueba.laps[2]  # Zero de lap3
+                    test1.append(date2num(lap1+prueba.laps[0]) - date2num(lap1))
+                    test2.append(date2num(lap2+prueba.laps[1]) - date2num(lap2))
+                    test3.append(date2num(lap3+prueba.laps[2]) - date2num(lap3))
+                #self.ax.clear()
                 self.ax.plot(date2num(dates), date2num(test1))
+                self.ax.plot(date2num(dates), date2num(test2))
+                self.ax.plot(date2num(dates), date2num(test3))
                 self.ax.xaxis.set_major_locator(MplCanvas.auto)
                 self.ax.xaxis.set_major_formatter(MplCanvas.formatter)
                 self.ax.xaxis.set_minor_locator(MplCanvas.minute)
                 self.ax.xaxis.set_major_locator(MplCanvas.auto)
-                self.ax.yaxis.set_major_formatter(MplCanvas.formatter)
-
+                self.ax.yaxis.set_major_formatter(MplCanvas.yform)
+                #self.ax.bar(indexes, [], bottom=date2num(pruebas[0].datetime))
             #for nn, ax in enumerate(self.ax):
              #   ax.plot(dates, y)
               #  # rotate_labels...

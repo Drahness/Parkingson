@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import math
 import threading
+import re
 
 import os
 from PyQt5.QtCore import Qt, QObject
@@ -122,6 +123,13 @@ def get_timedeltas(real_numbers: list):
         real_numbers.insert(x,delta)
     return real_numbers
 
+
+def parse_timedelta(s: str):
+    if 'day' in s:
+        m = re.match(r'(?P<days>[-\d]+) day[s]*, (?P<hours>\d+):(?P<minutes>\d+):(?P<seconds>\d[\.\d+]*)', s)
+    else:
+        m = re.match(r'(?P<hours>\d+):(?P<minutes>\d+):(?P<seconds>\d[\.\d+]*)', s)
+    return {key: float(val) for key, val in m.groupdict().iteritems()}
 
 if __name__ == "__main__":
     os.makedirs("aaaa/polaas/xd")

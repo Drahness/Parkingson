@@ -1,13 +1,13 @@
 import datetime
 
 from PyQt5.QtGui import QColor
-from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QObject, QThread
+from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QObject
 from PyQt5.QtWidgets import QWidget, QApplication, QSizePolicy
 
 from GUI.GUI_Resources import get_cronometro_widget_ui, get_cronometro_bar_widget
 from GUI.QtRoundProgressBar import QRoundTimer, QRoundProgressBar
 from GUI.form import PacientInterface
-from database.entities import Pacient, Prueba
+from database.entities import Prueba
 from main_window import UI
 
 
@@ -19,7 +19,6 @@ class Signaler(QObject):
 
 
 class Timer(QRunnable):
-    on_progress: pyqtSignal = pyqtSignal(datetime.timedelta)
 
     def __init__(self, stop_at: datetime = None):
         super().__init__()
@@ -39,13 +38,15 @@ class Timer(QRunnable):
         now = last_emision = datetime.datetime.now()
         while now < self.stop_at and self.is_running:
             time = self.get_actual_time()
-            print(time)
+            # print(time)
+            QApplication.processEvents()
             #  TODO el print hace que se sincronicen los tiempos. si se lo quitas va de pena
             if (now - last_emision) > datetime.timedelta(milliseconds=1) and self.emit_again:
                 self.signaler.on_progress.emit(time)
                 last_emision = now
             now = datetime.datetime.now()
         self.is_running = False
+        self.signaler.on_progress.emit(datetime.timedelta(seconds=0))
 
     def lap(self) -> datetime.timedelta:
         lap = len(self.laps)
@@ -68,7 +69,7 @@ class ProgressCronometro(QRoundTimer):
     def __init__(self):
         super().__init__()
         self.setBarStyle(QRoundProgressBar.StyleLine)
-        #self.setBackgroundRole()
+        # self.setBackgroundRole()
         self.setDataPenWidth(2)
         self.setOutlinePenWidth(2)
         self.setDonutThicknessRatio(0.75)
@@ -119,7 +120,7 @@ class Cronometro(QWidget, PacientInterface):
 
         ###################################################################
         # Configuracion progress bar
-        #self.start_and_lap.setEnabled(True)
+        # self.start_and_lap.setEnabled(True)
         self.timer = None
         self.laps = []
         self.status = self.STOPPED
@@ -127,6 +128,7 @@ class Cronometro(QWidget, PacientInterface):
 
     def start_and_lap_slot(self):
         if self.status == self.STOPPED:
+            self.sender().emit_again = True
             self.status = self.STARTED
 
             self.timer = Timer()
@@ -148,8 +150,8 @@ class Cronometro(QWidget, PacientInterface):
             self.stop_button.setEnabled(False)
             self.start_and_lap.setText("Start")
             self.finishedSignal.emit(self.prueba_actual, self.index)
-            #self.laps.clear()  # Tengo que llevarlo a algun sitio
-        else:   # Esta en ciclo.
+            # self.laps.clear()  # Tengo que llevarlo a algun sitio
+        else:  # Esta en ciclo.
             lap = self.timer.lap()
             self.progress_bar.setMaximun(lap)
             self.status += 1
@@ -158,15 +160,15 @@ class Cronometro(QWidget, PacientInterface):
             else:
                 button_string = "End"
             self.start_and_lap.setText(button_string)
-        print(self.laps)
-        print(len(self.laps))
 
     def stop_slot(self):  # Paras el timer
         if self.status != self.STOPPED and self.timer is not None:
+            self.cancel_button.setEnabled(False)
+            self.stop_button.setEnabled(False)
+
             self.timer.stop()
             self.status = self.STOPPED
             self.start_and_lap.setText("Start")
-
 
     def cancel_slot(self):  # Reseteas el timer
         self.stop_slot()
@@ -175,6 +177,5 @@ class Cronometro(QWidget, PacientInterface):
 
     def on_progress(self, timdelta: datetime.timedelta):
         self.sender().emit_again = False
-        print("receiving")
         self.progress_bar.setValue(timdelta)
         self.sender().emit_again = True
