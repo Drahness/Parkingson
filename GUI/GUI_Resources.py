@@ -25,7 +25,7 @@ BASIC_FORM = UIS_FOLDER / Path("basic_form.ui")
 PACIENT_WIDGET = UIS_FOLDER / Path("pacients_widget.ui")
 NO_EDITABLE_PACIENT_WIDGET = UIS_FOLDER / Path("pacients_widget_noeditable.ui")
 CONFIRMATION_DIALOG = UIS_FOLDER / Path("confirmation_dialog.ui")
-
+GRAPH_WIDGET = UIS_FOLDER / Path("graph_widget.ui")
 
 def get_basic_form(to: QDialog = None) -> QDialog:
     if to is None:
@@ -91,7 +91,7 @@ def get_cronometro_bar_widget():
 
 
 def get_cronometro_widget():
-    from GUI.cronometro import Cronometro
+    from GUI.tab_widgets import Cronometro
     return Cronometro()
 
 
@@ -110,9 +110,15 @@ def get_pacient_widget_ui_noeditable(to: QWidget):
         pacient_widget: QWidget = uic.loadUi(NO_EDITABLE_PACIENT_WIDGET, to)
     return pacient_widget
 
+def get_graph_widget(to: QWidget = None):
+    if to is None:
+        graph_widget: QWidget = uic.loadUi(GRAPH_WIDGET, QWidget())
+    else:
+        graph_widget: QWidget = uic.loadUi(GRAPH_WIDGET, to)
+    return graph_widget
 
 def get_pacient_widget():
-    from GUI.form import PacientWidget
+    from GUI.tab_widgets import PacientWidget
     return PacientWidget()
 
 

@@ -33,9 +33,9 @@ class UI(QMainWindow):
         self.connection = Connection()
         self.credentials()
         self.central = GUI_Resources.get_main_widget()
-        self.central.actions_buttons[self.central.ADD_button_key].clicked.connect(self.add_pacient_slot)
-        self.central.actions_buttons[self.central.DELETE_button_key].clicked.connect(self.del_pacient_slot)
-        self.central.actions_buttons[self.central.EDIT_button_key].clicked.connect(self.mod_pacient_slot)
+        self.central.actions_buttons[self.central.ADD_button_key].clicked.connect(self.button_clicked)
+        self.central.actions_buttons[self.central.DELETE_button_key].clicked.connect(self.button_clicked)
+        self.central.actions_buttons[self.central.EDIT_button_key].clicked.connect(self.button_clicked)
 
         self.central.pacients_list_view.clicked.connect(self.on_listview_pacient_click)
         self.central.pacients_list_view.doubleClicked.connect(self.on_pacient_double_click)
@@ -48,6 +48,10 @@ class UI(QMainWindow):
         self.central.pacients_tab.init()
         self.central.cronometro_tab.init()
         self.central.rendimiento_tab.init()
+
+        pacient_index = self.central.parent_tab_widget.indexOf(self.central.pacients_tab)
+        self.central.parent_tab_widget.setCurrentIndex(pacient_index)
+
         self.setFixedSize(1020, 600)
         # self.iconSizeChanged.connect(self.iconSizeChanged)
         if self.user_credentials["result"]:
@@ -57,14 +61,6 @@ class UI(QMainWindow):
             self.central.pacients_list_view.setModel(self.listview_model)
         else:
             sys.exit(0)
-
-        # self.cen = QListView()
-        # self.modelTest = models.PacientsModel()
-        # self.cen.setModel(self.modelTest)
-        # self.setCentralWidget(self.cen)
-        # self.show()
-        # self.modelTest.append(Pacients("AAAA","aaa","asdas",1,"asda"))
-        # self.modelTest.layoutChanged.emit()
 
     def credentials(self):
         """ Funcion que pide las credenciales. Si le dan a cancelar, sale del programa. Si son incorrectas
@@ -90,11 +86,13 @@ class UI(QMainWindow):
         return UI.instance
 
     def on_finished(self, enable):
-        """Finished slot,"""
+        """Finished slot"""
         self.central.actions_buttons[self.central.ADD_button_key].setEnabled(enable)
         self.central.actions_buttons[self.central.DELETE_button_key].setEnabled(enable)
         self.central.actions_buttons[self.central.EDIT_button_key].setEnabled(enable)
         self.central.pacients_list_view.setEnabled(enable)
+
+    """Slots"""
 
     def on_result(self, acepted: bool, row: int):
         if acepted:  # si es true, significa que han acabado de editar
@@ -106,28 +104,26 @@ class UI(QMainWindow):
                 self.listview_model.update(self.central.pacients_tab.pacient, self.central.pacients_tab.last_pacient)
                 self.central.pacients_list_view.setCurrentIndex(self.listview_model.index(row, 0))
 
-    """"""
-
-    def add_pacient_slot(self):
-        self.central.pacients_tab.on_pacient_selected(Pacient(), -1)
-        self.central.pacients_tab.set_enabled(True)
-
     def on_pacient_double_click(self, *args):
         print("double click")
 
-    def del_pacient_slot(self, *args):
-        if self.central.pacients_tab.pacient_selected():
-            pacient = self.listview_model.items[self.central.pacients_tab.index]
-            dialog = get_confirmation_dialog_ui(f"Quieres eliminar el usuario {pacient}")
-            if dialog.exec_() == 1:
-                self.listview_model.delete(pacient)
 
-    def mod_pacient_slot(self, *args):
-        if self.central.pacients_tab.pacient_selected():
+    def button_clicked(self,*args):
+        sender_name = self.sender().objectName()
+        pacient_index =  self.central.parent_tab_widget.indexOf(self.central.pacients_tab)
+        self.central.parent_tab_widget.setCurrentIndex(pacient_index)
+        if sender_name == "add_button":
+            self.central.pacients_tab.pacientSelected(Pacient(), -1)
             self.central.pacients_tab.set_enabled(True)
-
-    def pacient_selected_slot(self, *args):
-        print("selected")
+        elif sender_name == "delete_button":
+            if self.central.pacients_tab.pacient_selected():
+                pacient = self.listview_model.items[self.central.pacients_tab.index]
+                dialog = get_confirmation_dialog_ui(f"Quieres eliminar el usuario {pacient}")
+                if dialog.exec_() == 1:
+                    self.listview_model.delete(pacient)
+        elif sender_name == "edit_button":
+            if self.central.pacients_tab.pacient_selected():
+                self.central.pacients_tab.set_enabled(True)
 
     def on_crono_finished(self, prueba, row):
         PruebasListModel.get_instance().append(prueba)

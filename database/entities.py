@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QDate
 from sqlitedao import ColumnDict, SqliteDao
 
-from Utils import get_timedeltas, get_timedelta
+#from Utils import get_timedeltas, get_timedelta
 from database.DB_Resources import get_db_connection
 import datetime
 from dateutil.parser import parse
@@ -71,7 +71,7 @@ class Entity:
 
 
 class Prueba(Entity):
-    def __init__(self,  # identifier: int = None,
+    def __init__(self, identifier: int = None,
                  laps: list = None,
                  pacient_id: str = None,
                  datetime_of_test: datetime.datetime = None,
@@ -83,8 +83,8 @@ class Prueba(Entity):
             pacient_id = dictionary["pacient_id"]
             datetime_of_test = dictionary["datetime"]
         super().__init__(pacient_id)
-        self.identifier = None  # Integer
-        if len(laps) > 0 and isinstance(laps[0], float):
+        self.identifier = identifier or None  # Integer
+        if laps is not None and len(laps) > 0 and isinstance(laps[0], float):
             self.laps = get_timedeltas(laps)
         else:
             self.laps = laps
@@ -145,16 +145,36 @@ class Prueba(Entity):
     def is_autoincrement() -> bool:
         return True
 
+    @property
+    def laps(self):
+        return self._laps
+
+    @laps.setter
+    def laps(self,value: list):
+        if isinstance(value,list):
+            if len(value) == 3:
+                if isinstance(value[0],float):
+                    self._laps = get_timedeltas(value)
+                elif isinstance(value[0],datetime.timedelta):
+                    self._laps = value
+            else:
+                self._laps = [0,0,0]
+        else:
+            return
+
     def delete(self, conexion):
-        conexion.execute("DELETE FROM pruebas WHERE id = ?", [self.identifier])
-        conexion.execute("DELETE FROM pruebas_data WHERE id = ?", [self.identifier])
+        conexion.set_auto_commit(False)
+        conexion.execute("DELETE FROM pruebas WHERE identifier = ?", [self.identifier])
+        conexion.execute("DELETE FROM pruebas_data WHERE identifier = ?", [self.identifier])
+        conexion.commit()
+        conexion.set_auto_commit(True)
         self.remove()
 
     @classmethod
     def load(cls, connection) -> list:
         dao = connection.dao
         items = cls._get_list_of_instances()
-        dictionaries = dao.search_table(Prueba.get_tablename()[0], {})
+        dictionaries = dao.search_table(Prueba.get_tablename()[0], {},order_by=["datetime"])
         for dictionary in dictionaries:
             tests_list = []
             list_laps = dao.search_table(table_name=Prueba.get_tablename()[1],

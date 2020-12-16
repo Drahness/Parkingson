@@ -5,8 +5,7 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTabWidget, \
     QApplication, QListView
 
-from GUI.form import PacientWidget
-from GUI.graph import MplCanvas
+from GUI.tab_widgets import PacientWidget, MplCanvas
 from .GUI_Resources import get_cronometro_widget, get_pacient_widget
 
 
@@ -26,8 +25,6 @@ class App(QMainWindow):
         super().__init__()
         self.setWindowTitle("CronometroOrtsLayouts")
         self.central_widget = CentralWidgetParkingson(self)
-        # sc = MplCanvas(self, width=5, height=4, dpi=100)
-        # sc.axes.plot([0,1,2,3,4], [10,1,20,3,40])
 
         self.setCentralWidget(self.central_widget)
         self.show()
@@ -55,18 +52,15 @@ class CentralWidgetParkingson(QWidget):
         self.content_layout = QHBoxLayout()
 
         self.actions_buttons = {
-            'add': QPushButton('Anadir'),
-            'delete': QPushButton('Eliminar'),
-            'edit': QPushButton('Editar')
+            CentralWidgetParkingson.ADD_button_key: QPushButton('Anadir'),
+            CentralWidgetParkingson.DELETE_button_key: QPushButton('Eliminar'),
+            CentralWidgetParkingson.EDIT_button_key: QPushButton('Editar')
         }
 
-        self.actions_buttons['add'].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.actions_buttons['delete'].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.actions_buttons['edit'].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-        self.buttons_layout.addWidget(self.actions_buttons['add'])
-        self.buttons_layout.addWidget(self.actions_buttons['delete'])
-        self.buttons_layout.addWidget(self.actions_buttons['edit'])
+        for x in self.actions_buttons:
+            self.actions_buttons[x].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            self.actions_buttons[x].setObjectName(x+"_button")
+            self.buttons_layout.addWidget(self.actions_buttons[x])
 
         self.buttons_layout.setAlignment(Qt.AlignLeft)
         self.buttons_layout.setSpacing(20)
@@ -77,7 +71,6 @@ class CentralWidgetParkingson(QWidget):
         self.pacients_tab: PacientWidget = get_pacient_widget()  # Tab1 Color
 
         self.rendimiento_tab = MplCanvas(self, width=5, height=4, dpi=100)  # Tab2 Grafica
-        #self.rendimiento_tab.axes.plot([(0,1), (1,1), (2,1), (3,1), (4,1)], [(10,1), (1,1), (20,1), (3,1), (500,1)])
 
         self.cronometro_tab = get_cronometro_widget()  # Tab3 Color
 

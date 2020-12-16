@@ -356,7 +356,7 @@ class QRoundTimer(QRoundProgressBar):
                 format_string = ("{:02}:" + format_string).format(minutes,
                                                                   seconds + self.actual_time.microseconds / (10 ** 6))
             else:
-                format_string = ("{:02}{:02}:" + format_string).format(hours, minutes,
+                format_string = ("{:02}:{:02}:" + format_string).format(hours, minutes,
                                                                        seconds + self.actual_time.microseconds / (
                                                                                    10 ** 6))
             #m = self.actual_time.microseconds / (10 ** 6)

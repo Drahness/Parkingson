@@ -2,13 +2,9 @@ import datetime
 
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QObject
-from PyQt5.QtWidgets import QWidget, QApplication, QSizePolicy
+from PyQt5.QtWidgets import QApplication, QSizePolicy
 
-from GUI.GUI_Resources import get_cronometro_widget_ui, get_cronometro_bar_widget
 from GUI.QtRoundProgressBar import QRoundTimer, QRoundProgressBar
-from GUI.form import PacientInterface
-from database.entities import Prueba
-from main_window import UI
 
 
 class Signaler(QObject):
@@ -85,97 +81,3 @@ class ProgressCronometro(QRoundTimer):
         self.min = 0.0
         self.value = 0.0
         self.max = 0.0
-
-
-class Cronometro(QWidget, PacientInterface):
-    STOPPED = 3
-    STARTED = 0
-    END = 2
-    # La parte int, la voy a dejar, pero no la usare.
-    finishedSignal: pyqtSignal = pyqtSignal(Prueba, int)
-
-    def on_pacient_selected(self, pacient, index):
-        super().on_pacient_selected(pacient, index)
-        self.start_and_lap.setEnabled(True)
-
-    def __init__(self, parent=None):
-        super(Cronometro, self).__init__(parent)
-        get_cronometro_widget_ui(self)
-        self.setObjectName("cronometro_paciente")
-        self.prueba_actual = None
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.progress_bar = get_cronometro_bar_widget()
-        self.horizontalLayout.addWidget(self.progress_bar)
-        self.stop_button.setEnabled(False)
-        self.cancel_button.setEnabled(False)
-
-        # self.horizontalLayout.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        # self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
-        # self.setStyleSheet("background:red")
-
-        # Conexiones de los botones
-        self.start_and_lap.clicked.connect(self.start_and_lap_slot)
-        self.cancel_button.clicked.connect(self.cancel_slot)
-        self.stop_button.clicked.connect(self.stop_slot)
-
-        ###################################################################
-        # Configuracion progress bar
-        # self.start_and_lap.setEnabled(True)
-        self.timer = None
-        self.laps = []
-        self.status = self.STOPPED
-        self.start_and_lap.setText("Start")
-
-    def start_and_lap_slot(self):
-        if self.status == self.STOPPED:
-            self.sender().emit_again = True
-            self.status = self.STARTED
-
-            self.timer = Timer()
-            self.prueba_actual = Prueba(pacient_id=self.pacient.dni,
-                                        datetime_of_test=datetime.datetime.now(),
-                                        laps=self.timer.laps)
-            self.timer.signaler.on_progress.connect(self.on_progress)
-            UI.threadpool.start(self.timer)
-            button_string = "Lap " + str(self.status + 1)
-            self.start_and_lap.setText(button_string)
-
-            self.stop_button.setEnabled(True)
-            self.cancel_button.setEnabled(True)
-        elif self.status == self.END:  # A acabado el ciclo.
-            self.stop_slot()
-            self.timer.lap()
-            self.status = self.STOPPED
-            self.cancel_button.setEnabled(False)
-            self.stop_button.setEnabled(False)
-            self.start_and_lap.setText("Start")
-            self.finishedSignal.emit(self.prueba_actual, self.index)
-            # self.laps.clear()  # Tengo que llevarlo a algun sitio
-        else:  # Esta en ciclo.
-            lap = self.timer.lap()
-            self.progress_bar.setMaximun(lap)
-            self.status += 1
-            if self.status != self.END:
-                button_string = "Lap " + str(self.status + 1)
-            else:
-                button_string = "End"
-            self.start_and_lap.setText(button_string)
-
-    def stop_slot(self):  # Paras el timer
-        if self.status != self.STOPPED and self.timer is not None:
-            self.cancel_button.setEnabled(False)
-            self.stop_button.setEnabled(False)
-
-            self.timer.stop()
-            self.status = self.STOPPED
-            self.start_and_lap.setText("Start")
-
-    def cancel_slot(self):  # Reseteas el timer
-        self.stop_slot()
-        self.timer = None
-        self.progress_bar.setValue(datetime.timedelta(seconds=0))
-
-    def on_progress(self, timdelta: datetime.timedelta):
-        self.sender().emit_again = False
-        self.progress_bar.setValue(timdelta)
-        self.sender().emit_again = True
