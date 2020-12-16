@@ -80,7 +80,7 @@ class CentralWidgetParkingson(QWidget):
         self.parent_tab_widget.addTab(self.rendimiento_tab, "Rendimiento")
         self.parent_tab_widget.addTab(self.cronometro_tab, "Cronómetro")
 
-        self.pacients_list_view.setMinimumSize(200, 400)
+        self.pacients_list_view.setMinimumSize(200, 400)  ## 200, 400
         self.pacients_list_view.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
         self.content_layout.addWidget(self.pacients_list_view, stretch=3, alignment=Qt.AlignTop)

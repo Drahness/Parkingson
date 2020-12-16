@@ -2,6 +2,7 @@ from PyQt5.QtCore import QDate
 from sqlitedao import ColumnDict, SqliteDao
 
 #from Utils import get_timedeltas, get_timedelta
+from Utils import get_timedeltas
 from database.DB_Resources import get_db_connection
 import datetime
 from dateutil.parser import parse

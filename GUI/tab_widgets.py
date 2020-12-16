@@ -251,9 +251,9 @@ class Cronometro(QWidget, PacientInterface):
         PacientInterface.__init__(self)
         get_cronometro_widget_ui(self)
         self.setObjectName("cronometro_paciente")
-        self.prueba_actual = None
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.progress_bar = get_cronometro_bar_widget()
+        self.progress_bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.horizontalLayout.addWidget(self.progress_bar)
         self.stop_button.setEnabled(False)
         self.cancel_button.setEnabled(False)
@@ -328,6 +328,11 @@ class Cronometro(QWidget, PacientInterface):
         self.sender().emit_again = False
         self.progress_bar.setValue(timdelta)
         self.sender().emit_again = True
+
+    def init(self):
+        super().init()
+
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

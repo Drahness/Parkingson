@@ -9,12 +9,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>733</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+   <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -27,8 +27,8 @@
     <rect>
      <x>-1</x>
      <y>-1</y>
-     <width>401</width>
-     <height>301</height>
+     <width>731</width>
+     <height>481</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">

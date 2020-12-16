@@ -64,19 +64,17 @@ class Timer(QRunnable):
 class ProgressCronometro(QRoundTimer):
     def __init__(self):
         super().__init__()
-        self.setBarStyle(QRoundProgressBar.StyleLine)
+        self.setBarStyle(QRoundProgressBar.StyleDonut)
         # self.setBackgroundRole()
         self.setDataPenWidth(2)
         self.setOutlinePenWidth(2)
-        self.setDonutThicknessRatio(0.75)
+        self.setDonutThicknessRatio(0.95)
         self.setDecimals(self.MILISECONDS)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setFormat('%t')
         self.setDataColors(
             [
-                (0.0, QColor.fromRgb(255, 0, 0)),
-                (1 / 3, QColor.fromRgb(0, 255, 0)),
-                (2 / 3, QColor.fromRgb(0, 0, 255))
+                (0.0, QColor.fromRgb(0, 0, 0)),
             ])
         self.min = 0.0
         self.value = 0.0

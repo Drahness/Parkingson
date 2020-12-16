@@ -121,8 +121,8 @@ class QRoundProgressBar(QWidget):
 
     def paintEvent(self, event):
         outerRadius = min(self.width(), self.height())
+        #baseRect = QtCore.QRectF(1, 1, outerRadius - 2, outerRadius - 2)
         baseRect = QtCore.QRectF(1, 1, outerRadius - 2, outerRadius - 2)
-
         buffer = QtGui.QImage(outerRadius, outerRadius, QtGui.QImage.Format_ARGB32)
         buffer.fill(0)
 
@@ -156,7 +156,7 @@ class QRoundProgressBar(QWidget):
 
     def drawBackground(self, p, baseRect):
         """Esta linea tira error porque self.palette().background() no existia"""
-        p.fillRect(baseRect, self.palette().brush(self.palette().Background))
+        #p.fillRect(baseRect, self.palette().brush(self.palette().Background))
 
     def drawBase(self, p, baseRect):
         bs = self.barStyle
