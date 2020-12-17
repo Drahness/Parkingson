@@ -1,10 +1,18 @@
 from PyQt5.QtWidgets import QAction
-
+from .GUI_Resources import *
 
 class StaticActions:
-    add_pacient_action = QAction("Añadir paciente")
-    edit_pacient_action = QAction("Editar paciente")
-    del_pacient_action = QAction("Eliminar paciente")
+    print("something")
+    add = get_add_icon()
+    edit = get_edit_icon()
+    delete = get_delete_icon()
+    save = get_save_icon()
+    add_pacient_action = QAction(add, "&Añadir")
+    edit_pacient_action = QAction(edit,"&Editar")
+    del_pacient_action = QAction(delete,"&Eliminar")
+    #add_pacient_action = QAction( "&Añadir")
+    #edit_pacient_action = QAction("&Editar")
+    #del_pacient_action = QAction("&Eliminar")
     recargar_action = QAction("Recargar datos")
     consultar_tablas_action = QAction("Consultar tablas SQL")
     exportar_JSON_action = QAction("Exportar JSON")

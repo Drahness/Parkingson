@@ -1,22 +1,21 @@
 import os
 import sys
 
+from PyQt5 import QtGui
 from PyQt5.QtCore import QThreadPool, QModelIndex, pyqtSignal
 from PyQt5.QtGui import QResizeEvent
-from PyQt5.QtWidgets import QMainWindow, QDialog, QVBoxLayout, QStatusBar, QToolBar
+from PyQt5.QtWidgets import QMainWindow, QDialog, QVBoxLayout, QStatusBar, QToolBar, QSizePolicy
 
-from GUI import GUI_Resources
-from GUI.GUI_Resources import get_error_dialog_msg, get_confirmation_dialog_ui
-from GUI.MenuBar import MenuBar
-from GUI.Utils import SimpleForm
+from GUI.MenuBar import MenuBar, ToolBar
 from database.database_controller import Connection
 from database.entities import Usuari, Pacient
 from database.models import PacientsListModel, ListModel, PruebasListModel
-
+from GUI import GUI_Resources
 
 class UI(QMainWindow):
     """ Clase que importara los ajustes de Javi. Con la main window"""
     pacientSelected = pyqtSignal(Pacient, int)
+    changeStatusBar = pyqtSignal(str,int)
 
     def __init__(self, debug=False):
         super().__init__()
@@ -27,24 +26,28 @@ class UI(QMainWindow):
         UI.threadpool = QThreadPool()
         UI.DEBUG = debug
         # TODO SINGLETONS ?¿?¿?¿?¿ THEY ARE REALLY NEEDED?
-
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.login_form = GUI_Resources.get_login_register_dialog()
         self.user_credentials = {"result": False}
         self.connection = Connection()
-        self.credentials()
 
-        self.central = GUI_Resources.get_main_widget()
+        # Recogemos el Central widget, lo añadimos y luego lo inicializamos
+        self.central = GUI_Resources.get_main_widgetDEPRECATED()
+        self.setCentralWidget(self.central)
+
+
         self.menu_bar = MenuBar()
         self.status_bar = QStatusBar()
-        self.toolbar = QToolBar()
+        self.toolbar = ToolBar()
         self.addToolBar(self.toolbar)
         self.setStatusBar(self.status_bar)
         self.setMenuBar(self.menu_bar)
 
+
         # Connexiones.
-        self.central.actions_buttons[self.central.ADD_button_key].clicked.connect(self.menu_bar.add_pacient.triggered.emit)
-        self.central.actions_buttons[self.central.DELETE_button_key].clicked.connect(self.menu_bar.del_pacient.triggered.emit)
-        self.central.actions_buttons[self.central.EDIT_button_key].clicked.connect(self.menu_bar.edit_pacient.triggered.emit)
+        #self.central.actions_buttons[self.central.ADD_button_key].clicked.connect(self.menu_bar.add_pacient.triggered.emit)
+        #self.central.actions_buttons[self.central.DELETE_button_key].clicked.connect(self.menu_bar.del_pacient.triggered.emit)
+        #self.central.actions_buttons[self.central.EDIT_button_key].clicked.connect(self.menu_bar.edit_pacient.triggered.emit
         self.menu_bar.add_pacient.triggered.connect(self.button_clicked)
         self.menu_bar.edit_pacient.triggered.connect(self.button_clicked)
         self.menu_bar.del_pacient.triggered.connect(self.button_clicked)
@@ -53,16 +56,29 @@ class UI(QMainWindow):
         self.central.pacients_tab.finishedSignal.connect(self.on_finished)
         self.central.pacients_tab.resultSignal.connect(self.on_result)
         self.central.cronometro_tab.finishedSignal.connect(self.on_crono_finished)
+        self.changeStatusBar.connect(self.changeStatus)
+
+
+        self.menu_bar.data.setEnabled(False)
+        self.menu_bar.ajustes.setEnabled(False)
+        self.menu_bar.ayuda.setEnabled(False)
+        self.menu_bar.pruebas.setEnabled(False)
+
+        self.menu_bar.edit_pacient.setEnabled(False)
+        self.menu_bar.del_pacient.setEnabled(False)
 
         # INIT Tab Components
         self.central.pacients_tab.init()
         self.central.cronometro_tab.init()
         self.central.rendimiento_tab.init()
         # El tab de pacientes sera el por defecto.
+
         pacient_index = self.central.parent_tab_widget.indexOf(self.central.pacients_tab)
         self.central.parent_tab_widget.setCurrentIndex(pacient_index)
-        #self.setFixedSize(1020, 600)
-        # self.iconSizeChanged.connect(self.iconSizeChanged)
+        self.iconSizeChanged.connect(self.iconSizeChanged)
+        self.setFixedHeight(800)
+        self.setFixedWidth(1180)
+        self.credentials()
         if self.user_credentials["result"]:
             self.setCentralWidget(self.central)
             self.show()
@@ -87,8 +103,10 @@ class UI(QMainWindow):
         """Slot for clicks in the listview, listens to the builtin Signal of clicked"""
         row = args[0].row()
         p = self.listview_model.instance_class.get_object(row)
+        self.changeStatusBar.emit(f"Selecionado: {p}",1)
         self.pacientSelected.emit(p, row)
-        # self.central.pacients_tab.set_pacient(p, row)
+        self.menu_bar.edit_pacient.setEnabled(True)
+        self.menu_bar.del_pacient.setEnabled(True)
 
     @staticmethod
     def get_instance():
@@ -114,8 +132,13 @@ class UI(QMainWindow):
                 self.central.pacients_list_view.setCurrentIndex(self.listview_model.index(row, 0))
 
     def on_pacient_double_click(self, *args):
-        print("double click")
+        row = args[0].row()
+        p = self.listview_model.instance_class.get_object(row)
+        self.status_bar.showMessage(f"Editando: {p}")
+        self.menu_bar.edit_pacient.triggered.emit()
 
+    def changeStatus(self,str,seconds):
+        self.status_bar.showMessage(str,seconds*1000)
 
     def button_clicked(self,*args):
         sender_name = self.sender().objectName()
@@ -127,7 +150,7 @@ class UI(QMainWindow):
         elif sender_name == "del_pacient_action":
             if self.central.pacients_tab.pacient_selected():
                 pacient = self.listview_model.items[self.central.pacients_tab.index]
-                dialog = get_confirmation_dialog_ui(f"Quieres eliminar el usuario {pacient}")
+                dialog = GUI_Resources.get_confirmation_dialog_ui(f"Quieres eliminar el usuario {pacient}")
                 if dialog.exec_() == 1:
                     self.listview_model.delete(pacient)
         elif sender_name == "edit_pacient_action":
@@ -136,3 +159,12 @@ class UI(QMainWindow):
 
     def on_crono_finished(self, prueba, row):
         PruebasListModel.get_instance().append(prueba)
+        p = self.listview_model.instance_class.get_object(row)
+        self.status_bar.showMessage(f"Insertada nueva prueba a {p}")
+
+    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(a0)
+        size = a0.size()
+        old_size = a0.oldSize()
+        print(f"{size} {old_size}")
+

@@ -31,6 +31,7 @@ class PacientInterface:
         self.pacient = None
         self.index = None
         self.on_focus = False
+        self.statusChangeSlot = None
         pass
 
     def pacientSelected(self, pacient, index):
@@ -42,10 +43,12 @@ class PacientInterface:
         from main_window import UI
         UI.get_instance().pacientSelected.connect(self.pacientSelected)
         UI.get_instance().central.parent_tab_widget.currentChanged.connect(self.currentChanged)
+        self.statusChangeSlot = UI.get_instance().changeStatusBar
 
     def currentChanged(self, index):
         self.on_focus = False
         self.sender().currentWidget().on_focus = True
+
 
 
 class PacientWidget(QWidget, PacientInterface):
@@ -212,20 +215,22 @@ class MplCanvas(FigureCanvasQTAgg, PacientInterface):
                 self.ax.plot(date2num(dates), matplotlib.dates.num2date(test1), lw=0.75, label='lap1')
                 self.ax.plot(date2num(dates), matplotlib.dates.num2date(test2), lw=0.75, label='lap2')
                 self.ax.plot(date2num(dates), matplotlib.dates.num2date(test3), lw=0.75, label='lap3')
-                self.ax.plot(date2num(dates), matplotlib.dates.num2date(test3), lw=0.75, label='Total')
+                self.ax.plot(date2num(dates), matplotlib.dates.num2date(total), lw=0.75, label='Total')
 
                 self.ax.xaxis.set_major_locator(MplCanvas.autox)
                 self.ax.xaxis.set_major_formatter(MplCanvas.formatterx)
                 self.ax.yaxis.set_major_formatter(MplCanvas.funcformatter)
-
+                self.ax.yaxis.set_label("Tiempo de prueba")
+                self.ax.xaxis.set_label("Fecha")
                 self.ax.grid(True)
                 self.ax.legend(frameon=False)
-
+                self.statusChangeSlot.emit(f"Mostrando {len(test2)} pruebas, entre {dates[0]} y {dates[len(dates)-1]}",10)
                 for tick in self.ax.get_xticklabels():
                     tick.set_rotation(55)
             else:
                 self.ax.clear()
             self.draw()
+
         except Exception as e:
             string = f"Error en la matriz {type(e).__name__} paciente {pacient.dni}\n"
             string += "Valores:\n"
@@ -327,6 +332,7 @@ class Cronometro(QWidget, PacientInterface):
     def on_progress(self, timdelta: datetime.timedelta):
         self.sender().emit_again = False
         self.progress_bar.setValue(timdelta)
+        self.statusChangeSlot.emit(f"{self.prueba_actual}",1)
         self.sender().emit_again = True
 
     def init(self):

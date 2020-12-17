@@ -1,6 +1,5 @@
 import sys
 
-import typing
 from PyQt5.QtWidgets import QMenuBar, QApplication, QAction, QMenu,  QToolBar
 
 from GUI.actions import StaticActions
@@ -12,6 +11,26 @@ def _rep(string: str) -> str:
 class ToolBar(QToolBar):
     def __init__(self):
         super().__init__()
+        self.add_pacient = self.addAction(StaticActions.add_pacient_action)
+        self.edit_pacient = self.addAction(StaticActions.edit_pacient_action)
+        self.del_pacient = self.addAction(StaticActions.del_pacient_action)
+        """
+        # DATA
+        self.recargar = self.data.addAction(StaticActions.recargar_action)
+        self.consultar_tablas = self.data.addAction(StaticActions.consultar_tablas_action)
+        self.data.addSeparator()
+        self.exportar_JSON = self.data.addAction(StaticActions.exportar_JSON_action)
+        self.exportar_XML = self.data.addAction(StaticActions.exportar_XML_action)
+        # PRUEBA
+        self.mod_prueba = self.pruebas.addAction(StaticActions.mod_prueba_action)
+        self.del_prueba = self.pruebas.addAction(StaticActions.del_prueba_action)
+        # AYUDA
+        self.creditos = self.ayuda.addAction(StaticActions.creditos_action)
+        """
+
+    def addAction(self, action: 'QAction') -> None:
+        super().addAction(action)
+        action.setParent(self)
 
 
 class MenuBar(QMenuBar):

@@ -85,8 +85,11 @@ class Prueba(Entity):
             datetime_of_test = dictionary["datetime"]
         super().__init__(pacient_id)
         self.identifier = identifier or None  # Integer
-        if laps is not None and len(laps) > 0 and isinstance(laps[0], float):
-            self.laps = get_timedeltas(laps)
+        if laps is not None:
+            if len(laps) > 0 and isinstance(laps[0], float):
+                self.laps = get_timedeltas(laps)
+            else:
+                self.laps = laps
         else:
             self.laps = laps
         self.pacient_id = pacient_id
@@ -159,7 +162,7 @@ class Prueba(Entity):
                 elif isinstance(value[0],datetime.timedelta):
                     self._laps = value
             else:
-                self._laps = [0,0,0]
+                self._laps = value
         else:
             return
 
@@ -210,6 +213,11 @@ class Prueba(Entity):
         second_table.add_column("num_lap", "INTEGER")
         return first_table, second_table
 
+    def __str__(self, *args, **kwargs):
+        string = ""
+        for x in range(0,len(self.laps)):
+            string += f'{x}: {self.laps[x]} | '
+        return string
 
 class Pacient(Entity):
     ID = "dni"

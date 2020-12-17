@@ -3,6 +3,7 @@ import traceback
 from pathlib import Path
 
 from PyQt5 import uic
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QDialog, QWidget, QMessageBox
 
 paths = Path(os.path.abspath(__name__)).parents
@@ -11,7 +12,7 @@ for parent in Path(os.path.abspath(__name__)).parents:
     folder = parent / Path("GUI")
     if folder.exists():
         MAIN_FOLDER = parent
-
+from .UIs import resources
 if MAIN_FOLDER is None:
     raise ModuleNotFoundError("Malformed modules.")
 
@@ -26,6 +27,28 @@ PACIENT_WIDGET = UIS_FOLDER / Path("pacients_widget.ui")
 NO_EDITABLE_PACIENT_WIDGET = UIS_FOLDER / Path("pacients_widget_noeditable.ui")
 CONFIRMATION_DIALOG = UIS_FOLDER / Path("confirmation_dialog.ui")
 GRAPH_WIDGET = UIS_FOLDER / Path("graph_widget.ui")
+
+## Los iconos no trabajan con rutas absolutas
+ADD = (UIS_FOLDER / Path("anadir.png"))
+DELETE = (UIS_FOLDER / Path("borrar.png"))
+EDIT = (UIS_FOLDER / Path("editar.png"))
+SAVE = (UIS_FOLDER / Path("save.png"))
+
+def get_add_icon():
+    return QIcon(":/icons/add")
+
+
+def get_delete_icon():
+    return QIcon(":/icons/del")
+
+
+def get_edit_icon():
+    return QIcon(":/icons/edit")
+
+
+def get_save_icon():
+    return QIcon(":/icons/save")
+
 
 def get_basic_form(to: QDialog = None) -> QDialog:
     if to is None:
@@ -55,12 +78,12 @@ def get_error_dialog(to: QDialog = None) -> QDialog:
         return uic.loadUi(ERROR_DIALOG, to)
 
 
-def get_error_dialog_msg(e: Exception,string_before_trace: str = None, title: str = None) -> QMessageBox:
+def get_error_dialog_msg(e: Exception, string_before_trace: str = None, title: str = None) -> QMessageBox:
     title = title or type(e).__name__
     string_before_trace = string_before_trace or ""
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Critical)
-    msg.setText(string_before_trace+"\n\n"+type(e).__name__+":")
+    msg.setText(string_before_trace + "\n\n" + type(e).__name__ + ":")
     msg.setInformativeText(traceback.format_exc())
     msg.setWindowTitle(title)
     traceback.print_exc()
@@ -72,9 +95,15 @@ def get_login_register_dialog():
     return LoginRegisterWindow()
 
 
-def get_main_widget():
+def get_main_widgetDEPRECATED():
     from .main_window_javi import CentralWidgetParkingson  # Para evitar imports circulares
     return CentralWidgetParkingson()
+
+
+def get_main_widget():
+    from .main_window_javi import CentralWidgetParkingson  # Para evitar imports circulares
+    from GUI.Interfaz import CentralWidget
+    return CentralWidget()
 
 
 def get_cronometro_widget_ui(to: QWidget = None):
@@ -110,12 +139,14 @@ def get_pacient_widget_ui_noeditable(to: QWidget):
         pacient_widget: QWidget = uic.loadUi(NO_EDITABLE_PACIENT_WIDGET, to)
     return pacient_widget
 
+
 def get_graph_widget(to: QWidget = None):
     if to is None:
         graph_widget: QWidget = uic.loadUi(GRAPH_WIDGET, QWidget())
     else:
         graph_widget: QWidget = uic.loadUi(GRAPH_WIDGET, to)
     return graph_widget
+
 
 def get_pacient_widget():
     from GUI.tab_widgets import PacientWidget

@@ -66,7 +66,7 @@ class CentralWidgetParkingson(QWidget):
         self.buttons_layout.setSpacing(20)
 
         self.pacients_list_view = QListView()
-
+        self.pacients_list_view.resize(200, 400)
         self.parent_tab_widget = QTabWidget()
         self.pacients_tab: PacientWidget = get_pacient_widget()  # Tab1 Color
 
@@ -86,7 +86,7 @@ class CentralWidgetParkingson(QWidget):
         self.content_layout.addWidget(self.pacients_list_view, stretch=3, alignment=Qt.AlignTop)
         self.content_layout.addWidget(self.parent_tab_widget, stretch=9)
 
-        self.general_layout.addLayout(self.buttons_layout)
+        #self.general_layout.addLayout(self.buttons_layout)
         self.general_layout.addLayout(self.content_layout)
 
         self.setMinimumSize(900, 600)
