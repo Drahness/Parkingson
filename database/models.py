@@ -17,21 +17,43 @@ class ListModel(QAbstractListModel):
         self.instance_class = base
         self.__check_subclass(base)
         self.items = base.load(get_db_connection())  # Al ser singleon, solo carga una vez y se matiene sincronizado.
-        # TODO hacer que load sea mas dinamico, recargandose con algun cambio en la BBDD
+        self.showable_items = None
+        # TODO hacer que load sea mas dinamico, recargandose con algun cambio en la BBDD sin pasar con el programa? Maybe un thread que hace check?
 
-    """Retornara el objeto convertido a string sin mas"""
+    def reload(self):
+        self.items = self.instance_class.load(get_db_connection())
+
+    def change_model_list(self, list):
+        if list is not None:
+            if len(list) > 0:
+                if isinstance(list[0],self.instance_class):
+                    self.showable_items = list
+                    self.layoutChanged.emit()
+                else:
+                    raise TypeError(f"Provided a list of non pure objects of type {self.instance_class}")
+            else:
+                self.showable_items = list
+                self.layoutChanged.emit()
 
     def data(self, index: QModelIndex, role: int = ...) -> typing.Any:
-        """Called to display information in the listview"""
+        """Retornara el objeto convertido a string sin mas
+        Called to display information in the listview"""
+        if self.showable_items is None:
+            self.showable_items = self.items
         if role == Qt.DisplayRole:
-            item = self.items[index.row()]
-            return str(item)
+            item = self.showable_items[index.row()]
+            return item
+
+    def get(self,index):
+        """Retorna el item clickado"""
+        return self.showable_items[index]
 
     def rowCount(self, parent: QModelIndex = ...) -> int:
         """Called for me, idk what is QModelIndex"""
-        return len(self.items)
+        return len(self.showable_items) if self.showable_items is not None else len(self.items)
 
     def append(self, entity):
+        """Append to the list."""
         try:
             self.__check_instance(entity)
             entity.insert(get_db_connection())
@@ -92,15 +114,27 @@ class PacientsListModel(ListModel):
         super(PacientsListModel, self).__init__(Pacient)
         pass
 
+    def data(self, index: QModelIndex, role: int = ...):
+        pacient = super(PacientsListModel, self).data(index,role)
+        if pacient is not None:
+            return str(pacient)
+
 
 class PruebasListModel(ListModel):
     def __init__(self):
         from database.entities import Prueba
         super(PruebasListModel, self).__init__(Prueba)
 
+
     def get_pruebas(self, pacient) -> list:
         pruebas = []
         for prueba in self.items:
             if pacient.dni == prueba.pacient_id:
                 pruebas.append(prueba)
+        self.change_model_list(sorted(pruebas))
         return pruebas
+
+    def data(self, index: QModelIndex, role: int = ...):
+        prueba = super(PruebasListModel, self).data(index, role)
+        if prueba is not None:
+            return str(prueba.datetime.strftime("%m/%d/%Y, %H:%M:%S"))

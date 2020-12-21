@@ -2,9 +2,8 @@ import os
 import sys
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import QThreadPool, QModelIndex, pyqtSignal
-from PyQt5.QtGui import QResizeEvent
-from PyQt5.QtWidgets import QMainWindow, QDialog, QVBoxLayout, QStatusBar, QToolBar, QSizePolicy
+from PyQt5.QtCore import QThreadPool, pyqtSignal
+from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy
 
 from GUI.MenuBar import MenuBar, ToolBar
 from database.database_controller import Connection
@@ -44,10 +43,6 @@ class UI(QMainWindow):
         self.setMenuBar(self.menu_bar)
 
 
-        # Connexiones.
-        #self.central.actions_buttons[self.central.ADD_button_key].clicked.connect(self.menu_bar.add_pacient.triggered.emit)
-        #self.central.actions_buttons[self.central.DELETE_button_key].clicked.connect(self.menu_bar.del_pacient.triggered.emit)
-        #self.central.actions_buttons[self.central.EDIT_button_key].clicked.connect(self.menu_bar.edit_pacient.triggered.emit
         self.menu_bar.add_pacient.triggered.connect(self.button_clicked)
         self.menu_bar.edit_pacient.triggered.connect(self.button_clicked)
         self.menu_bar.del_pacient.triggered.connect(self.button_clicked)

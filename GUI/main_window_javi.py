@@ -5,7 +5,7 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTabWidget, \
     QApplication, QListView
 
-from GUI.tab_widgets import PacientWidget, MplCanvas
+from GUI.tab_widgets import PacientWidget, PerformanceTab
 from .GUI_Resources import get_cronometro_widget, get_pacient_widget
 
 
@@ -70,7 +70,8 @@ class CentralWidgetParkingson(QWidget):
         self.parent_tab_widget = QTabWidget()
         self.pacients_tab: PacientWidget = get_pacient_widget()  # Tab1 Color
 
-        self.rendimiento_tab = MplCanvas(self, width=5, height=4, dpi=100)  # Tab2 Grafica
+        #self.rendimiento_tab = MplCanvas(self, width=5, height=4, dpi=100)  # Tab2 Grafica
+        self.rendimiento_tab = PerformanceTab()
 
         self.cronometro_tab = get_cronometro_widget()  # Tab3 Color
 

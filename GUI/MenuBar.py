@@ -14,6 +14,7 @@ class ToolBar(QToolBar):
         self.add_pacient = self.addAction(StaticActions.add_pacient_action)
         self.edit_pacient = self.addAction(StaticActions.edit_pacient_action)
         self.del_pacient = self.addAction(StaticActions.del_pacient_action)
+
         """
         # DATA
         self.recargar = self.data.addAction(StaticActions.recargar_action)

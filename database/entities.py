@@ -72,6 +72,24 @@ class Entity:
 
 
 class Prueba(Entity):
+    def __gt__(self, other):
+        if isinstance(other, Prueba):
+            return self.datetime > other.datetime
+        if isinstance(other, datetime.datetime):
+            return self.datetime > other
+
+    def __lt__(self, other):
+        if isinstance(other, Prueba):
+            return self.datetime < other.datetime
+        if isinstance(other, datetime.datetime):
+            return self.datetime < other
+
+    def __eq__(self, other):
+        if isinstance(other, Prueba):
+            return self.datetime == other.datetime
+        if isinstance(other, datetime.datetime):
+            return self.datetime == other
+
     def __init__(self, identifier: int = None,
                  laps: list = None,
                  pacient_id: str = None,
@@ -178,7 +196,8 @@ class Prueba(Entity):
     def load(cls, connection) -> list:
         dao = connection.dao
         items = cls._get_list_of_instances()
-        dictionaries = dao.search_table(Prueba.get_tablename()[0], {},order_by=["datetime"])
+        dictionaries = dao.search_table(Prueba.get_tablename()[0], {},order_by=["datetime"]) # Este order by sobra
+        # Implementar __repr__ deberia ser lo normal.
         for dictionary in dictionaries:
             tests_list = []
             list_laps = dao.search_table(table_name=Prueba.get_tablename()[1],
@@ -219,12 +238,31 @@ class Prueba(Entity):
             string += f'{x}: {self.laps[x]} | '
         return string
 
+
 class Pacient(Entity):
     ID = "dni"
     dni: str
     apellidos: str
     estadio: int
     nombre: str
+
+    def __gt__(self, other):
+        if isinstance(other, Pacient):
+            return self.dni > other.dni
+        if isinstance(other, str):
+            return self.dni > other
+
+    def __lt__(self, other):
+        if isinstance(other, Pacient):
+            return self.dni < other.dni
+        if isinstance(other, str):
+            return self.dni < other
+
+    def __eq__(self, other):
+        if isinstance(other, Pacient):
+            return self.dni == other.dni
+        if isinstance(other, str):
+            return self.dni == other
 
     def __init__(self,
                  dni: str = None,

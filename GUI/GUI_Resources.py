@@ -12,9 +12,11 @@ for parent in Path(os.path.abspath(__name__)).parents:
     folder = parent / Path("GUI")
     if folder.exists():
         MAIN_FOLDER = parent
-from .UIs import resources
+
 if MAIN_FOLDER is None:
     raise ModuleNotFoundError("Malformed modules.")
+
+from . import resources
 
 GUI_FOLDER = MAIN_FOLDER / Path("GUI")
 UIS_FOLDER = GUI_FOLDER / Path("UIs")
@@ -28,11 +30,6 @@ NO_EDITABLE_PACIENT_WIDGET = UIS_FOLDER / Path("pacients_widget_noeditable.ui")
 CONFIRMATION_DIALOG = UIS_FOLDER / Path("confirmation_dialog.ui")
 GRAPH_WIDGET = UIS_FOLDER / Path("graph_widget.ui")
 
-## Los iconos no trabajan con rutas absolutas
-ADD = (UIS_FOLDER / Path("anadir.png"))
-DELETE = (UIS_FOLDER / Path("borrar.png"))
-EDIT = (UIS_FOLDER / Path("editar.png"))
-SAVE = (UIS_FOLDER / Path("save.png"))
 
 def get_add_icon():
     return QIcon(":/icons/add")
@@ -100,12 +97,6 @@ def get_main_widgetDEPRECATED():
     return CentralWidgetParkingson()
 
 
-def get_main_widget():
-    from .main_window_javi import CentralWidgetParkingson  # Para evitar imports circulares
-    from GUI.Interfaz import CentralWidget
-    return CentralWidget()
-
-
 def get_cronometro_widget_ui(to: QWidget = None):
     if to is None:
         cronometro_ui: QWidget = uic.loadUi(CRONOMETRO_WIDGET, QWidget())
@@ -140,14 +131,6 @@ def get_pacient_widget_ui_noeditable(to: QWidget):
     return pacient_widget
 
 
-def get_graph_widget(to: QWidget = None):
-    if to is None:
-        graph_widget: QWidget = uic.loadUi(GRAPH_WIDGET, QWidget())
-    else:
-        graph_widget: QWidget = uic.loadUi(GRAPH_WIDGET, to)
-    return graph_widget
-
-
 def get_pacient_widget():
     from GUI.tab_widgets import PacientWidget
     return PacientWidget()
@@ -161,3 +144,11 @@ def get_confirmation_dialog_ui(msg: str, to: QDialog = None):
 
     confirmation_dialog.confirm_label.setText(msg)
     return confirmation_dialog
+
+
+def get_performance_widget(to: QWidget = None) -> QWidget:
+    if to is None:
+        performance = uic.loadUi(GRAPH_WIDGET, QDialog())
+    else:
+        performance = uic.loadUi(GRAPH_WIDGET, to)
+    return performance
