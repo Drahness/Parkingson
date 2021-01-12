@@ -24,6 +24,7 @@ matplotlib.use('Qt5Agg')
 
 class PacientInterface:
     """Los tabs heredan de esta. Ya que todos tienen casi la misma logica"""
+
     def __init__(self):
         self.last_pacient = None
         self.pacient = None
@@ -34,18 +35,14 @@ class PacientInterface:
         self.currentChangedSignal = None
         pass
 
-
     def getsignal_pacient_selected(self) -> pyqtSignal:
         return self.pacientSelectedSignal
-
 
     def set_signal_pacient_selected(self, signal: pyqtSignal):
         self.pacientSelectedSignal = signal
 
-
     def getsignal_current_changed(self) -> pyqtSignal:
         return self.currentChangedSignal
-
 
     def set_signal_current_changed(self, signal: pyqtSignal):
         self.currentChangedSignal = signal
@@ -58,13 +55,13 @@ class PacientInterface:
     def init(self):
         """Inicializas el widget. Concretamente las señales desde el mainWindow."""
         from main_window import UI
-        #UI.get_instance().pacientSelected.connect(self.pacientSelected)
+        # UI.get_instance().pacientSelected.connect(self.pacientSelected)
         self.pacientSelectedSignal.connect(self.pacientSelected)
         self.currentChangedSignal.connect(self.currentChanged)
-        #UI.get_instance().central.parent_tab_widget.currentChanged.connect(self.currentChanged)
-        #self.statusChangeSlot = UI.get_instance().changeStatusBar
+        # UI.get_instance().central.parent_tab_widget.currentChanged.connect(self.currentChanged)
+        # self.statusChangeSlot = UI.get_instance().changeStatusBar
 
-    def set_change_status_bar(self,signal: pyqtSignal):
+    def set_change_status_bar(self, signal: pyqtSignal):
         self.statusChangeSlot = signal
 
     def get_change_status_bar(self):
@@ -111,7 +108,9 @@ class PacientWidget(QWidget, PacientInterface):
 
     def check_input(self):
         errored = False
-        if not re.fullmatch("((([X-Z])|([LM])){1}([-]?)((\d){7})([-]?)([A-Z]{1}))|((\d{8})([-]?)([A-Z]))",self.dni_field.text()) and not re.fullmatch("/^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$/i",self.dni_field.text()):
+        if not re.fullmatch("((([X-Z])|([LM])){1}([-]?)((\d){7})([-]?)([A-Z]{1}))|((\d{8})([-]?)([A-Z]))",
+                            self.dni_field.text()) and not re.fullmatch("/^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$/i",
+                                                                        self.dni_field.text()):
             errored = True
             self.error_dni.setText("No has introducido un documento de identidad valido.")
         if not len(self.apellidos_field.text()) > 0:
@@ -141,7 +140,6 @@ class PacientWidget(QWidget, PacientInterface):
             if self.save_pacient():
                 self.resultSignal.emit(False, -1)
                 self.set_enabled(False)
-
 
     def pacientSelected(self, pacient, row: int = None):
         """Overriden method from PacientInterface"""
@@ -336,10 +334,13 @@ class MplCanvasTest(FigureCanvasQTAgg):
         self.markers1 = None
         self.markers2 = None
         self.markers_total = None
-
+        self.text0 = None
+        self.text1 = None
+        self.text2 = None
         super(MplCanvasTest, self).__init__(self.fig)
         FigureCanvasQTAgg.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvasQTAgg.updateGeometry(self)
+
 
 class PerformanceTab(QWidget, PacientInterface):
 
@@ -368,18 +369,26 @@ class PerformanceTab(QWidget, PacientInterface):
             self.setVisible(False)
             pass
 
-    def onPruebaClicked(self,*args):
+    def onPruebaClicked(self, *args):
         if self.graph.markers1 is not None:
             self.graph.markers0[0].set_marker(None)
             self.graph.markers1[0].set_marker(None)
             self.graph.markers2[0].set_marker(None)
             self.graph.markers_total[0].set_marker(None)
+            """self.text0 # TODO
+            self.text1
+            self.text2"""
         row = args[0].row()
         prueba = self.model.get(row)
         total = prueba.laps[2].total_seconds() + prueba.laps[0].total_seconds() + prueba.laps[1].total_seconds()
-        self.graph.markers0 = self.graph.ax.plot(prueba.datetime,prueba.laps[0].total_seconds(),marker="+", markersize=20, color="blue")
-        self.graph.markers1 = self.graph.ax.plot(prueba.datetime, prueba.laps[1].total_seconds(), marker="+", markersize=20, color="green")
-        self.graph.markers2 = self.graph.ax.plot(prueba.datetime, prueba.laps[2].total_seconds(), marker="+", markersize=20, color="brown")
+        self.graph.markers0 = self.graph.ax.plot(prueba.datetime, prueba.laps[0].total_seconds(), marker="+",
+                                                 markersize=20, color="blue")
+        self.graph.markers1 = self.graph.ax.plot(prueba.datetime, prueba.laps[1].total_seconds(), marker="+",
+                                                 markersize=20, color="green")
+        self.graph.markers2 = self.graph.ax.plot(prueba.datetime, prueba.laps[2].total_seconds(), marker="+",
+                                                 markersize=20, color="brown")
+# todo
+
         self.graph.markers_total = self.graph.ax.plot(prueba.datetime, total, marker="+", markersize=20, color="red")
         self.graph.draw()
         pass
@@ -403,10 +412,14 @@ class PerformanceTab(QWidget, PacientInterface):
                     test3.append(prueba.laps[2].total_seconds())
                     total.append(test1[x] + test2[x] + test3[x])
 
-                self.graph.line_lap0 = self.graph.ax.plot(date2num(dates), matplotlib.dates.num2date(test1), lw=0.75, label='lap1', color="blue",marker="o", markersize=2)
-                self.graph.line_lap1 = self.graph.ax.plot(date2num(dates), matplotlib.dates.num2date(test2), lw=0.75, label='lap2', color="green",marker="o", markersize=2)
-                self.graph.line_lap2 = self.graph.ax.plot(date2num(dates), matplotlib.dates.num2date(test3), lw=0.75, label='lap3', color="brown",marker="o", markersize=2)
-                self.graph.line_total = self.graph.ax.plot(date2num(dates), matplotlib.dates.num2date(total), lw=0.75, label='Total', color="red",marker="o", markersize=2)
+                self.graph.line_lap0 = self.graph.ax.plot(date2num(dates), matplotlib.dates.num2date(test1), lw=0.75,
+                                                          label='lap1', color="blue", marker="o", markersize=2)
+                self.graph.line_lap1 = self.graph.ax.plot(date2num(dates), matplotlib.dates.num2date(test2), lw=0.75,
+                                                          label='lap2', color="green", marker="o", markersize=2)
+                self.graph.line_lap2 = self.graph.ax.plot(date2num(dates), matplotlib.dates.num2date(test3), lw=0.75,
+                                                          label='lap3', color="brown", marker="o", markersize=2)
+                self.graph.line_total = self.graph.ax.plot(date2num(dates), matplotlib.dates.num2date(total), lw=0.75,
+                                                           label='Total', color="red", marker="o", markersize=2)
 
                 self.graph.ax.xaxis.set_major_locator(MplCanvasTest.autox)
                 self.graph.ax.xaxis.set_major_formatter(MplCanvasTest.formatterx)
@@ -431,6 +444,7 @@ class PerformanceTab(QWidget, PacientInterface):
             string += f"{test2}\n"
             string += f"{test3}"
             get_error_dialog_msg(e, string, "Error de insertacion").exec_()
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

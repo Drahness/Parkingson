@@ -24,6 +24,9 @@ class Entity:
             items.append(cls(dictionary=obj))
         Entity.__loaded_instances[cls] = items
         return items
+    @staticmethod
+    def get_columns_dict() -> tuple or ColumnDict:
+        raise NotImplementedError()
 
     @staticmethod
     def is_autoincrement() -> bool:
@@ -194,13 +197,12 @@ class Prueba(Entity):
 
     @classmethod
     def load(cls, connection) -> list:
-        dao = connection.dao
         items = cls._get_list_of_instances()
-        dictionaries = dao.search_table(Prueba.get_tablename()[0], {}, order_by=["datetime"])  # Este order by sobra
+        dictionaries = connection.dao.search_table(Prueba.get_tablename()[0], {}, order_by=["datetime"])  # Este order by sobra
         # Implementar __repr__ deberia ser lo normal.
         for dictionary in dictionaries:
             tests_list = []
-            list_laps = dao.search_table(table_name=Prueba.get_tablename()[1],
+            list_laps = connection.dao.search_table(table_name=Prueba.get_tablename()[1],
                                          search_dict={"identifier": dictionary["identifier"]},
                                          order_by=["num_lap"])
             for lap in list_laps:
@@ -344,23 +346,8 @@ class Pacient(Entity):
             dni = to_updated.dni
         else:
             raise AssertionError("argument type dont supported, type: " + str(type(to_updated)))
-        conexion.execute("UPDATE pacients SET dni = ?,"
-                         "                  apellidos = ?,"
-                         "                  estadio = ?,"
-                         "                  nombre = ? ,"
-                         "                  nacimiento = ?,"
-                         "                  notas = ?" +
-                         "                  telefono = ?" +
-                         "                  mail = ? " +
-                         "                  fotocara = ? " +
-                         "                  fotocuerpo = ? " +
-                         "                  direccion = ? " +
-                         "                  peso = ? " +
-                         "                  genero = ? " +
-                         "                  fecha_diagnostico = ? " +
-                         "                  imc = ? "
-                         " WHERE dni = ?",
-                         [self.dni,
+        if self.dni != dni:
+            atributos = [self.dni,
                           self.apellidos,
                           self.estadio,
                           self.nombre,
@@ -375,7 +362,57 @@ class Pacient(Entity):
                           self.genero,
                           self.fecha_diagnostico,
                           self.imc,
-                          dni])
+                          dni]
+            sql = """UPDATE pacients SET
+                   dni = ?
+"                  apellidos = ?,
+                   estadio = ?,
+                   nombre = ? ,
+                   nacimiento = ?,
+                   notas = ?,
+                   telefono = ?,
+                   mail = ?,
+                   fotocara = ?,
+                   fotocuerpo = ?,
+                   direccion = ?,
+                   peso = ?,
+                   genero = ?,
+                   fecha_diagnostico = ?,
+                   imc = ?,
+                    WHERE dni = ?"""
+        else:
+            atributos = [ self.apellidos,
+                          self.estadio,
+                          self.nombre,
+                          self.nacimiento,
+                          self.notas,
+                          self.telefono,
+                          self.mail,
+                          self.fotocara,
+                          self.fotocuerpo,
+                          self.direccion,
+                          self.peso,
+                          self.genero,
+                          self.fecha_diagnostico,
+                          self.imc,
+                          dni]
+            sql = """UPDATE pacients SET
+                              apellidos = ?,
+                               estadio = ?,
+                               nombre = ? ,
+                               nacimiento = ?,
+                               notas = ?,
+                               telefono = ?,
+                               mail = ?,
+                               fotocara = ?,
+                               fotocuerpo = ?,
+                               direccion = ?,
+                               peso = ?,
+                               genero = ?,
+                               fecha_diagnostico = ?,
+                               imc = ?
+                                WHERE dni = ?"""
+        conexion.execute(sql,atributos)
 
     def delete(self, conexion):
         conexion.execute(f"DELETE FROM {self.get_tablename()} WHERE dni = ?", [self.dni])

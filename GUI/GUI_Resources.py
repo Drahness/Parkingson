@@ -92,7 +92,7 @@ def get_login_register_dialog():
     return LoginRegisterWindow()
 
 
-def get_main_widgetDEPRECATED():
+def get_main_widget():
     from .main_window_javi import CentralWidgetParkingson  # Para evitar imports circulares
     return CentralWidgetParkingson()
 

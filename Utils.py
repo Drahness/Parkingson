@@ -111,16 +111,27 @@ def get_from_dict(dictionary: dict, key: any) -> any or None:
     except KeyError:
         return None
 
-def get_timedelta(real_number: float):
-    micro, seconds = math.modf(real_number)
-    return datetime.timedelta(seconds=seconds, microseconds=micro)
+
+def get_timedelta(real_number: float or datetime.timedelta,canbeNone=False):
+    if real_number is None:
+        if canbeNone:
+            return real_number
+        else:
+            raise ValueError("the real_number cant be none.")
+    if isinstance(real_number,float) or isinstance(real_number,int):
+        micro, seconds = math.modf(real_number)
+        return datetime.timedelta(seconds=seconds, microseconds=micro)
+    elif isinstance(real_number,datetime.timedelta):
+        return real_number
+    else:
+        raise ValueError("Unknown number.")
 
 
 def get_timedeltas(real_numbers: list):
-    for x in range(0,len(real_numbers)):
+    for x in range(0, len(real_numbers)):
         delta = get_timedelta(real_numbers[x])
         real_numbers.pop(x)
-        real_numbers.insert(x,delta)
+        real_numbers.insert(x, delta)
     return real_numbers
 
 
@@ -130,6 +141,7 @@ def parse_timedelta(s: str):
     else:
         m = re.match(r'(?P<hours>\d+):(?P<minutes>\d+):(?P<seconds>\d[\.\d+]*)', s)
     return {key: float(val) for key, val in m.groupdict().iteritems()}
+
 
 if __name__ == "__main__":
     os.makedirs("aaaa/polaas/xd")

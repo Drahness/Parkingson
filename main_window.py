@@ -32,7 +32,7 @@ class UI(QMainWindow):
         self.connection = Connection()
 
         # Recogemos el Central widget, lo añadimos y luego lo inicializamos
-        self.central = GUI_Resources.get_main_widgetDEPRECATED()
+        self.central = GUI_Resources.get_main_widget()
         self.setCentralWidget(self.central)
 
         self.menu_bar = MenuBar()

@@ -13,12 +13,13 @@ from .entities import Entity, Pacient, Usuari, Prueba
 class Connection:
     INSTANCE_MAP = {}
 
-    def __init__(self, path: str = "db", dbname=f"default.db"):
+    def __init__(self,user="Admin", path: str = "db", dbname=f"default.db"):
         filepath = path + os.sep + dbname
         if not os.path.exists(filepath):
             os.makedirs(path, exist_ok=True)
         self.conn = sqlite3.connect(filepath)
         self.dao = SqliteDao.get_instance(filepath)
+        self.user = user
         self.autocommit = True
         self.cursor = self.conn.cursor()
 
@@ -85,3 +86,8 @@ class Connection:
         if path not in Connection.INSTANCE_MAP:
             Connection.INSTANCE_MAP[path + os.sep + db] = Connection(path, db)
         return Connection.INSTANCE_MAP[path + os.sep + db]
+
+class BasicConnection(Connection):
+
+    def __init__(self):
+        pass
