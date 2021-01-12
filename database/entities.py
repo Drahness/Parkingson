@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QDate
 from sqlitedao import ColumnDict, SqliteDao
 
-#from Utils import get_timedeltas, get_timedelta
+# from Utils import get_timedeltas, get_timedelta
 from Utils import get_timedeltas
 from database.DB_Resources import get_db_connection
 import datetime
@@ -111,7 +111,7 @@ class Prueba(Entity):
         else:
             self.laps = laps
         self.pacient_id = pacient_id
-        if isinstance(datetime_of_test,str):
+        if isinstance(datetime_of_test, str):
             self.datetime = datetime.datetime.strptime(datetime_of_test, '%Y-%m-%d %H:%M:%S.%f')
         else:
             self.datetime = datetime_of_test
@@ -172,12 +172,12 @@ class Prueba(Entity):
         return self._laps
 
     @laps.setter
-    def laps(self,value: list):
-        if isinstance(value,list):
+    def laps(self, value: list):
+        if isinstance(value, list):
             if len(value) == 3:
-                if isinstance(value[0],float):
+                if isinstance(value[0], float):
                     self._laps = get_timedeltas(value)
-                elif isinstance(value[0],datetime.timedelta):
+                elif isinstance(value[0], datetime.timedelta):
                     self._laps = value
             else:
                 self._laps = value
@@ -196,7 +196,7 @@ class Prueba(Entity):
     def load(cls, connection) -> list:
         dao = connection.dao
         items = cls._get_list_of_instances()
-        dictionaries = dao.search_table(Prueba.get_tablename()[0], {},order_by=["datetime"]) # Este order by sobra
+        dictionaries = dao.search_table(Prueba.get_tablename()[0], {}, order_by=["datetime"])  # Este order by sobra
         # Implementar __repr__ deberia ser lo normal.
         for dictionary in dictionaries:
             tests_list = []
@@ -234,7 +234,7 @@ class Prueba(Entity):
 
     def __str__(self, *args, **kwargs):
         string = ""
-        for x in range(0,len(self.laps)):
+        for x in range(0, len(self.laps)):
             string += f'{x}: {self.laps[x]} | '
         return string
 
@@ -271,6 +271,15 @@ class Pacient(Entity):
                  nombre: str = None,
                  nacimiento: datetime.date = None,
                  notas: str = None,
+                 telefono: int = None,
+                 mail: str = None,
+                 fotocara: bytes = None,
+                 fotocuerpo: bytes = None,
+                 direccion: str = None,
+                 peso: float = None,
+                 genero: str = None,
+                 fecha_diagnostico: datetime.date = None,
+                 imc: float = None,
                  dictionary: dict = None):
         if dictionary is not None:
             self.dictionary = dictionary
@@ -280,6 +289,15 @@ class Pacient(Entity):
             estadio = dictionary.get("estadio")
             nombre = dictionary.get("nombre")
             notas = dictionary.get("notas")
+            telefono = dictionary.get("telefono")
+            mail = dictionary.get("mail")
+            fotocara = dictionary.get("fotocara")
+            fotocuerpo = dictionary.get("fotocuerpo")
+            direccion = dictionary.get("direccion")
+            peso = dictionary.get("peso")
+            genero = dictionary.get("genero")
+            fecha_diagnostico = dictionary.get("fecha_diagnostico")
+            imc = dictionary.get("imc")
         super().__init__(dni)
         self.dni = dni
         self.apellidos = apellidos
@@ -287,15 +305,35 @@ class Pacient(Entity):
         self.nombre = nombre
         self.nacimiento = nacimiento if not isinstance(nacimiento, str) else parse(nacimiento)
         self.notas = notas
+        self.telefono = telefono
+        self.mail = mail
+        self.fotocara = fotocara
+        self.fotocuerpo = fotocuerpo
+        self.direccion = direccion
+        self.peso = peso
+        self.genero = genero
+        self.fecha_diagnostico = fecha_diagnostico
+        self.imc = imc
 
     def insert(self, conexion):
-        conexion.insert("INSERT INTO pacients (dni,apellidos,estadio,nombre,nacimiento,notas) VALUES (?,?,?,?,?,?)",
-                        [self.dni,
-                         self.apellidos,
-                         self.estadio,
-                         self.nombre,
-                         self.nacimiento,
-                         self.notas])
+        attributes = [self.dni,
+                      self.apellidos,
+                      self.estadio,
+                      self.nombre,
+                      self.nacimiento,
+                      self.notas,
+                      self.telefono,
+                      self.mail,
+                      self.fotocara,
+                      self.fotocuerpo,
+                      self.direccion,
+                      self.peso,
+                      self.genero,
+                      self.fecha_diagnostico,
+                      self.imc]
+        sql = "INSERT INTO pacients (dni,apellidos,estadio,nombre,nacimiento,notas,telefono,mail,fotocara,fotocuerpo,direccion,peso,genero,fecha_diagnostico,imc) VALUES "
+        sql = (sql + "(" + ("?," * len(attributes)))[:-1] + ")"
+        conexion.insert(sql, attributes)
         self.append()
         return self.dni
 
@@ -311,7 +349,16 @@ class Pacient(Entity):
                          "                  estadio = ?,"
                          "                  nombre = ? ,"
                          "                  nacimiento = ?,"
-                         "                  notas = ?"
+                         "                  notas = ?" +
+                         "                  telefono = ?" +
+                         "                  mail = ? " +
+                         "                  fotocara = ? " +
+                         "                  fotocuerpo = ? " +
+                         "                  direccion = ? " +
+                         "                  peso = ? " +
+                         "                  genero = ? " +
+                         "                  fecha_diagnostico = ? " +
+                         "                  imc = ? "
                          " WHERE dni = ?",
                          [self.dni,
                           self.apellidos,
@@ -319,6 +366,15 @@ class Pacient(Entity):
                           self.nombre,
                           self.nacimiento,
                           self.notas,
+                          self.telefono,
+                          self.mail,
+                          self.fotocara,
+                          self.fotocuerpo,
+                          self.direccion,
+                          self.peso,
+                          self.genero,
+                          self.fecha_diagnostico,
+                          self.imc,
                           dni])
 
     def delete(self, conexion):
@@ -338,6 +394,15 @@ class Pacient(Entity):
         columns.add_column("estadio", "integer")
         columns.add_column("nacimiento", "date")
         columns.add_column("notas", "text")
+        columns.add_column("telefono", "integer")
+        columns.add_column("mail", "text")
+        columns.add_column("fotocara", "blob")
+        columns.add_column("fotocuerpo", "blob")
+        columns.add_column("direccion", "text")
+        columns.add_column("peso", "integer")
+        columns.add_column("genero", "text")
+        columns.add_column("fecha_diagnostico", "date")
+        columns.add_column("imc", "float")
         return columns
 
     def __str__(self):
@@ -412,4 +477,3 @@ class Usuari(Entity):
     def valid_user(username, password):
         dao = get_db_connection().dao
         return len(dao.search_table("users", {"username": username, "password": password})) > 0
-

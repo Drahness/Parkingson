@@ -30,7 +30,25 @@ class PacientInterface:
         self.index = None
         self.on_focus = False
         self.statusChangeSlot = None
+        self.pacientSelectedSignal = None
+        self.currentChangedSignal = None
         pass
+
+
+    def getsignal_pacient_selected(self) -> pyqtSignal:
+        return self.pacientSelectedSignal
+
+
+    def set_signal_pacient_selected(self, signal: pyqtSignal):
+        self.pacientSelectedSignal = signal
+
+
+    def getsignal_current_changed(self) -> pyqtSignal:
+        return self.currentChangedSignal
+
+
+    def set_signal_current_changed(self, signal: pyqtSignal):
+        self.currentChangedSignal = signal
 
     def pacientSelected(self, pacient, index):
         """The signal pacientSelected will get a Pacient and a row in the model."""
@@ -40,9 +58,17 @@ class PacientInterface:
     def init(self):
         """Inicializas el widget. Concretamente las señales desde el mainWindow."""
         from main_window import UI
-        UI.get_instance().pacientSelected.connect(self.pacientSelected)
-        UI.get_instance().central.parent_tab_widget.currentChanged.connect(self.currentChanged)
-        self.statusChangeSlot = UI.get_instance().changeStatusBar
+        #UI.get_instance().pacientSelected.connect(self.pacientSelected)
+        self.pacientSelectedSignal.connect(self.pacientSelected)
+        self.currentChangedSignal.connect(self.currentChanged)
+        #UI.get_instance().central.parent_tab_widget.currentChanged.connect(self.currentChanged)
+        #self.statusChangeSlot = UI.get_instance().changeStatusBar
+
+    def set_change_status_bar(self,signal: pyqtSignal):
+        self.statusChangeSlot = signal
+
+    def get_change_status_bar(self):
+        return self.statusChangeSlot
 
     def currentChanged(self, index):
         self.on_focus = False
@@ -105,6 +131,10 @@ class PacientWidget(QWidget, PacientInterface):
         if name == "accept_button":
             if self.save_pacient():
                 if self.check_input():
+                    self.error_dni.setText("")
+                    self.error_estadio.setText("")
+                    self.error_nombre.setText("")
+                    self.error_apellidos.setText("")
                     self.resultSignal.emit(True, self.index)
                     self.set_enabled(False)
         elif name == "cancel_button":

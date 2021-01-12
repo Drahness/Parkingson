@@ -11,10 +11,11 @@ from database.entities import Usuari, Pacient
 from database.models import PacientsListModel, ListModel, PruebasListModel
 from GUI import GUI_Resources
 
+
 class UI(QMainWindow):
     """ Clase que importara los ajustes de Javi. Con la main window"""
     pacientSelected = pyqtSignal(Pacient, int)
-    changeStatusBar = pyqtSignal(str,int)
+    changeStatusBar = pyqtSignal(str, int)
 
     def __init__(self, debug=False):
         super().__init__()
@@ -34,14 +35,12 @@ class UI(QMainWindow):
         self.central = GUI_Resources.get_main_widgetDEPRECATED()
         self.setCentralWidget(self.central)
 
-
         self.menu_bar = MenuBar()
         self.status_bar = QStatusBar()
         self.toolbar = ToolBar()
         self.addToolBar(self.toolbar)
         self.setStatusBar(self.status_bar)
         self.setMenuBar(self.menu_bar)
-
 
         self.menu_bar.add_pacient.triggered.connect(self.button_clicked)
         self.menu_bar.edit_pacient.triggered.connect(self.button_clicked)
@@ -53,7 +52,6 @@ class UI(QMainWindow):
         self.central.cronometro_tab.finishedSignal.connect(self.on_crono_finished)
         self.changeStatusBar.connect(self.changeStatus)
 
-
         self.menu_bar.data.setEnabled(False)
         self.menu_bar.ajustes.setEnabled(False)
         self.menu_bar.ayuda.setEnabled(False)
@@ -61,6 +59,19 @@ class UI(QMainWindow):
 
         self.menu_bar.edit_pacient.setEnabled(False)
         self.menu_bar.del_pacient.setEnabled(False)
+
+        self.central.pacients_tab.set_signal_pacient_selected(self.pacientSelected)
+        self.central.cronometro_tab.set_signal_pacient_selected(self.pacientSelected)
+        self.central.rendimiento_tab.set_signal_pacient_selected(self.pacientSelected)
+
+        self.central.pacients_tab.set_change_status_bar(self.changeStatusBar)
+        self.central.cronometro_tab.set_change_status_bar(self.changeStatusBar)
+        self.central.rendimiento_tab.set_change_status_bar(self.changeStatusBar)
+
+        self.central.pacients_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
+        self.central.cronometro_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
+        self.central.rendimiento_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
+
 
         # INIT Tab Components
         self.central.pacients_tab.init()
@@ -71,8 +82,8 @@ class UI(QMainWindow):
         pacient_index = self.central.parent_tab_widget.indexOf(self.central.pacients_tab)
         self.central.parent_tab_widget.setCurrentIndex(pacient_index)
         self.iconSizeChanged.connect(self.iconSizeChanged)
-        self.setFixedHeight(800)
-        self.setFixedWidth(1180)
+        ##self.setFixedHeight(800)
+        # self.setFixedWidth(1180)
         self.credentials()
         if self.user_credentials["result"]:
             self.setCentralWidget(self.central)
@@ -98,7 +109,7 @@ class UI(QMainWindow):
         """Slot for clicks in the listview, listens to the builtin Signal of clicked"""
         row = args[0].row()
         p = self.listview_model.instance_class.get_object(row)
-        self.changeStatusBar.emit(f"Selecionado: {p}",1)
+        self.changeStatusBar.emit(f"Selecionado: {p}", 1)
         self.pacientSelected.emit(p, row)
         self.menu_bar.edit_pacient.setEnabled(True)
         self.menu_bar.del_pacient.setEnabled(True)
@@ -132,12 +143,12 @@ class UI(QMainWindow):
         self.status_bar.showMessage(f"Editando: {p}")
         self.menu_bar.edit_pacient.triggered.emit()
 
-    def changeStatus(self,str,seconds):
-        self.status_bar.showMessage(str,seconds*1000)
+    def changeStatus(self, str, seconds):
+        self.status_bar.showMessage(str, seconds * 1000)
 
-    def button_clicked(self,*args):
+    def button_clicked(self, *args):
         sender_name = self.sender().objectName()
-        pacient_index =  self.central.parent_tab_widget.indexOf(self.central.pacients_tab)
+        pacient_index = self.central.parent_tab_widget.indexOf(self.central.pacients_tab)
         self.central.parent_tab_widget.setCurrentIndex(pacient_index)
         if sender_name == "add_pacient_action":
             self.central.pacients_tab.pacientSelected(Pacient(), -1)
@@ -162,4 +173,3 @@ class UI(QMainWindow):
         size = a0.size()
         old_size = a0.oldSize()
         print(f"{size} {old_size}")
-
