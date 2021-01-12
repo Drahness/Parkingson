@@ -45,6 +45,9 @@ def get_default_dbname():
     return "default.db"
 
 
-def get_db_connection(path: str = get_default_path(), dbname: str = get_default_dbname()):
+default_user = "Admin"
+
+
+def get_db_connection(path: str = get_default_path(), dbname: str = get_default_dbname(), user=default_user):
     from database.database_controller import Connection
     return Connection.get_instance(path, dbname)

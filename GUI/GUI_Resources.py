@@ -87,9 +87,9 @@ def get_error_dialog_msg(e: Exception, string_before_trace: str = None, title: s
     return msg
 
 
-def get_login_register_dialog():
+def get_login_register_dialog(conn):
     from .LoginForm import LoginRegisterWindow  # Para evitar imports circulares
-    return LoginRegisterWindow()
+    return LoginRegisterWindow(conn)
 
 
 def get_main_widget():

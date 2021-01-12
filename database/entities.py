@@ -511,6 +511,6 @@ class Usuari(Entity):
         return columns
 
     @staticmethod
-    def valid_user(username, password):
-        dao = get_db_connection().dao
+    def valid_user(conn,username, password):
+        dao = conn.dao
         return len(dao.search_table("users", {"username": username, "password": password})) > 0

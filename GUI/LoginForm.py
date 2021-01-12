@@ -20,9 +20,10 @@ class LoginRegisterWindow(QDialog):
     La clave "order", podra tener "login" o "register"
     """
 
-    def __init__(self):
+    def __init__(self,conn):
         super(LoginRegisterWindow, self).__init__()
         self.result = {}
+        self.conn = conn
         tab: QTabWidget = QTabWidget()
         layout = QVBoxLayout()
         layout.addWidget(tab)

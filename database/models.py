@@ -16,12 +16,13 @@ class ListModel(QAbstractListModel):
         super(ListModel, self).__init__()
         self.instance_class = base
         self.__check_subclass(base)
-        self.items = base.load(get_db_connection())  # Al ser singleon, solo carga una vez y se matiene sincronizado.
+        self.conn = get_db_connection()
+        self.items = base.load(self.conn)  # Al ser singleon, solo carga una vez y se matiene sincronizado.
         self.showable_items = None
         # TODO hacer que load sea mas dinamico, recargandose con algun cambio en la BBDD sin pasar con el programa? Maybe un thread que hace check?
 
     def reload(self):
-        self.items = self.instance_class.load(get_db_connection())
+        self.items = self.instance_class.load(self.conn)
 
     def change_model_list(self, list):
         if list is not None:
@@ -56,7 +57,7 @@ class ListModel(QAbstractListModel):
         """Append to the list."""
         try:
             self.__check_instance(entity)
-            entity.insert(get_db_connection())
+            entity.insert(self.conn)
             self.layoutChanged.emit()
         except Exception as e:
             string = f"""Error mientras se agregaba la entidad {type(entity).__name__} con identificador {entity.get_id()}"""
@@ -76,7 +77,7 @@ class ListModel(QAbstractListModel):
     def delete(self, entity):
         try:
             self.__check_instance(entity)
-            entity.delete(get_db_connection())
+            entity.delete(self.conn)
             self.layoutChanged.emit()
         except Exception as e:
             string = f"""Error mientras se eliminaba la entidad {type(entity).__name__} con identificador {entity.get_id()}"""
@@ -85,7 +86,7 @@ class ListModel(QAbstractListModel):
     def update(self, entity, id_to_update):
         try:
             self.__check_instance(entity)
-            entity.update(get_db_connection(), id_to_update)
+            entity.update(self.conn, id_to_update)
             self.layoutChanged.emit()
         except Exception as e:
             string = f"""Error mientras se eliminaba la entidad {type(entity).__name__} con identificador {entity.get_id()}"""

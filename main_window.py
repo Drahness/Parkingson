@@ -27,9 +27,9 @@ class UI(QMainWindow):
         UI.DEBUG = debug
         # TODO SINGLETONS ?¿?¿?¿?¿ THEY ARE REALLY NEEDED?
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.login_form = GUI_Resources.get_login_register_dialog()
-        self.user_credentials = {"result": False}
         self.connection = Connection()
+        self.login_form = GUI_Resources.get_login_register_dialog(self.connection)
+        self.user_credentials = {"result": False}
 
         # Recogemos el Central widget, lo añadimos y luego lo inicializamos
         self.central = GUI_Resources.get_main_widget()
