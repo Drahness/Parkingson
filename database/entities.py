@@ -428,7 +428,7 @@ class Pacient(Entity):
         columns.add_column("dni", "text", "PRIMARY KEY")
         columns.add_column("nombre", "text")
         columns.add_column("apellidos", "text")
-        columns.add_column("estadio", "integer")
+        columns.add_column("estadio", "float")
         columns.add_column("nacimiento", "date")
         columns.add_column("notas", "text")
         columns.add_column("telefono", "integer")

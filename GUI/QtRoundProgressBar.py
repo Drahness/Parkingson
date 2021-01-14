@@ -1,8 +1,7 @@
 import datetime
-import sys
 
 from PyQt5 import QtCore, QtGui, Qt
-from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout
+from PyQt5.QtWidgets import QWidget
 
 
 # https://stackoverflow.com/a/33583019/12725251
@@ -121,7 +120,7 @@ class QRoundProgressBar(QWidget):
 
     def paintEvent(self, event):
         outerRadius = min(self.width(), self.height())
-        #baseRect = QtCore.QRectF(1, 1, outerRadius - 2, outerRadius - 2)
+        # baseRect = QtCore.QRectF(1, 1, outerRadius - 2, outerRadius - 2)
         baseRect = QtCore.QRectF(1, 1, outerRadius - 2, outerRadius - 2)
         buffer = QtGui.QImage(outerRadius, outerRadius, QtGui.QImage.Format_ARGB32)
         buffer.fill(0)
@@ -156,7 +155,7 @@ class QRoundProgressBar(QWidget):
 
     def drawBackground(self, p, baseRect):
         """Esta linea tira error porque self.palette().background() no existia"""
-        #p.fillRect(baseRect, self.palette().brush(self.palette().Background))
+        # p.fillRect(baseRect, self.palette().brush(self.palette().Background))
 
     def drawBase(self, p, baseRect):
         bs = self.barStyle
@@ -241,7 +240,6 @@ class QRoundProgressBar(QWidget):
         p.setPen(self.palette().text().color())
         p.drawText(textRect, Qt.Qt.AlignCenter, text)
 
-
     def valueToText(self, value):
         textToDraw = self.format
 
@@ -292,11 +290,10 @@ class QRoundProgressBar(QWidget):
             self.setPalette(p)
 
 
-
 class QRoundTimer(QRoundProgressBar):
     """Clase creada para implementar el cronometro que pueda desbordar el valor, ejemplo que teniendo un valor maximo
-    de 100, si tienes 101, el valor quedaria como 1.
-    """
+        de 100, si tienes 101, el valor quedaria como 1.
+        """
 
     UF_TIME = 8
     MILISECONDS = 3
@@ -309,12 +306,17 @@ class QRoundTimer(QRoundProgressBar):
 
     def setValue(self, val):
         if isinstance(val, datetime.timedelta):
-            #super(QRoundTimer, self).setValue(val.seconds + val.microseconds / 10 ** 6)  # microseconds, in the decimals will change it
+            # super(QRoundTimer, self).setValue(val.seconds + val.microseconds / 10 ** 6)  # microseconds, in the decimals will change it
             self.value = val.seconds + val.microseconds / 10 ** 6
             self.actual_time = val
         else:
-            self.value = super(QRoundTimer, self).setValue(val % self.max)
+            self.value = super(QRoundTimer, self).setValue(self.max)
         self.update()
+
+    def getArch(self):
+        if self.max - self.min == 0:
+            return 0
+        return super().getArch()
 
     def valueFormatChanged(self):
         self.updateFlags = 0
@@ -335,7 +337,7 @@ class QRoundTimer(QRoundProgressBar):
     def valueToText(self, value):
         textToDraw = self.format
 
-        format_string = '{' + ':0={}.{}f'.format(self.decimals+3,self.decimals) + '}'
+        format_string = '{' + ':0={}.{}f'.format(self.decimals + 3, self.decimals) + '}'
 
         if self.updateFlags & self.UF_VALUE:
             textToDraw = textToDraw.replace("%v", format_string.format(value))
@@ -357,18 +359,13 @@ class QRoundTimer(QRoundProgressBar):
                                                                   seconds + self.actual_time.microseconds / (10 ** 6))
             else:
                 format_string = ("{:02}:{:02}:" + format_string).format(hours, minutes,
-                                                                       seconds + self.actual_time.microseconds / (
-                                                                                   10 ** 6))
-            #m = self.actual_time.microseconds / (10 ** 6)
+                                                                        seconds + self.actual_time.microseconds / (
+                                                                                10 ** 6))
+            # m = self.actual_time.microseconds / (10 ** 6)
             textToDraw = textToDraw.replace("%t", format_string)
 
         return textToDraw
 
-    def getArch(self):
-        max_minus_min = (self.max - self.min)
-        if max_minus_min == 0:
-            return 0
-        return 360.0 / max_minus_min * self.value % 360
     @property
     def min(self):  # in seconds and microseconds
         if not isinstance(self._min, datetime.timedelta):
@@ -403,41 +400,13 @@ class QRoundTimer(QRoundProgressBar):
         self._value = value
 
 
+class QRoundTimerRebasable(QRoundProgressBar):
+    """Clase creada para implementar el cronometro que pueda desbordar el valor, ejemplo que teniendo un valor maximo
+    de 100, si tienes 101, el arco quedaria como que tiene un valor a 1.
+    """
 
-class __TstWidget(QWidget):
-    """ Clase para probar el QRoundProgressBar, no utilizar. Solo basarse en esta"""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.bar = QRoundTimer()
-        # self.bar.setFixedSize(200, 200)
-
-        self.bar.setDataPenWidth(2)  # es la anchura de las barras exteriores
-        self.bar.setOutlinePenWidth(2)  # ??
-        self.bar.setDonutThicknessRatio(0.75)  # Solo en los PIE y DONUT, es la anchura de la barra de progreso.
-        self.bar.setDecimals(
-            0)  # le das el numero de decimales si no hay formato no hace nada. Si es 0 es sin decimales
-        # self.bar.setFormat('%v | %p %')
-        self.bar.setFormat('%v')  # Le das formato al texto, sin texto no hay formato.
-        self.bar.resetFormat()  # ResetFormat a ""
-        self.bar.setNullPosition(90)  # ??
-        self.bar.setBarStyle(QRoundProgressBar.StyleDonut)
-        # self.bar.setDataColors([(0., QtGui.QColor.fromRgb(255,0,0)), (0.5, QtGui.QColor.fromRgb(255,255,0)), (1.,
-        # QtGui.QColor.fromRgb(0,255,0))])
-        self.bar.setDataColors([(0, QtGui.QColor.fromRgb(100, 100, 0))])
-        # Metodo para darle un color, se le pasa una lista, con tuplas dentro.
-        # El primer valor es el principio, y el segundo es el color, si hay varios hace un efecto de gradiente
-
-        self.bar.setRange(0, 60)  # Minimo y maximo.
-        self.bar.setValue(40)  # Valor actual
-
-        lay = QVBoxLayout()
-        lay.addWidget(self.bar)
-        self.setLayout(lay)
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = __TstWidget()
-    window.show()
-    app.exec_()
+    def getArch(self):
+        max_minus_min = (self.max - self.min)
+        if max_minus_min == 0:
+            return 0
+        return 360.0 / max_minus_min * self.value % 360

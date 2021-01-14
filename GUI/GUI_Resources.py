@@ -110,10 +110,6 @@ def get_cronometro_bar_widget():
     return ProgressCronometro()
 
 
-def get_cronometro_widget():
-    from GUI.tab_widgets import Cronometro
-    return Cronometro()
-
 
 def get_pacient_widget_ui(to: QWidget):
     if to is None:

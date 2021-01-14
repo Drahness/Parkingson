@@ -3,11 +3,15 @@ from datetime import timedelta
 from sqlitedao import ColumnDict, SqliteDao
 
 import Utils
+from database.database_controller import Connection
 from database.entities import Entity, Usuari
 
 
 class Settings(Entity):
     instance = ...
+    @property
+    def DEFAULT_USER(self):
+        return "Admin"
 
     def __init__(self, dictionary: dict, user: str):
         super().__init__(self, dictionary)
@@ -27,7 +31,9 @@ class Settings(Entity):
         self.locale = dictionary.get('locale')
 
     @classmethod
-    def init_default(cls, user):
+    def init_default(cls, user:str=None):
+        if user is None:
+            user = cls.DEFAULT_USER
         dictionary = {
             "lap0_name": "Marxa",
             "lap1_name": "Equilibri",
@@ -41,10 +47,15 @@ class Settings(Entity):
             "lap2_mediumhard_start": timedelta(seconds=13, microseconds=340),
             "locale": "Es"
         }
-        cls(dictionary=dictionary, user=user)
+        return Settings(dictionary=dictionary, user=user)
 
-    def insert(self, conexion) -> any:
-        """The settings instance can only be inserted once and only during the creation of the database."""
+    def insert(self, conexion: Connection) -> any:
+        if conexion.has_users():
+            results = conexion.execute(f"SELECT * FROM {self.get_tablename()} WHERE username like {self.user}")
+            for val,key in self.dictionary.items():
+                if {"key":key,"value":val,"username":self.user} in results:
+                    pass
+                    # TODO
 
         pass
 
@@ -66,15 +77,22 @@ class Settings(Entity):
     @classmethod
     def load(cls, connection) -> list:
         dao: SqliteDao = connection.dao
-        dao.search_table(cls.get_tablename(),)
-        settings = Settings()
-        return super().load(connection)
+        settingsDictionary = {}
+        if connection.has_users():
+            user = connection.user
+        else:
+            user = cls.DEFAULT_USER
+        results = dao.search_table(cls.get_tablename(), {"username": user})
+        for result in results:
+            settingsDictionary[result.get("key")] = result.get("value")
+        settings = Settings(settingsDictionary, user)
+        return [settings]
 
     @staticmethod
     def get_columns_dict() -> tuple or ColumnDict:
         columns = ColumnDict()
         columns.add_column("key", "text", "PRIMARY KEY")
         columns.add_column("value", "text")
-        columns.add_column("user", "text", )
+        columns.add_column("username", "text", )
         columns.add_column("FOREIGN KEY(pacient_id)",
                            f"REFERENCES {Usuari.get_tablename()}(username)")

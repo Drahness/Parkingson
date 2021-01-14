@@ -1,10 +1,10 @@
 import datetime
 
-from PyQt5.QtGui import QColor
 from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QObject
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QApplication, QSizePolicy
 
-from GUI.QtRoundProgressBar import QRoundTimer, QRoundProgressBar
+from GUI.QtRoundProgressBar import QRoundProgressBar, QRoundTimer
 
 
 class Signaler(QObject):
@@ -74,8 +74,10 @@ class ProgressCronometro(QRoundTimer):
         self.setFormat('%t')
         self.setDataColors(
             [
-                (0.0, QColor.fromRgb(0, 0, 0)),
+                (0., QColor.fromRgb(0, 255, 0)),
+                (0.45, QColor.fromRgb(255, 255, 0)),
+                (0.90, QColor.fromRgb(255, 0, 0))
             ])
         self.min = 0.0
         self.value = 0.0
-        self.max = 0.0
+        self.max = 10.0

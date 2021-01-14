@@ -34,7 +34,7 @@ class LoginRegisterWindow(QDialog):
         tab.addTab(self.login_widget, "Login")
         tab.addTab(self.register_widget, "Registro")
         self.setLayout(layout)
-
+        self.debug = False
         self.login_widget.positive.clicked.connect(self.__positive_login)
         self.login_widget.negative.clicked.connect(self.__cancel_buttons)
         self.register_widget.Rnegative.clicked.connect(self.__cancel_buttons)
@@ -56,7 +56,7 @@ class LoginRegisterWindow(QDialog):
             raise AttributeError("You need to set the property self.login_validator to a method parametrized with 2 "
                                  "arguments username and password")
         self.result = {"order": "login",
-                       "username": self.login_widget.usernamefield.text(),
+                       "username": "Admin" if self.debug else self.login_widget.usernamefield.text(),
                        "password": Utils.cypher(self.login_widget.passwordfield.text())
                        }
         self.result["result"] = self._login_validator(self.result["username"], self.result["password"])
