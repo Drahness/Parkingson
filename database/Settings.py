@@ -9,6 +9,7 @@ from database.entities import Entity, Usuari
 
 class Settings(Entity):
     instance = ...
+    
     @property
     def DEFAULT_USER(self):
         return "Admin"

@@ -68,7 +68,7 @@ class CentralWidgetParkingson(QWidget):
         self.pacients_list_view = QListView()
         self.pacients_list_view.resize(200, 400)
         self.parent_tab_widget = QTabWidget()
-        self.pacients_tab: PacientWidget = get_pacient_widget()  # Tab1 Color
+        self.pacients_tab: PacientWidget = PacientWidget()  # Tab1 Color
 
         #self.rendimiento_tab = MplCanvas(self, width=5, height=4, dpi=100)  # Tab2 Grafica
         self.rendimiento_tab = PerformanceTab()

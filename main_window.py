@@ -3,9 +3,10 @@ import sys
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThreadPool, pyqtSignal
-from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy
+from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy, QScrollArea
 
 from GUI.MenuBar import MenuBar, ToolBar
+from GUI.main_window_javi import CentralWidgetParkingson
 from database.database_controller import Connection
 from database.entities import Usuari, Pacient
 from database.models import PacientsListModel, ListModel, PruebasListModel
@@ -16,6 +17,7 @@ class UI(QMainWindow):
     """ Clase que importara los ajustes de Javi. Con la main window"""
     pacientSelected = pyqtSignal(Pacient, int)
     changeStatusBar = pyqtSignal(str, int)
+    hideViews = pyqtSignal(bool)
 
     def __init__(self, debug=False):
         super().__init__()
@@ -32,7 +34,7 @@ class UI(QMainWindow):
         self.user_credentials = {"result": False}
 
         # Recogemos el Central widget, lo añadimos y luego lo inicializamos
-        self.central = GUI_Resources.get_main_widget()
+        self.central = CentralWidgetParkingson()
         self.setCentralWidget(self.central)
 
         self.menu_bar = MenuBar()
@@ -58,8 +60,6 @@ class UI(QMainWindow):
         self.menu_bar.pruebas.setEnabled(False)
 
         self.menu_bar.edit_pacient.setEnabled(False)
-        self.menu_bar.del_pacient.setEnabled(False)
-
         self.central.pacients_tab.set_signal_pacient_selected(self.pacientSelected)
         self.central.cronometro_tab.set_signal_pacient_selected(self.pacientSelected)
         self.central.rendimiento_tab.set_signal_pacient_selected(self.pacientSelected)
@@ -72,6 +72,24 @@ class UI(QMainWindow):
         self.central.cronometro_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
         self.central.rendimiento_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
 
+        self.hideViews.connect(self.hide_view)
+
+        self.menu_bar.view_pacientes.setCheckable(True)
+        self.menu_bar.view_toolbar.setCheckable(True)
+        self.menu_bar.view_crono.setCheckable(True)
+        self.menu_bar.view_rendimiento.setCheckable(True)
+
+        self.menu_bar.view_pacientes.setChecked(True)
+        self.menu_bar.view_toolbar.setChecked(True)
+        self.menu_bar.view_crono.setChecked(True)
+        self.menu_bar.view_rendimiento.setChecked(True)
+
+        self.menu_bar.view_pacientes.changed.connect(self.hide_view)
+        self.menu_bar.view_toolbar.changed.connect(self.hide_view)
+        self.menu_bar.view_crono.changed.connect(self.hide_view)
+        self.menu_bar.view_rendimiento.changed.connect(self.hide_view)
+
+        self.central.parent_tab_widget.setEnabled(False)
 
         # INIT Tab Components
         self.central.pacients_tab.init()
@@ -82,8 +100,7 @@ class UI(QMainWindow):
         pacient_index = self.central.parent_tab_widget.indexOf(self.central.pacients_tab)
         self.central.parent_tab_widget.setCurrentIndex(pacient_index)
         self.iconSizeChanged.connect(self.iconSizeChanged)
-        ##self.setFixedHeight(800)
-        # self.setFixedWidth(1180)
+
         self.credentials()
         if self.user_credentials["result"]:
             self.setCentralWidget(self.central)
@@ -108,11 +125,50 @@ class UI(QMainWindow):
     def on_listview_pacient_click(self, *args):
         """Slot for clicks in the listview, listens to the builtin Signal of clicked"""
         row = args[0].row()
+        if not self.central.parent_tab_widget.isEnabled():
+            self.central.parent_tab_widget.setEnabled(True)
         p = self.listview_model.instance_class.get_object(row)
         self.changeStatusBar.emit(f"Selecionado: {p}", 1)
         self.pacientSelected.emit(p, row)
         self.menu_bar.edit_pacient.setEnabled(True)
         self.menu_bar.del_pacient.setEnabled(True)
+
+    def hide_view(self,*args):
+        name = self.sender().objectName()
+        if "action_view_toolbar" == name:
+            if not self.sender().isChecked():
+                self.removeToolBar(self.toolbar)
+            else:
+                self.addToolBar(self.toolbar)
+                self.toolbar.setVisible(True)
+        elif "action_view_crono" == name:
+            self.central.cronometro_tab.setVisible(self.sender().isChecked())
+            self.central.parent_tab_widget.currentChanged.emit(self.central.parent_tab_widget.currentIndex())
+            if not self.sender().isChecked():
+                self.central.parent_tab_widget.setTabVisible(2, False)
+                self.central.cronometro_tab.setVisible(self.central.cronometro_tab.is_on_focus())
+            else:
+                self.central.parent_tab_widget.setTabVisible(2, True)
+                self.central.cronometro_tab.setVisible(self.central.cronometro_tab.is_on_focus())
+            pass
+        elif "action_view_pacientes" == name:
+            self.central.pacients_tab.setVisible(self.sender().isChecked())
+            self.central.parent_tab_widget.currentChanged.emit(self.central.parent_tab_widget.currentIndex())
+            if not self.sender().isChecked():
+                self.central.parent_tab_widget.setTabVisible(0, False)
+                self.central.pacients_tab.setVisible(self.central.cronometro_tab.is_on_focus())
+            else:
+                self.central.parent_tab_widget.setTabVisible(0, True)
+                self.central.pacients_tab.setVisible(self.central.cronometro_tab.is_on_focus())
+        elif "action_view_rendimiento" == name:
+            self.central.rendimiento_tab.setVisible(self.sender().isChecked())
+            self.central.parent_tab_widget.currentChanged.emit(self.central.parent_tab_widget.currentIndex())
+            if not self.sender().isChecked():
+                self.central.parent_tab_widget.setTabVisible(1, False)
+                self.central.rendimiento_tab.setVisible(self.central.rendimiento_tab.is_on_focus())
+            else:
+                self.central.parent_tab_widget.setTabVisible(1, True)
+                self.central.rendimiento_tab.setVisible(self.central.rendimiento_tab.is_on_focus())
 
     @staticmethod
     def get_instance():

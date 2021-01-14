@@ -1,12 +1,13 @@
 import sys
 
-from PyQt5.QtWidgets import QMenuBar, QApplication, QAction, QMenu,  QToolBar
+from PyQt5.QtWidgets import QMenuBar, QApplication, QAction, QMenu, QToolBar
 
 from GUI.actions import StaticActions
 
 
 def _rep(string: str) -> str:
     return string.replace("&", "").replace(" ", "_").lower()
+
 
 class ToolBar(QToolBar):
     def __init__(self):
@@ -40,26 +41,7 @@ class MenuBar(QMenuBar):
     _test = "&Pruebas"
     _settings = "&Ajustes"
     _help = "&Ayuda"
-
-    @property
-    def pacients_str(self):
-        return _rep(MenuBar._pacients)
-
-    @property
-    def data_str(self):
-        return _rep(MenuBar._data)
-
-    @property
-    def test_str(self):
-        return _rep(MenuBar._test)
-
-    @property
-    def settings_str(self):
-        return _rep(MenuBar._settings)
-
-    @property
-    def help_str(self):
-        return _rep(MenuBar._help)
+    _view = "&Vista"
 
     def __init__(self) -> None:
         super().__init__()
@@ -69,6 +51,7 @@ class MenuBar(QMenuBar):
         self.pruebas = Menu(MenuBar._test)
         self.ajustes = Menu(MenuBar._settings)
         self.ayuda = Menu(MenuBar._help)
+        self.vista = Menu(MenuBar._view)
         # PACIENTES
         self.add_pacient = self.pacients.addAction(StaticActions.add_pacient_action)
         self.edit_pacient = self.pacients.addAction(StaticActions.edit_pacient_action)
@@ -84,16 +67,21 @@ class MenuBar(QMenuBar):
         self.del_prueba = self.pruebas.addAction(StaticActions.del_prueba_action)
         # AYUDA
         self.creditos = self.ayuda.addAction(StaticActions.creditos_action)
+        # VISTA
+        self.view_toolbar: QAction = self.vista.addAction(StaticActions.vista_Toolbar)
+        self.view_crono: QAction = self.vista.addAction(StaticActions.vista_crono)
+        self.view_rendimiento: QAction = self.vista.addAction(StaticActions.vista_rendimiento)
+        self.view_pacientes: QAction = self.vista.addAction(StaticActions.vista_pacientes)
         # AÑADIR MENUS
         self.addMenu(self.pacients)
         self.addMenu(self.data)
         self.addMenu(self.pruebas)
         self.addMenu(self.ajustes)
         self.addMenu(self.ayuda)
+        self.addMenu(self.vista)
 
 
 class Menu(QMenu):
-
     def __init__(self, title: str = ""):
         super().__init__(title)
 

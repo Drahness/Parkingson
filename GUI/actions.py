@@ -20,8 +20,15 @@ class StaticActions:
     mod_prueba_action = QAction("Modificar prueba")
     del_prueba_action = QAction("Eliminar prueba")
     creditos_action = QAction("Creditos")
+    vista_Toolbar = QAction("Barra de herramientas.")
+    vista_crono = QAction("Vista cronometro.")
+    vista_pacientes = QAction("Vista pacientes.")
+    vista_rendimiento = QAction("Vista rendimiento.")
 
-
+    vista_Toolbar.setObjectName("action_view_toolbar")
+    vista_crono.setObjectName("action_view_crono")
+    vista_pacientes.setObjectName("action_view_pacientes")
+    vista_rendimiento.setObjectName("action_view_rendimiento")
 
     add_pacient_action.setObjectName("add_pacient_action")
     edit_pacient_action.setObjectName("edit_pacient_action")

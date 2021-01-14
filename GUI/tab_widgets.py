@@ -6,7 +6,7 @@ import matplotlib
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QWidget, QCalendarWidget, QDateEdit, QSizePolicy, QListView, QLabel
+from PyQt5.QtWidgets import QWidget, QCalendarWidget, QDateEdit, QSizePolicy, QListView, QLabel, QScrollArea
 from matplotlib import dates, ticker as ticker, pyplot as pyplot
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.dates import AutoDateLocator, ConciseDateFormatter, date2num
@@ -17,7 +17,6 @@ from GUI.GUI_Resources import get_pacient_widget_ui, get_error_dialog_msg, get_c
 from GUI.cronometro import Timer
 from database.entities import Pacient, Prueba
 from database.models import PruebasListModel
-from main_window import UI
 
 matplotlib.use('Qt5Agg')
 
@@ -35,6 +34,8 @@ class PacientInterface:
         self.currentChangedSignal = None
         pass
 
+    def is_on_focus(self) -> bool:
+        return self.on_focus
     def getsignal_pacient_selected(self) -> pyqtSignal:
         return self.pacientSelectedSignal
 
@@ -72,14 +73,15 @@ class PacientInterface:
         self.sender().currentWidget().on_focus = True
 
 
-class PacientWidget(QWidget, PacientInterface):
+class PacientWidget(QWidget,PacientInterface):
     default_date = datetime.date(1990, 12, 12)
     finishedSignal: pyqtSignal = pyqtSignal(bool)  # maybe another name is better
     resultSignal: pyqtSignal = pyqtSignal(bool, int)
     """ bool if canceled or accepted. int, the row of the pacient or -1 if new pacient """
 
     def __init__(self):
-        super().__init__()
+        PacientInterface.__init__(self)
+        QWidget.__init__(self)
         get_pacient_widget_ui(self)
         self.on_focus = True  # Este sale por defecto
         self.calendarWidget.clicked.connect(self.on_calendar_changed)
@@ -240,6 +242,7 @@ class Cronometro(QWidget, PacientInterface):
         self.start_and_lap.setText("Start")
 
     def start_and_lap_slot(self):
+        from main_window import UI
         if self.status == self.STOPPED:
             self.sender().emit_again = True
             self.status = self.STARTED
