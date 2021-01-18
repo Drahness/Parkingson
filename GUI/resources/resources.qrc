@@ -1,0 +1,21 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>no_image.png</file>
+    <file alias="add">anadir.png</file>
+    <file alias="del">borrar.png</file>
+    <file alias="edit">editar.png</file>
+    <file alias="save">save.png</file>
+  </qresource>
+  <qresource prefix="dialog">
+    <file>confirmation_dialog.ui</file>
+    <file>login_dialog.ui</file>
+    <file>register_dialog.ui</file>
+  </qresource>
+  <qresource prefix="widget">
+    <file>basic_form.ui</file>
+    <file>cronometro.ui</file>
+    <file>graph_widget.ui</file>
+    <file>pacients_widget.ui</file>
+    <file>pacients_widget_noeditable.ui</file>
+  </qresource>
+</RCC>
