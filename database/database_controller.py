@@ -7,7 +7,10 @@ from typing import Type
 import Utils
 from collections import Iterable
 
-from .entities import Entity, Pacient, Usuari, Prueba
+from .entities_interface import Entity
+from .prueba import Prueba
+from .usuari import Usuari
+from .pacient import Pacient
 
 
 class Connection:

@@ -1,1 +1,1 @@
-__all__ = ['LoginForm',"UIs","GUI_Resources"]
+__all__ = ['LoginForm', "resources", "GUI_Resources"]

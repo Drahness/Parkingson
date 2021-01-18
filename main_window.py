@@ -8,7 +8,8 @@ from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy
 from GUI.MenuBar import MenuBar, ToolBar
 from GUI.main_window_javi import CentralWidgetParkingson
 from database.database_controller import Connection
-from database.entities import Usuari, Pacient
+from database.usuari import Usuari
+from database.pacient import Pacient
 from database.models import PacientsListModel, ListModel, PruebasListModel
 from GUI import GUI_Resources
 
@@ -36,7 +37,8 @@ class UI(QMainWindow):
         # Recogemos el Central widget, lo añadimos y luego lo inicializamos
         self.central = CentralWidgetParkingson(debug=debug)
         self.setCentralWidget(self.central)
-
+        self.setMaximumSize(1066,830)
+        self.setMinimumSize(1066, 830)
         self.menu_bar = MenuBar()
         self.status_bar = QStatusBar()
         self.toolbar = ToolBar()
@@ -135,7 +137,7 @@ class UI(QMainWindow):
         self.menu_bar.edit_pacient.setEnabled(True)
         self.menu_bar.del_pacient.setEnabled(True)
 
-    def hide_view(self,*args):
+    def hide_view(self,args):
         name = self.sender().objectName()
         if "action_view_toolbar" == name:
             if not self.sender().isChecked():
@@ -171,7 +173,7 @@ class UI(QMainWindow):
             else:
                 self.central.parent_tab_widget.setTabVisible(1, True)
                 self.central.rendimiento_tab.setVisible(self.central.rendimiento_tab.is_on_focus())
-        #self.update()
+        #slf.update()
 
     @staticmethod
     def get_instance():
@@ -204,6 +206,7 @@ class UI(QMainWindow):
         self.menu_bar.edit_pacient.triggered.emit()
 
 
+
     def changeStatus(self, str, seconds):
         self.status_bar.showMessage(str, seconds * 1000)
 
@@ -216,7 +219,7 @@ class UI(QMainWindow):
             self.central.pacients_tab.set_enabled(True)
             self.central.parent_tab_widget.setEnabled(True)
         elif sender_name == "del_pacient_action":
-            if len(self.listview_model.items) > 0 and self.central.pacients_tab.pacient_selected() :
+            if len(self.listview_model.items) > 0 and self.central.pacients_tab.pacient_selected()  :
                 pacient = self.listview_model.items[self.central.pacients_tab.index]
                 dialog = GUI_Resources.get_confirmation_dialog_ui(f"Quieres eliminar el usuario {pacient}")
                 if dialog.exec_() == 1:

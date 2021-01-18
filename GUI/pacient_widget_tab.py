@@ -1,17 +1,23 @@
 import datetime
 import re
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QIntValidator
+import cv2
+import numpy
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import pyqtSignal, QPoint
+from PyQt5.QtGui import QIntValidator, QPixmap
 from PyQt5.QtWidgets import QWidget, QCalendarWidget, QDateEdit, QLabel, QComboBox, QLineEdit, QDoubleSpinBox, \
-    QPushButton
+    QPushButton, QTabWidget, QToolButton
 from VideoCapture import Device
-from GUI.GUI_Resources import get_pacient_widget_ui
+from GUI.GUI_Resources import get_pacient_widget_ui, get_no_image_pixmap
+from GUI.MenuBar import Menu
+from GUI.actions import StaticActions
 from GUI.tab_widgets import PacientInterface
-from database.entities import Pacient
+from database.pacient import Pacient
 
 
 class PacientWidget(QWidget, PacientInterface):
+    no_image = get_no_image_pixmap()
     default_date = datetime.date(1990, 12, 12)
     finishedSignal: pyqtSignal = pyqtSignal(bool)  # maybe another name is better
     resultSignal: pyqtSignal = pyqtSignal(bool, int)
@@ -21,13 +27,13 @@ class PacientWidget(QWidget, PacientInterface):
         PacientInterface.__init__(self)
         QWidget.__init__(self)
         get_pacient_widget_ui(self)
-        #
+        # Variables.
         self.combo_items = ["", "0", "1", "1.5", "2", "2.5", "3", "4", "5"]
         self.gender_items = ["", "Hombre", "Mujer"]
         self.debug = debug
         self.on_focus = True
         # Declaramos los objetos
-        self.calendarWidget: QCalendarWidget = self.calendarWidget
+        self.nacimiento_calendar: QCalendarWidget = self.nacimiento_calendar
         self.nacimiento_field: QDateEdit = self.nacimiento_field
         self.estadio_combo_box: QComboBox = self.estadio_combo_box
         self.label_estadio: QLabel = self.label_estadio
@@ -39,7 +45,8 @@ class PacientWidget(QWidget, PacientInterface):
         self.direccion_edit: QLineEdit = self.direccion_edit
         self.email_edit: QLineEdit = self.email_edit
         self.consejo_imc: QLabel = self.consejo_imc
-
+        self.diagnostico_tool: QToolButton = self.diagnostico_tool
+        self.nacimiento_tool: QToolButton = self.nacimiento_tool
         self.error_apellidos: QLabel = self.error_apellidos
         self.error_dni: QLabel = self.error_dni
         self.error_estadio: QLabel = self.error_estadio
@@ -47,32 +54,67 @@ class PacientWidget(QWidget, PacientInterface):
         self.error_telefono: QLabel = self.error_telefono
         self.error_gender: QLabel = self.error_gender
         self.error_email: QLabel = self.error_email
-
         self.gender_combo_box: QComboBox = self.gender_combo_box
         self.diagnostico_date_edit: QDateEdit = self.diagnostico_date_edit
+        self.cara_image: QLabel= self.cara_image
+        self.cuerpo_image: QLabel = self.cuerpo_image
+        self.current_calendar: QLabel = self.current_calendar
+        self.diagnostico_calendar: QCalendarWidget = self.diagnostico_calendar
+        self.accept_button: QPushButton = self.accept_button
+        self.cancel_button: QPushButton = self.cancel_button
+        self.foto_tab: QTabWidget = self.foto_tab
+        self.context_button: QToolButton = self.context_button
+        # Fin declaracion
+        # Conexiones
         self.peso_edit.editingFinished.connect(self.calculate_imc)
         self.altura_edit.editingFinished.connect(self.calculate_imc)
         self.peso_edit.valueChanged.connect(self.calculate_imc)
         self.altura_edit.valueChanged.connect(self.calculate_imc)
+        self.accept_button.clicked.connect(self.buttons)
+        self.cancel_button.clicked.connect(self.buttons)
+        # Fin conexion
+        # Conexion Calendarios.
+        self.nacimiento_calendar.clicked.connect(self.on_calendar_changed)
+        self.nacimiento_field.dateChanged.connect(self.on_calendar_changed)
+        self.diagnostico_date_edit.dateChanged.connect(self.on_calendar_changed)
+        self.diagnostico_calendar.clicked.connect(self.on_calendar_changed)
+        self.diagnostico_tool.clicked.connect(self.activate_calendar)
+        self.nacimiento_tool.clicked.connect(self.activate_calendar)
+        # Fin conexion calendarios
+        # Formateamos ciertas cosas.
         self.gender_combo_box.addItems(self.gender_items)
         self.estadio_combo_box.addItems(self.combo_items)
-        self.calendarWidget.clicked.connect(self.on_calendar_changed)
-        self.nacimiento_field.dateChanged.connect(self.on_calendar_changed)
-
+        self.diagnostico_calendar.setVisible(False)
+        self.nacimiento_calendar.setVisible(False)
         self.altura_edit.setDecimals(2)
         self.peso_edit.setDecimals(2)
         self.altura_edit.setSingleStep(0.01)
         self.peso_edit.setRange(0, 500)
-
         self.altura_edit.setRange(0, 3.0)
-        self.accept_button.clicked.connect(self.buttons)
-        self.cancel_button.clicked.connect(self.buttons)
-        self.accept_button: QPushButton = self.accept_button
-        self.cancel_button: QPushButton = self.cancel_button
 
+        self.menu = Menu()
+        self.action_select_pic = self.menu.addAction(StaticActions.seleccionar_foto)
+        self.action_select_pic.triggered.connect(self.take_picture)
+        self.action_take_pic = self.menu.addAction(StaticActions.tomar_foto)
+        self.action_take_pic.triggered.connect(self.take_picture)
+
+        self.context_button.clicked.connect(self.popup_context_menu)
         self.consejo_imc.setVisible(False)  # TODO Cambiar cuando acabe con el objeto settings
         self.pacientSelected(None)
         self.set_enabled(False)
+
+    def popup_context_menu(self,*args):
+        widget = self.sender()
+        x = 0
+        y = 0
+        while widget.parent() is not None:
+            x += widget.pos().x()
+            y += widget.pos().y()
+            widget = widget.parent()
+        x += widget.pos().x() + 15
+        y += widget.pos().y() - 10
+        point = QPoint(x,y)
+        self.menu.popup(point)
 
     def save_pacient(self):
         """Updates the instance."""
@@ -86,14 +128,33 @@ class PacientWidget(QWidget, PacientInterface):
         self.pacient.notas = self.notas_field.toPlainText()
         self.pacient.estadio = self.estadio_combo_box.itemText(combo_index)
         self.pacient.direccion = self.direccion_edit.text()
-        self.pacient.fecha_diagnostico = self.nacimiento_field.date()
+        self.pacient.fecha_diagnostico = self.diagnostico_date_edit.date()
         self.pacient.altura = self.altura_edit.value()
         self.pacient.peso = self.peso_edit.value()
         self.pacient.genero = self.gender_combo_box.itemText(gender_index)
         self.pacient.mail = self.email_edit.text()
         self.pacient.telefono = self.telefono_edit.text()
-        self.pacient.fotocara = 0x000000  # TODO
-        self.pacient.fotocuerpo = 0x000000  # TODO
+        barray_body = QtCore.QByteArray()
+        barray_face = QtCore.QByteArray()
+        buff_body = QtCore.QBuffer(barray_body)
+        buff_face = QtCore.QBuffer(barray_face)
+        buff_face.open(QtCore.QIODevice.WriteOnly)
+        buff_body.open(QtCore.QIODevice.WriteOnly)
+        if self.cara_image.pixmap() != self.no_image:
+            pass
+            ok = self.cara_image.pixmap().save(buff_face, "PNG")
+            assert ok
+            self.pacient.fotocara = barray_face.data()
+        else:
+            self.pacient.fotocara = None  # TODO
+
+        if self.cuerpo_image.pixmap() != self.no_image:
+
+            ok = self.cuerpo_image.pixmap().save(buff_body, "PNG")
+            assert ok
+            self.pacient.fotocuerpo = barray_body.data()
+        else:
+            self.pacient.fotocuerpo = None  # TODO
         return self.pacient
 
     def check_input(self):
@@ -165,13 +226,13 @@ class PacientWidget(QWidget, PacientInterface):
                 nacimiento = pacient.get("nacimiento", default=self.default_date)
                 notas = pacient.get("notas")
                 genero = pacient.get("genero")
-                altura = pacient.get("altura")
+                altura = pacient.get("altura",default=0)
                 mail = pacient.get("mail")
                 fotocuerpo = pacient.get("fotocuerpo")
                 fotocara = pacient.get("fotocara")
                 telefono = pacient.get("telefono")
                 direccion = pacient.get("direccion")
-                peso = pacient.get("peso")
+                peso = pacient.get("peso",default=0)
                 fecha_diagnostico = pacient.get("fecha_diagnostico", default=self.default_date)
             elif isinstance(pacient, Pacient):
                 dni = pacient.dni
@@ -181,14 +242,14 @@ class PacientWidget(QWidget, PacientInterface):
                 nacimiento = pacient.nacimiento or self.default_date
                 notas = pacient.notas
                 genero = pacient.genero
-                altura = pacient.altura
+                altura = pacient.altura or 0
                 mail = pacient.mail
                 fotocuerpo = pacient.fotocuerpo  # TODO
                 fotocara = pacient.fotocara  # TODO
                 telefono = pacient.telefono
                 direccion = pacient.direccion
-                peso = pacient.peso
-                fecha_diagnostico = pacient.fecha_diagnostico
+                peso = pacient.peso or 0
+                fecha_diagnostico = pacient.fecha_diagnostico or self.default_date
             else:
                 raise AssertionError()
         else:
@@ -203,15 +264,19 @@ class PacientWidget(QWidget, PacientInterface):
             mail = None
             fotocuerpo = None  # TODO
             fotocara = None  # TODO
-            telefono = None
+            telefono = ""
             direccion = None
             peso = 0
             fecha_diagnostico = self.default_date
-        if self.combo_items.count(estadio):
-            estadio_index = self.combo_items.index(str(pacient.estadio))
+
+        if estadio is not None and self.combo_items.count(str(estadio)):
+            estadio_index = self.combo_items.index(str(estadio))
         else:
-            estadio_index = 0
-        if self.combo_items.count(genero):
+            if isinstance(estadio,float) and estadio.is_integer():
+                estadio_index = self.combo_items.index(str(estadio.as_integer_ratio()[0]))
+            else:
+                estadio_index = 0
+        if self.gender_items.count(genero):
             gender_index = self.gender_items.index(pacient.genero)
         else:
             gender_index = 0
@@ -224,7 +289,7 @@ class PacientWidget(QWidget, PacientInterface):
         self.gender_combo_box.setCurrentIndex(gender_index)
         self.nacimiento_field.setDate(nacimiento)
         self.notas_field.setText(notas)
-        self.calendarWidget.setSelectedDate(nacimiento)
+        self.nacimiento_calendar.setSelectedDate(nacimiento)
         self.telefono_edit.setValidator(QIntValidator())
         self.diagnostico_date_edit.setDate(fecha_diagnostico)
         self.direccion_edit.setText(direccion)
@@ -233,6 +298,16 @@ class PacientWidget(QWidget, PacientInterface):
         self.gender_combo_box.itemText(gender_index)
         self.email_edit.setText(mail)
         self.telefono_edit.setText(str(telefono))
+        if fotocara is not None and isinstance(fotocara,bytes) and fotocara != 0x0:
+            pix = QPixmap().loadFromData(fotocara)
+            self.cara_image.setPixmap(pix)
+        else:
+            self.cara_image.setPixmap(self.no_image)
+        if fotocuerpo is not None and isinstance(fotocuerpo,bytes) and fotocara != 0x0:
+            pix = QPixmap().loadFromData(fotocuerpo)
+            self.cuerpo_image.setPixmap(pix)
+        else:
+            self.cuerpo_image.setPixmap(self.no_image)
         self.calculate_imc()
 
     def set_enabled(self, enabled: bool):
@@ -242,7 +317,8 @@ class PacientWidget(QWidget, PacientInterface):
         self.estadio_combo_box.setEnabled(enabled)
         self.nacimiento_field.setEnabled(enabled)
         self.notas_field.setEnabled(enabled)
-        self.calendarWidget.setEnabled(enabled)
+        self.nacimiento_calendar.setEnabled(enabled)
+        self.diagnostico_calendar.setEnabled(enabled)
         self.cancel_button.setVisible(enabled)
         self.accept_button.setVisible(enabled)
         self.estadio_combo_box.setEnabled(enabled)
@@ -257,12 +333,10 @@ class PacientWidget(QWidget, PacientInterface):
         self.error_dni.setEnabled(enabled)
         self.error_estadio.setEnabled(enabled)
         self.error_nombre.setEnabled(enabled)
+        self.context_button.setEnabled(enabled)
         self.imc_result.setEnabled(enabled)
+        self.foto_tab.setEnabled(enabled)
         self.finishedSignal.emit(not enabled)
-
-    def on_calendar_changed(self, *args):
-        self.calendarWidget.setSelectedDate(args[0])
-        self.nacimiento_field.setDate(args[0])
 
     def pacient_selected(self) -> bool:
         return self.pacient is not None
@@ -271,11 +345,79 @@ class PacientWidget(QWidget, PacientInterface):
         peso = self.peso_edit.value()
         altura = self.altura_edit.value()
         if altura != 0:
-            self.imc_result.setText(str(peso / (altura * altura)))
+            self.imc_result.setText(str(round(peso / (altura * altura),3)))
         else:
             self.imc_result.setText("NaN")
         # https://www.seedo.es/index.php/pacientes/calculo-imc
 
-    def take_picture(self): # TODO
-        cam = Device()
-        cam.saveSnapshot('image.jpg');
+    def take_picture(self):  # TODO
+        if self.sender() == self.action_take_pic:
+            cam = cv2.VideoCapture(0)
+            bytearr = None
+            while True:
+                ret, frame = cam.read()
+                if not ret:
+                    print("failed to grab frame")
+                    break
+                show = cv2.imshow("Pulsa ESC para salir. Espacio para tomar la foto", frame)
+                k = cv2.waitKey(1)
+                if k % 256 == 27:
+                    break
+                elif k % 256 == 32:
+                    buffer = cv2.imencode("toto.jpg", frame)[1]
+                    bytearr: numpy.ndarray = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
+                    print(bytearr)
+                    print(type(bytearr))
+                    print(buffer)
+                    print(type(buffer))
+                    cam.release()
+                    cv2.destroyAllWindows()
+                    break
+            if bytearr is not None:
+                pixmap = QPixmap()
+                pixmap.loadFromData(bytearr.tobytes())
+                if self.foto_tab.currentWidget() == self.cara_tab and bytearr is not None:
+                    self.cara_image.setPixmap(pixmap)
+                    pass
+                elif self.foto_tab.currentWidget() == self.cuerpo_tab is not None:
+                    self.cuerpo_image.setPixmap(pixmap)
+            else:
+                pass
+
+        elif self.sender() == self.action_select_pic:
+            pass
+        else:
+            pass
+
+    def activate_calendar(self):
+        name = self.sender().objectName()
+        if name == "nacimiento_tool":
+            if self.nacimiento_calendar.isVisible():
+                self.nacimiento_calendar.setVisible(False)
+                self.current_calendar.setVisible(False)
+            else:
+                self.current_calendar.setVisible(True)
+                self.current_calendar.setText("Fecha de nacimiento:")
+                self.diagnostico_calendar.setVisible(False)
+                self.nacimiento_calendar.setVisible(True)
+        if name == "diagnostico_tool":
+            if self.diagnostico_calendar.isVisible():
+                self.diagnostico_calendar.setVisible(False)
+                self.current_calendar.setVisible(False)
+            else:
+                self.current_calendar.setVisible(True)
+                self.nacimiento_calendar.setVisible(False)
+                self.current_calendar.setText("Fecha de diagnostico:")
+                self.diagnostico_calendar.setVisible(True)
+
+    def on_calendar_changed(self, *args):
+        name = self.sender().objectName()
+        if name == self.nacimiento_calendar.objectName() or name == self.nacimiento_field.objectName():
+            self.nacimiento_calendar.setSelectedDate(args[0])
+            self.nacimiento_field.setDate(args[0])
+        elif name == self.diagnostico_calendar.objectName() or name == self.diagnostico_date_edit.objectName():
+            self.diagnostico_calendar.setSelectedDate(args[0])
+            self.diagnostico_date_edit.setDate(args[0])
+
+
+

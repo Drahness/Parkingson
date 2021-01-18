@@ -2,7 +2,7 @@ import datetime
 
 from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QObject
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QApplication, QSizePolicy
+from PyQt5.QtWidgets import QApplication, QSizePolicy, QFrame
 
 from GUI.QtRoundProgressBar import QRoundProgressBar, QRoundTimer
 
@@ -67,6 +67,7 @@ class ProgressCronometro(QRoundTimer):
         self.setBarStyle(QRoundProgressBar.StyleDonut)
         # self.setBackgroundRole()
         self.setDataPenWidth(2)
+        self.setMinimumSize(200,200)
         self.setOutlinePenWidth(2)
         self.setDonutThicknessRatio(0.95)
         self.setDecimals(self.MILISECONDS)

@@ -3,7 +3,7 @@ import traceback
 from pathlib import Path
 
 from PyQt5 import uic
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QDialog, QWidget, QMessageBox
 
 paths = Path(os.path.abspath(__name__)).parents
@@ -18,17 +18,18 @@ if MAIN_FOLDER is None:
 
 from . import resources
 
-GUI_FOLDER = MAIN_FOLDER / Path("GUI")
-UIS_FOLDER = GUI_FOLDER / Path("UIs")
-LOGIN_DIALOG = UIS_FOLDER / Path("login_dialog.ui")
-REGISTER_DIALOG = UIS_FOLDER / Path("register_dialog.ui")
-ERROR_DIALOG = UIS_FOLDER / Path("error_dialog.ui")
-CRONOMETRO_WIDGET = UIS_FOLDER / Path("cronometro.ui")
-BASIC_FORM = UIS_FOLDER / Path("basic_form.ui")
-PACIENT_WIDGET = UIS_FOLDER / Path("pacients_widget.ui")
-NO_EDITABLE_PACIENT_WIDGET = UIS_FOLDER / Path("pacients_widget_noeditable.ui")
-CONFIRMATION_DIALOG = UIS_FOLDER / Path("confirmation_dialog.ui")
-GRAPH_WIDGET = UIS_FOLDER / Path("graph_widget.ui")
+GUI_FOLDER: Path = MAIN_FOLDER / Path("GUI")
+UIS_FOLDER: Path = GUI_FOLDER / Path("resources")
+LOGIN_DIALOG: Path = UIS_FOLDER / Path("login_dialog.ui")
+REGISTER_DIALOG: Path = UIS_FOLDER / Path("register_dialog.ui")
+ERROR_DIALOG: Path = UIS_FOLDER / Path("error_dialog.ui")
+CRONOMETRO_WIDGET: Path = UIS_FOLDER / Path("cronometro.ui")
+BASIC_FORM: Path = UIS_FOLDER / Path("basic_form.ui")
+PACIENT_WIDGET: Path = UIS_FOLDER / Path("pacients_widget.ui")
+NO_EDITABLE_PACIENT_WIDGET: Path = UIS_FOLDER / Path("pacients_widget_noeditable.ui")
+CONFIRMATION_DIALOG: Path = UIS_FOLDER / Path("confirmation_dialog.ui")
+GRAPH_WIDGET: Path = UIS_FOLDER / Path("graph_widget.ui")
+PIXMAP_NO_IMAGE: Path = UIS_FOLDER / Path("no_image.png")
 
 
 def get_add_icon():
@@ -45,6 +46,10 @@ def get_edit_icon():
 
 def get_save_icon():
     return QIcon(":/icons/save")
+
+
+def get_no_image_pixmap():
+    return QPixmap(str(PIXMAP_NO_IMAGE))
 
 
 def get_basic_form(to: QDialog = None) -> QDialog:
@@ -108,7 +113,6 @@ def get_cronometro_widget_ui(to: QWidget = None):
 def get_cronometro_bar_widget():
     from .cronometro import ProgressCronometro  # Para evitar imports circulares
     return ProgressCronometro()
-
 
 
 def get_pacient_widget_ui(to: QWidget):

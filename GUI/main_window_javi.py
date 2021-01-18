@@ -1,18 +1,17 @@
 import sys
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTabWidget, \
-    QApplication, QListView
+from PyQt5.QtGui import QPalette, QColor, QIcon
+from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTabWidget, QListView
 
 from GUI.grafica_tab import PerformanceTab
 from GUI.cronometro_tab import Cronometro
 from GUI.pacient_widget_tab import PacientWidget
-from .GUI_Resources import get_pacient_widget
 
 
 class Color(QWidget):
     """No la voy a usar"""
+
     def __init__(self, color):
         super().__init__()
         self.setAutoFillBackground(True)
@@ -23,6 +22,7 @@ class Color(QWidget):
 
 class App(QMainWindow):
     """ Esta clase no la voy a usar """
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("CronometroOrtsLayouts")
@@ -47,7 +47,8 @@ class CentralWidgetParkingson(QWidget):
     ADD_button_key = "add"
     DELETE_button_key = "delete"
     EDIT_button_key = "edit"
-    def __init__(self, parent=None,debug=False):
+
+    def __init__(self, parent=None, debug=False):
         super(QWidget, self).__init__(parent)
         self.general_layout = QVBoxLayout()
         self.buttons_layout = QHBoxLayout()
@@ -61,7 +62,7 @@ class CentralWidgetParkingson(QWidget):
 
         for x in self.actions_buttons:
             self.actions_buttons[x].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-            self.actions_buttons[x].setObjectName(x+"_button")
+            self.actions_buttons[x].setObjectName(x + "_button")
             self.buttons_layout.addWidget(self.actions_buttons[x])
 
         self.buttons_layout.setAlignment(Qt.AlignLeft)
@@ -70,34 +71,29 @@ class CentralWidgetParkingson(QWidget):
         self.pacients_list_view = QListView()
         self.pacients_list_view.resize(200, 400)
         self.parent_tab_widget = QTabWidget()
-        self.parent_tab_widget.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+        self.parent_tab_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.pacients_tab: PacientWidget = PacientWidget(debug)  # Tab1 Color
 
-        #self.rendimiento_tab = MplCanvas(self, width=5, height=4, dpi=100)  # Tab2 Grafica
+        # self.rendimiento_tab = MplCanvas(self, width=5, height=4, dpi=100)  # Tab2 Grafica
         self.rendimiento_tab = PerformanceTab()
 
         self.cronometro_tab = Cronometro()
-
+        QIcon()
         self.parent_tab_widget.resize(300, 300)  # Tab Parent
 
         self.parent_tab_widget.addTab(self.pacients_tab, "Paciente")
         self.parent_tab_widget.addTab(self.rendimiento_tab, "Rendimiento")
         self.parent_tab_widget.addTab(self.cronometro_tab, "Cronómetro")
-        self.pacients_tab.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+        self.pacients_tab.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.pacients_list_view.setMinimumSize(200, 400)  ## 200, 400
         self.pacients_list_view.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
         self.content_layout.addWidget(self.pacients_list_view, stretch=3, alignment=Qt.AlignTop)
         self.content_layout.addWidget(self.parent_tab_widget, stretch=9)
 
-        #self.general_layout.addLayout(self.buttons_layout)
+        # self.general_layout.addLayout(self.buttons_layout)
         self.general_layout.addLayout(self.content_layout)
 
         self.setMinimumSize(900, 600)
         self.setLayout(self.general_layout)
 
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = App()
-    sys.exit(app.exec_())

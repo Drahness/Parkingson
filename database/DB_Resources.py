@@ -18,14 +18,14 @@ def get_entity_pacient(dni: str = None,
                        estadio: int = None,
                        nombre: str = None,
                        dictionary: dict = None):
-    from database.entities import Pacient
+    from database.pacient import Pacient
     return Pacient(dni, apellidos, estadio, nombre, dictionary)
 
 
 def get_entity_usuari(username: str = None,
                       password: str = None,
                       dictionary: dict = None):
-    from database.entities import Usuari
+    from database.usuari import Usuari
     return Usuari(username, password, dictionary)
 
 
@@ -33,7 +33,7 @@ def get_entity_prueba(identifier: int = None,
                       laps: list = None,
                       pacient_id: str = None,
                       dictionary: dict = None):
-    from database.entities import Prueba
+    from database.prueba import Prueba
     return Prueba(identifier, laps, pacient_id, dictionary)
 
 

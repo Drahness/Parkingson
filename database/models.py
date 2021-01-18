@@ -6,7 +6,7 @@ import traceback
 
 from GUI.GUI_Resources import get_error_dialog_msg
 from database.DB_Resources import get_db_connection
-from database.entities import Entity
+from database.entities_interface import Entity
 
 
 class ListModel(QAbstractListModel):
@@ -27,7 +27,7 @@ class ListModel(QAbstractListModel):
     def change_model_list(self, list):
         if list is not None:
             if len(list) > 0:
-                if isinstance(list[0],self.instance_class):
+                if isinstance(list[0], self.instance_class):
                     self.showable_items = list
                     self.layoutChanged.emit()
                 else:
@@ -45,7 +45,7 @@ class ListModel(QAbstractListModel):
             item = self.showable_items[index.row()]
             return item
 
-    def get(self,index):
+    def get(self, index):
         """Retorna el item clickado"""
         return self.showable_items[index]
 
@@ -101,31 +101,31 @@ class ListModel(QAbstractListModel):
     def __len__(self) -> int:
         return len(self.items)
 
+
 class UsuariListModel(ListModel):
     """ No se si la voy a usar"""
 
     def __init__(self):
-        from database.entities import Usuari
+        from database.usuari import Usuari
         super(UsuariListModel, self).__init__(Usuari)
 
 
 class PacientsListModel(ListModel):
     def __init__(self):
-        from database.entities import Pacient
+        from database.pacient import Pacient
         super(PacientsListModel, self).__init__(Pacient)
         pass
 
     def data(self, index: QModelIndex, role: int = ...):
-        pacient = super(PacientsListModel, self).data(index,role)
+        pacient = super(PacientsListModel, self).data(index, role)
         if pacient is not None:
             return str(pacient)
 
 
 class PruebasListModel(ListModel):
     def __init__(self):
-        from database.entities import Prueba
+        from database.prueba import Prueba
         super(PruebasListModel, self).__init__(Prueba)
-
 
     def get_pruebas(self, pacient) -> list:
         pruebas = []

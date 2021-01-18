@@ -4,7 +4,8 @@ from sqlitedao import ColumnDict, SqliteDao
 
 import Utils
 from database.database_controller import Connection
-from database.entities import Entity, Usuari
+from database.entities_interface import Entity
+from database.usuari import Usuari
 
 
 class Settings(Entity):

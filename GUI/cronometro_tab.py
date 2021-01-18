@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QWidget, QSizePolicy
 from GUI.GUI_Resources import get_cronometro_widget_ui, get_cronometro_bar_widget
 from GUI.cronometro import Timer
 from GUI.tab_widgets import PacientInterface
-from database.entities import Prueba
+from database.prueba import Prueba
 
 
 class Cronometro(QWidget, PacientInterface):
@@ -28,7 +28,8 @@ class Cronometro(QWidget, PacientInterface):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.progress_bar = get_cronometro_bar_widget()
         self.progress_bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.horizontalLayout.addWidget(self.progress_bar)
+        #self.horizontalLayout.addWidget(self.progress_bar)
+        self.crono_widget.addWidget(self.progress_bar)
         self.stop_button.setEnabled(False)
         self.cancel_button.setEnabled(False)
 

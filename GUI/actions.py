@@ -25,6 +25,9 @@ class StaticActions:
     vista_pacientes = QAction("Vista pacientes.")
     vista_rendimiento = QAction("Vista rendimiento.")
 
+    tomar_foto = QAction("Tomar foto")
+    seleccionar_foto = QAction("Buscar nueva foto.")
+
     vista_Toolbar.setObjectName("action_view_toolbar")
     vista_crono.setObjectName("action_view_crono")
     vista_pacientes.setObjectName("action_view_pacientes")
@@ -40,3 +43,5 @@ class StaticActions:
     mod_prueba_action.setObjectName("mod_prueba_action")
     del_prueba_action.setObjectName("del_prueba_action")
     creditos_action.setObjectName("creditos_action")
+    tomar_foto.setObjectName("tomar_foto")
+    seleccionar_foto.setObjectName("seleccionar_foto")
