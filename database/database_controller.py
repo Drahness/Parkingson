@@ -13,8 +13,10 @@ from .entities import Entity, Pacient, Usuari, Prueba
 class Connection:
     INSTANCE_MAP = {}
 
-    def __init__(self,user="Admin", path: str = "db", dbname=f"default.db"):
+    def __init__(self, user="Admin", path: str = "db", dbname=f"default.db",model=None):
         filepath = path + os.sep + dbname
+        self.path = path
+        self.dbname = dbname
         if not os.path.exists(filepath):
             os.makedirs(path, exist_ok=True)
         self.conn = sqlite3.connect(filepath)
@@ -40,13 +42,13 @@ class Connection:
             return self.execute(f"SELECT * FROM first_init")[0] == 0
         except:
             columns = ColumnDict()
-            columns.add_column("boolean_init","INTEGER")
-            self.create_table("first_init",columns)
+            columns.add_column("boolean_init", "INTEGER")
+            self.create_table("first_init", columns)
             self.execute(f"INSERT OR IGNORE INTO first_init VALUES (0)")
             return True
 
     def execute(self, sql, parameters: Iterable = None) -> list:
-        print(f"Operation: {sql}, {parameters}")
+        print(f"DB:{self.path}/{self.dbname} - Operation: {sql}, {parameters}")
         if parameters is None:
             self.cursor.execute(sql)
         else:
@@ -84,10 +86,11 @@ class Connection:
     @staticmethod
     def get_instance(path: str, db: str):
         if path not in Connection.INSTANCE_MAP:
-            Connection.INSTANCE_MAP[path + os.sep + db] = Connection(path, db)
+            Connection.INSTANCE_MAP[path + os.sep + db] = Connection(path=path, dbname=db)
         return Connection.INSTANCE_MAP[path + os.sep + db]
 
-class BasicConnection(Connection):
 
+class ModelConnection(Connection):
+ # Its a connection for a model, i think its better to be multiple connections between the models.
     def __init__(self):
         pass

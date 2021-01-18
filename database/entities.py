@@ -24,6 +24,7 @@ class Entity:
             items.append(cls(dictionary=obj))
         Entity.__loaded_instances[cls] = items
         return items
+
     @staticmethod
     def get_columns_dict() -> tuple or ColumnDict:
         raise NotImplementedError()
@@ -198,13 +199,14 @@ class Prueba(Entity):
     @classmethod
     def load(cls, connection) -> list:
         items = cls._get_list_of_instances()
-        dictionaries = connection.dao.search_table(Prueba.get_tablename()[0], {}, order_by=["datetime"])  # Este order by sobra
+        dictionaries = connection.dao.search_table(Prueba.get_tablename()[0], {},
+                                                   order_by=["datetime"])  # Este order by sobra
         # Implementar __repr__ deberia ser lo normal.
         for dictionary in dictionaries:
             tests_list = []
             list_laps = connection.dao.search_table(table_name=Prueba.get_tablename()[1],
-                                         search_dict={"identifier": dictionary["identifier"]},
-                                         order_by=["num_lap"])
+                                                    search_dict={"identifier": dictionary["identifier"]},
+                                                    order_by=["num_lap"])
             for lap in list_laps:
                 tests_list.append(lap["tiempo"])
             dictionary["laps"] = tests_list
@@ -280,8 +282,8 @@ class Pacient(Entity):
                  direccion: str = None,
                  peso: float = None,
                  genero: str = None,
+                 altura: float = None,
                  fecha_diagnostico: datetime.date = None,
-                 imc: float = None,
                  dictionary: dict = None):
         if dictionary is not None:
             self.dictionary = dictionary
@@ -298,8 +300,8 @@ class Pacient(Entity):
             direccion = dictionary.get("direccion")
             peso = dictionary.get("peso")
             genero = dictionary.get("genero")
+            altura = dictionary.get("altura")
             fecha_diagnostico = dictionary.get("fecha_diagnostico")
-            imc = dictionary.get("imc")
         super().__init__(dni)
         self.dni = dni
         self.apellidos = apellidos
@@ -314,8 +316,8 @@ class Pacient(Entity):
         self.direccion = direccion
         self.peso = peso
         self.genero = genero
-        self.fecha_diagnostico = fecha_diagnostico
-        self.imc = imc
+        self.fecha_diagnostico = fecha_diagnostico if not isinstance(fecha_diagnostico, str) else parse(fecha_diagnostico)
+        self.altura = altura
 
     def insert(self, conexion):
         attributes = [self.dni,
@@ -332,8 +334,23 @@ class Pacient(Entity):
                       self.peso,
                       self.genero,
                       self.fecha_diagnostico,
-                      self.imc]
-        sql = "INSERT INTO pacients (dni,apellidos,estadio,nombre,nacimiento,notas,telefono,mail,fotocara,fotocuerpo,direccion,peso,genero,fecha_diagnostico,imc) VALUES "
+                      self.altura]
+        sql = "INSERT INTO pacients (  dni," \
+              "apellidos," \
+              "estadio," \
+              "nombre," \
+              "nacimiento," \
+              "notas," \
+              "telefono," \
+              "mail," \
+              "fotocara," \
+              "fotocuerpo," \
+              "direccion," \
+              "peso," \
+              "genero," \
+              "fecha_diagnostico," \
+              "altura)" \
+              " VALUES "
         sql = (sql + "(" + ("?," * len(attributes)))[:-1] + ")"
         conexion.insert(sql, attributes)
         self.append()
@@ -348,21 +365,21 @@ class Pacient(Entity):
             raise AssertionError("argument type dont supported, type: " + str(type(to_updated)))
         if self.dni != dni:
             atributos = [self.dni,
-                          self.apellidos,
-                          self.estadio,
-                          self.nombre,
-                          self.nacimiento,
-                          self.notas,
-                          self.telefono,
-                          self.mail,
-                          self.fotocara,
-                          self.fotocuerpo,
-                          self.direccion,
-                          self.peso,
-                          self.genero,
-                          self.fecha_diagnostico,
-                          self.imc,
-                          dni]
+                         self.apellidos,
+                         self.estadio,
+                         self.nombre,
+                         self.nacimiento,
+                         self.notas,
+                         self.telefono,
+                         self.mail,
+                         self.fotocara,
+                         self.fotocuerpo,
+                         self.direccion,
+                         self.peso,
+                         self.genero,
+                         self.fecha_diagnostico,
+                         self.altura,
+                         dni]
             sql = """UPDATE pacients SET
                    dni = ?
 "                  apellidos = ?,
@@ -378,24 +395,24 @@ class Pacient(Entity):
                    peso = ?,
                    genero = ?,
                    fecha_diagnostico = ?,
-                   imc = ?,
+                   altura = ?,
                     WHERE dni = ?"""
         else:
-            atributos = [ self.apellidos,
-                          self.estadio,
-                          self.nombre,
-                          self.nacimiento,
-                          self.notas,
-                          self.telefono,
-                          self.mail,
-                          self.fotocara,
-                          self.fotocuerpo,
-                          self.direccion,
-                          self.peso,
-                          self.genero,
-                          self.fecha_diagnostico,
-                          self.imc,
-                          dni]
+            atributos = [self.apellidos,
+                         self.estadio,
+                         self.nombre,
+                         self.nacimiento,
+                         self.notas,
+                         self.telefono,
+                         self.mail,
+                         self.fotocara,
+                         self.fotocuerpo,
+                         self.direccion,
+                         self.peso,
+                         self.genero,
+                         self.fecha_diagnostico,
+                         self.altura,
+                         dni]
             sql = """UPDATE pacients SET
                               apellidos = ?,
                                estadio = ?,
@@ -410,9 +427,9 @@ class Pacient(Entity):
                                peso = ?,
                                genero = ?,
                                fecha_diagnostico = ?,
-                               imc = ?
+                               altura = ?
                                 WHERE dni = ?"""
-        conexion.execute(sql,atributos)
+        conexion.execute(sql, atributos)
 
     def delete(self, conexion):
         conexion.execute(f"DELETE FROM {self.get_tablename()} WHERE dni = ?", [self.dni])
@@ -436,10 +453,10 @@ class Pacient(Entity):
         columns.add_column("fotocara", "blob")
         columns.add_column("fotocuerpo", "blob")
         columns.add_column("direccion", "text")
-        columns.add_column("peso", "integer")
+        columns.add_column("peso", "float")
         columns.add_column("genero", "text")
         columns.add_column("fecha_diagnostico", "date")
-        columns.add_column("imc", "float")
+        columns.add_column("altura", "float")
         return columns
 
     def __str__(self):
@@ -455,6 +472,17 @@ class Pacient(Entity):
             self._nacimiento = value.toPyDate()
         else:
             self._nacimiento = value
+
+    @property
+    def fecha_diagnostico(self):
+        return self._fecha_diagnostico
+
+    @fecha_diagnostico.setter
+    def fecha_diagnostico(self, value):
+        if isinstance(value, QDate):
+            self._fecha_diagnostico = value.toPyDate()
+        else:
+            self._fecha_diagnostico = value
 
 
 class Usuari(Entity):
@@ -511,6 +539,6 @@ class Usuari(Entity):
         return columns
 
     @staticmethod
-    def valid_user(conn,username, password):
+    def valid_user(conn, username, password):
         dao = conn.dao
         return len(dao.search_table("users", {"username": username, "password": password})) > 0

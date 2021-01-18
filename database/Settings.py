@@ -31,6 +31,15 @@ class Settings(Entity):
         self.lap2_mediumhard_start = Utils.get_timedelta(dictionary.get('lap2_mediumhard_start'))
         self.locale = dictionary.get('locale')
 
+#<18,5	Peso insuficiente
+#18,5-24,9	Normopeso
+#25-26,9	Sobrepeso grado I
+#27-29,9	Sobrepeso grado II (preobesidad)
+#30-34,9	Obesidad de tipo I
+#35-39,9	Obesidad de tipo II
+#40-49,9	Obesidad de tipo III (mórbida)
+#>50	Obesidad de tipo IV (extrema)
+
     @classmethod
     def init_default(cls, user:str=None):
         if user is None:

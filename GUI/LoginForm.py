@@ -59,7 +59,7 @@ class LoginRegisterWindow(QDialog):
                        "username": "Admin" if self.debug else self.login_widget.usernamefield.text(),
                        "password": Utils.cypher(self.login_widget.passwordfield.text())
                        }
-        self.result["result"] = self._login_validator(self.result["username"], self.result["password"])
+        self.result["result"] = self._login_validator(self.conn,self.result["username"], self.result["password"])
         if self.result["result"]:
             self.accept()
         else:
@@ -79,7 +79,7 @@ class LoginRegisterWindow(QDialog):
         self._login_validator = method
 
     @staticmethod
-    def validator_debug(a, aa):
+    def validator_debug(*args):
         return True
 
 

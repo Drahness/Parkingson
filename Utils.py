@@ -8,7 +8,6 @@ import os
 from PyQt5.QtCore import Qt, QObject
 from PyQt5.QtWidgets import QWidget, QLabel, QTextEdit, QHBoxLayout, QFrame
 
-
 class KeyValueWidget(QWidget):
     def __init__(self, key: str, value: str):
         super().__init__()
@@ -112,16 +111,16 @@ def get_from_dict(dictionary: dict, key: any) -> any or None:
         return None
 
 
-def get_timedelta(real_number: float or datetime.timedelta,canbeNone=False):
+def get_timedelta(real_number: float or datetime.timedelta, canbeNone=False):
     if real_number is None:
         if canbeNone:
             return real_number
         else:
             raise ValueError("the real_number cant be none.")
-    if isinstance(real_number,float) or isinstance(real_number,int):
+    if isinstance(real_number, float) or isinstance(real_number, int):
         micro, seconds = math.modf(real_number)
-        return datetime.timedelta(seconds=seconds, microseconds=micro)
-    elif isinstance(real_number,datetime.timedelta):
+        return datetime.timedelta(seconds=seconds, microseconds=micro*1000000)
+    elif isinstance(real_number, datetime.timedelta):
         return real_number
     else:
         raise ValueError("Unknown number.")

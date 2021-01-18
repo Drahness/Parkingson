@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>942</width>
-    <height>702</height>
+    <width>790</width>
+    <height>665</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,10 +37,10 @@
       <widget class="QWidget" name="formLayoutWidget">
        <property name="geometry">
         <rect>
-         <x>0</x>
+         <x>10</x>
          <y>0</y>
-         <width>366</width>
-         <height>361</height>
+         <width>361</width>
+         <height>621</height>
         </rect>
        </property>
        <layout class="QFormLayout" name="formLayout">
@@ -109,6 +109,19 @@
            <string/>
           </property>
          </widget>
+        </item>
+        <item row="2" column="1">
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>10</height>
+           </size>
+          </property>
+         </spacer>
         </item>
         <item row="3" column="0">
          <widget class="QLabel" name="label_2">
@@ -221,19 +234,27 @@
          </widget>
         </item>
         <item row="8" column="1">
-         <widget class="QLineEdit" name="estadio_field">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>228</width>
-            <height>28</height>
-           </size>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QComboBox" name="estadio_combo_box"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_estadio">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="9" column="1">
+         <widget class="Line" name="line_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
           </property>
          </widget>
         </item>
-        <item row="9" column="1">
+        <item row="10" column="1">
          <spacer name="verticalSpacer_3">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -246,7 +267,7 @@
           </property>
          </spacer>
         </item>
-        <item row="10" column="1">
+        <item row="11" column="1">
          <widget class="QLabel" name="error_estadio">
           <property name="minimumSize">
            <size>
@@ -262,7 +283,175 @@
           </property>
          </widget>
         </item>
-        <item row="11" column="0">
+        <item row="12" column="0">
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>Altura</string>
+          </property>
+         </widget>
+        </item>
+        <item row="15" column="0">
+         <widget class="QLabel" name="label_13">
+          <property name="text">
+           <string>Peso</string>
+          </property>
+         </widget>
+        </item>
+        <item row="16" column="0">
+         <widget class="QLabel" name="imc_label">
+          <property name="text">
+           <string>IMC</string>
+          </property>
+         </widget>
+        </item>
+        <item row="16" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="imc_result">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="consejo_imc">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="17" column="1">
+         <spacer name="verticalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="19" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>Telefono</string>
+          </property>
+         </widget>
+        </item>
+        <item row="19" column="1">
+         <widget class="QLineEdit" name="telefono_edit">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="20" column="1">
+         <widget class="QLabel" name="error_telefono">
+          <property name="styleSheet">
+           <string notr="true">color:red</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="21" column="0">
+         <widget class="QLabel" name="label_9">
+          <property name="text">
+           <string>Email</string>
+          </property>
+         </widget>
+        </item>
+        <item row="21" column="1">
+         <widget class="QLineEdit" name="email_edit">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="22" column="1">
+         <widget class="QLabel" name="error_email">
+          <property name="styleSheet">
+           <string notr="true">color:red</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="23" column="0">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Direccion</string>
+          </property>
+         </widget>
+        </item>
+        <item row="23" column="1">
+         <widget class="QLineEdit" name="direccion_edit">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="24" column="1">
+         <spacer name="verticalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="25" column="0">
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Genero</string>
+          </property>
+         </widget>
+        </item>
+        <item row="25" column="1">
+         <widget class="QComboBox" name="gender_combo_box">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="27" column="1">
+         <spacer name="verticalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="28" column="0">
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>Fecha diagnostico</string>
+          </property>
+         </widget>
+        </item>
+        <item row="28" column="1">
+         <widget class="QDateEdit" name="diagnostico_date_edit">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="29" column="0">
          <widget class="QLabel" name="label_5">
           <property name="minimumSize">
            <size>
@@ -275,7 +464,7 @@
           </property>
          </widget>
         </item>
-        <item row="11" column="1">
+        <item row="29" column="1">
          <widget class="QDateEdit" name="nacimiento_field">
           <property name="enabled">
            <bool>false</bool>
@@ -288,18 +477,51 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
+        <item row="26" column="1">
+         <widget class="QLabel" name="error_gender">
+          <property name="styleSheet">
+           <string notr="true">color:red</string>
           </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>10</height>
-           </size>
+          <property name="text">
+           <string/>
           </property>
-         </spacer>
+         </widget>
+        </item>
+        <item row="12" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QDoubleSpinBox" name="altura_edit">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="error_altura">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="15" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <widget class="QDoubleSpinBox" name="peso_edit">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="error_peso">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
        <zorder>label</zorder>
@@ -308,7 +530,6 @@
        <zorder>nombre_field</zorder>
        <zorder>label_3</zorder>
        <zorder>label_4</zorder>
-       <zorder>estadio_field</zorder>
        <zorder>label_5</zorder>
        <zorder>nacimiento_field</zorder>
        <zorder>error_dni</zorder>
@@ -319,14 +540,36 @@
        <zorder>verticalSpacer_2</zorder>
        <zorder>verticalSpacer_3</zorder>
        <zorder>verticalSpacer</zorder>
+       <zorder>line_2</zorder>
+       <zorder>label_7</zorder>
+       <zorder>label_8</zorder>
+       <zorder>label_9</zorder>
+       <zorder>label_10</zorder>
+       <zorder>label_11</zorder>
+       <zorder>label_12</zorder>
+       <zorder>label_13</zorder>
+       <zorder>telefono_edit</zorder>
+       <zorder>email_edit</zorder>
+       <zorder>direccion_edit</zorder>
+       <zorder>gender_combo_box</zorder>
+       <zorder>diagnostico_date_edit</zorder>
+       <zorder>verticalSpacer_5</zorder>
+       <zorder>verticalSpacer_6</zorder>
+       <zorder>error_telefono</zorder>
+       <zorder>error_email</zorder>
+       <zorder>imc_label</zorder>
+       <zorder>verticalSpacer_4</zorder>
+       <zorder>error_gender</zorder>
+       <zorder>horizontalLayoutWidget_3</zorder>
+       <zorder>horizontalLayoutWidget_4</zorder>
       </widget>
       <widget class="QWidget" name="horizontalLayoutWidget_2">
        <property name="geometry">
         <rect>
-         <x>0</x>
-         <y>370</y>
-         <width>382</width>
-         <height>80</height>
+         <x>10</x>
+         <y>630</y>
+         <width>361</width>
+         <height>30</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="optionalLayout">
@@ -386,8 +629,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>434</width>
-         <height>441</height>
+         <width>371</width>
+         <height>651</height>
         </rect>
        </property>
        <layout class="QFormLayout" name="formLayout_2">
@@ -425,6 +668,49 @@
           <property name="enabled">
            <bool>false</bool>
           </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="cara_tab">
+           <attribute name="title">
+            <string>Tab 1</string>
+           </attribute>
+           <widget class="QLabel" name="cara_image">
+            <property name="geometry">
+             <rect>
+              <x>30</x>
+              <y>0</y>
+              <width>49</width>
+              <height>16</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="cuerpo_tab">
+           <attribute name="title">
+            <string>Tab 2</string>
+           </attribute>
+           <widget class="QLabel" name="cuerpo_image">
+            <property name="geometry">
+             <rect>
+              <x>30</x>
+              <y>0</y>
+              <width>49</width>
+              <height>16</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </widget>
          </widget>
         </item>
        </layout>

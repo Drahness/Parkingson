@@ -5,7 +5,9 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTabWidget, \
     QApplication, QListView
 
-from GUI.tab_widgets import PacientWidget, PerformanceTab, Cronometro
+from GUI.grafica_tab import PerformanceTab
+from GUI.cronometro_tab import Cronometro
+from GUI.pacient_widget_tab import PacientWidget
 from .GUI_Resources import get_pacient_widget
 
 
@@ -45,7 +47,7 @@ class CentralWidgetParkingson(QWidget):
     ADD_button_key = "add"
     DELETE_button_key = "delete"
     EDIT_button_key = "edit"
-    def __init__(self, parent=None):
+    def __init__(self, parent=None,debug=False):
         super(QWidget, self).__init__(parent)
         self.general_layout = QVBoxLayout()
         self.buttons_layout = QHBoxLayout()
@@ -68,7 +70,8 @@ class CentralWidgetParkingson(QWidget):
         self.pacients_list_view = QListView()
         self.pacients_list_view.resize(200, 400)
         self.parent_tab_widget = QTabWidget()
-        self.pacients_tab: PacientWidget = PacientWidget()  # Tab1 Color
+        self.parent_tab_widget.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+        self.pacients_tab: PacientWidget = PacientWidget(debug)  # Tab1 Color
 
         #self.rendimiento_tab = MplCanvas(self, width=5, height=4, dpi=100)  # Tab2 Grafica
         self.rendimiento_tab = PerformanceTab()
@@ -80,7 +83,7 @@ class CentralWidgetParkingson(QWidget):
         self.parent_tab_widget.addTab(self.pacients_tab, "Paciente")
         self.parent_tab_widget.addTab(self.rendimiento_tab, "Rendimiento")
         self.parent_tab_widget.addTab(self.cronometro_tab, "Cronómetro")
-
+        self.pacients_tab.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
         self.pacients_list_view.setMinimumSize(200, 400)  ## 200, 400
         self.pacients_list_view.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 

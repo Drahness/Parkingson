@@ -128,7 +128,7 @@ def get_pacient_widget_ui_noeditable(to: QWidget):
 
 
 def get_pacient_widget():
-    from GUI.tab_widgets import PacientWidget
+    from .pacient_widget_tab import PacientWidget
     return PacientWidget()
 
 

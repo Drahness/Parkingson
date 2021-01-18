@@ -3,7 +3,7 @@ import sys
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThreadPool, pyqtSignal
-from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy, QScrollArea
+from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy
 
 from GUI.MenuBar import MenuBar, ToolBar
 from GUI.main_window_javi import CentralWidgetParkingson
@@ -28,13 +28,13 @@ class UI(QMainWindow):
         UI.threadpool = QThreadPool()
         UI.DEBUG = debug
         # TODO SINGLETONS ?¿?¿?¿?¿ THEY ARE REALLY NEEDED?
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.connection = Connection()
         self.login_form = GUI_Resources.get_login_register_dialog(self.connection)
         self.user_credentials = {"result": False}
 
         # Recogemos el Central widget, lo añadimos y luego lo inicializamos
-        self.central = CentralWidgetParkingson()
+        self.central = CentralWidgetParkingson(debug=debug)
         self.setCentralWidget(self.central)
 
         self.menu_bar = MenuBar()
@@ -60,6 +60,8 @@ class UI(QMainWindow):
         self.menu_bar.pruebas.setEnabled(False)
 
         self.menu_bar.edit_pacient.setEnabled(False)
+        self.menu_bar.del_pacient.setEnabled(False)
+
         self.central.pacients_tab.set_signal_pacient_selected(self.pacientSelected)
         self.central.cronometro_tab.set_signal_pacient_selected(self.pacientSelected)
         self.central.rendimiento_tab.set_signal_pacient_selected(self.pacientSelected)
@@ -169,6 +171,7 @@ class UI(QMainWindow):
             else:
                 self.central.parent_tab_widget.setTabVisible(1, True)
                 self.central.rendimiento_tab.setVisible(self.central.rendimiento_tab.is_on_focus())
+        #self.update()
 
     @staticmethod
     def get_instance():
@@ -195,9 +198,11 @@ class UI(QMainWindow):
 
     def on_pacient_double_click(self, *args):
         row = args[0].row()
+
         p = self.listview_model.instance_class.get_object(row)
         self.status_bar.showMessage(f"Editando: {p}")
         self.menu_bar.edit_pacient.triggered.emit()
+
 
     def changeStatus(self, str, seconds):
         self.status_bar.showMessage(str, seconds * 1000)
@@ -209,14 +214,15 @@ class UI(QMainWindow):
         if sender_name == "add_pacient_action":
             self.central.pacients_tab.pacientSelected(Pacient(), -1)
             self.central.pacients_tab.set_enabled(True)
+            self.central.parent_tab_widget.setEnabled(True)
         elif sender_name == "del_pacient_action":
-            if self.central.pacients_tab.pacient_selected():
+            if len(self.listview_model.items) > 0 and self.central.pacients_tab.pacient_selected() :
                 pacient = self.listview_model.items[self.central.pacients_tab.index]
                 dialog = GUI_Resources.get_confirmation_dialog_ui(f"Quieres eliminar el usuario {pacient}")
                 if dialog.exec_() == 1:
                     self.listview_model.delete(pacient)
         elif sender_name == "edit_pacient_action":
-            if self.central.pacients_tab.pacient_selected():
+            if len(self.listview_model.items) > 0 and self.central.pacients_tab.pacient_selected():
                 self.central.pacients_tab.set_enabled(True)
 
     def on_crono_finished(self, prueba, row):
