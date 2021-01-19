@@ -2,8 +2,8 @@ import os
 import sys
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import QThreadPool, pyqtSignal
-from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy
+from PyQt5.QtCore import QThreadPool, pyqtSignal, Qt
+from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy, QScrollArea
 
 from GUI.MenuBar import MenuBar, ToolBar
 from GUI.main_window_javi import CentralWidgetParkingson
@@ -19,6 +19,7 @@ class UI(QMainWindow):
     pacientSelected = pyqtSignal(Pacient, int)
     changeStatusBar = pyqtSignal(str, int)
     hideViews = pyqtSignal(bool)
+    key_press = pyqtSignal(QtGui.QKeyEvent)
 
     def __init__(self, debug=False):
         super().__init__()
@@ -36,9 +37,8 @@ class UI(QMainWindow):
 
         # Recogemos el Central widget, lo añadimos y luego lo inicializamos
         self.central = CentralWidgetParkingson(debug=debug)
+
         self.setCentralWidget(self.central)
-        self.setMaximumSize(1066,830)
-        self.setMinimumSize(1066, 830)
         self.menu_bar = MenuBar()
         self.status_bar = QStatusBar()
         self.toolbar = ToolBar()
@@ -71,6 +71,10 @@ class UI(QMainWindow):
         self.central.pacients_tab.set_change_status_bar(self.changeStatusBar)
         self.central.cronometro_tab.set_change_status_bar(self.changeStatusBar)
         self.central.rendimiento_tab.set_change_status_bar(self.changeStatusBar)
+
+        self.central.pacients_tab.set_key_pressed(self.key_press)
+        self.central.cronometro_tab.set_key_pressed(self.key_press)
+        self.central.rendimiento_tab.set_key_pressed(self.key_press)
 
         self.central.pacients_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
         self.central.cronometro_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
@@ -173,7 +177,7 @@ class UI(QMainWindow):
             else:
                 self.central.parent_tab_widget.setTabVisible(1, True)
                 self.central.rendimiento_tab.setVisible(self.central.rendimiento_tab.is_on_focus())
-        #slf.update()
+        #  slf.update()
 
     @staticmethod
     def get_instance():
@@ -238,3 +242,8 @@ class UI(QMainWindow):
         size = a0.size()
         old_size = a0.oldSize()
         print(f"{size} {old_size}")
+
+    def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
+        super().keyPressEvent(a0)
+        self.key_press.emit(a0)
+

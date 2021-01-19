@@ -3,3 +3,4 @@ cryptography~=3.3.1
 sqlitedao
 numpy==1.19.3
 matplotlib
+opencv-python
