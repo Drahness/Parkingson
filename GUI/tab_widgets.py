@@ -382,6 +382,8 @@ class PerformanceTab(QWidget, PacientInterface):
         self.graph.markers2 = self.graph.ax.plot(prueba.datetime, prueba.laps[2].total_seconds(), marker="+", markersize=20, color="brown")
         self.graph.markers_total = self.graph.ax.plot(prueba.datetime, total, marker="+", markersize=20, color="red")
         self.graph.draw()
+        self.index = row
+        self.selected_prueba = prueba
         pass
 
     def load_graph(self, pacient):
