@@ -54,7 +54,7 @@ class Prueba(Entity):
 
     def insert(self, conexion) -> int:
         conexion.set_auto_commit(False)
-        result = conexion.execute("SELECT seq FROM sqlite_sequence WHERE name = ?", [self.get_tablename()[0]])
+        result = conexion.execute("SELECT seq FROM sqlite_sequence WHERE name = ?", [self.get_tablenames()[0]])
 
         if len(result) == 0:
             result = 0
@@ -83,8 +83,8 @@ class Prueba(Entity):
         else:
             raise AssertionError("argument type dont supported, type: " + str(type(to_updated)))
         laps_to_update = conexion.execute(
-            f"SELECT (rowid,tiempo,num_lap) FROM {self.get_tablename()[1]} WHERE identifier = ?", identifier)
-        conexion.execute(f"UPDATE {self.get_tablename()[0]} SET identifier = ?, pacient_id = ?, datetime = ? WHERE "
+            f"SELECT (rowid,tiempo,num_lap) FROM {self.get_tablenames()[1]} WHERE identifier = ?", identifier)
+        conexion.execute(f"UPDATE {self.get_tablenames()[0]} SET identifier = ?, pacient_id = ?, datetime = ? WHERE "
                          f"identifier = ?",
                          [self.identifier,
                           self.pacient_id,
@@ -92,7 +92,7 @@ class Prueba(Entity):
                           identifier])
         for i in range(0, len(laps_to_update)):
             conexion.execute(
-                f"UPDATE {self.get_tablename()[1]} SET identifier = ?, tiempo = ?, num_lap = ? WHERE rowid =", [
+                f"UPDATE {self.get_tablenames()[1]} SET identifier = ?, tiempo = ?, num_lap = ? WHERE rowid =", [
                     self.identifier,
                     self.laps[i],
                     i,
@@ -131,12 +131,12 @@ class Prueba(Entity):
     @classmethod
     def load(cls, connection) -> list:
         items = cls._get_list_of_instances()
-        dictionaries = connection.dao.search_table(Prueba.get_tablename()[0], {},
+        dictionaries = connection.dao.search_table(Prueba.get_tablenames()[0], {},
                                                    order_by=["datetime"])  # Este order by sobra
         # Implementar __repr__ deberia ser lo normal.
         for dictionary in dictionaries:
             tests_list = []
-            list_laps = connection.dao.search_table(table_name=Prueba.get_tablename()[1],
+            list_laps = connection.dao.search_table(table_name=Prueba.get_tablenames()[1],
                                                     search_dict={"identifier": dictionary["identifier"]},
                                                     order_by=["num_lap"])
             for lap in list_laps:
@@ -150,17 +150,17 @@ class Prueba(Entity):
         return 2
 
     @staticmethod
-    def get_tablename() -> tuple or str:
+    def get_tablenames() -> tuple:
         return "pruebas", "pruebas_data"
 
     @staticmethod
-    def get_columns_dict() -> tuple or ColumnDict:
+    def get_columns_dict() -> tuple:
         first_table = ColumnDict()
         first_table.add_column("identifier", "INTEGER", "PRIMARY KEY AUTOINCREMENT")
         first_table.add_column("pacient_id", "TEXT")
         first_table.add_column("datetime", "datetime")
         first_table.add_column("FOREIGN KEY(pacient_id)",
-                               f"REFERENCES {Pacient.get_tablename()}({Pacient.ID})")
+                               f"REFERENCES {Pacient.get_tablenames()[0]}({Pacient.ID})")
 
         second_table = ColumnDict()
         second_table.add_column("identifier", "INTEGER")  # id de la prueba

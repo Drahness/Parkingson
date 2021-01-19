@@ -13,10 +13,12 @@ from .usuari import Usuari
 from .pacient import Pacient
 
 
+# https://charlesleifer.com/blog/encrypted-sqlite-databases-with-python-and-sqlcipher/
+
 class Connection:
     INSTANCE_MAP = {}
 
-    def __init__(self, user="Admin", path: str = "db", dbname=f"default.db",model=None):
+    def __init__(self, user="Admin", path: str = "db", dbname=f"default.db"):
         filepath = path + os.sep + dbname
         self.path = path
         self.dbname = dbname
@@ -30,14 +32,14 @@ class Connection:
 
         if self.first_init():
             if not self.check_existence(Pacient):
-                self.create_table(Pacient.get_tablename(), Pacient.get_columns_dict())
+                self.create_table(Pacient.get_tablenames()[0], Pacient.get_columns_dict()[0])
             if not self.check_existence(Usuari):
-                self.create_table(Usuari.get_tablename(), Usuari.get_columns_dict())
-            if not self.check_existence(Prueba.get_tablename()[0]):
-                self.create_table(Prueba.get_tablename()[0], Prueba.get_columns_dict()[0])
-            if not self.check_existence(Prueba.get_tablename()[1]):
-                self.create_table(Prueba.get_tablename()[1], Prueba.get_columns_dict()[1])
-            self.execute(f"INSERT OR IGNORE INTO {Usuari.get_tablename()} VALUES ('Admin','{Utils.cypher('Admin')}')")
+                self.create_table(Usuari.get_tablenames()[0], Usuari.get_columns_dict()[0])
+            if not self.check_existence(Prueba.get_tablenames()[0]):
+                self.create_table(Prueba.get_tablenames()[0], Prueba.get_columns_dict()[0])
+            if not self.check_existence(Prueba.get_tablenames()[1]):
+                self.create_table(Prueba.get_tablenames()[1], Prueba.get_columns_dict()[1])
+            self.execute(f"INSERT OR IGNORE INTO {Usuari.get_tablenames()} VALUES ('Admin','{Utils.cypher('Admin')}')")
             self.execute(f"UPDATE first_init SET boolean_init = 1")
 
     def first_init(self):
@@ -79,7 +81,7 @@ class Connection:
         if isinstance(model, str):
             table = model
         elif issubclass(model, Entity):
-            table = model.get_tablename()
+            table = model.get_tablenames()
         else:
             raise AssertionError(f"Bad arguments. expected {str} or {type(Entity)} got {type(model)}")
         self.execute(f"SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{table}'")
@@ -93,7 +95,3 @@ class Connection:
         return Connection.INSTANCE_MAP[path + os.sep + db]
 
 
-class ModelConnection(Connection):
- # Its a connection for a model, i think its better to be multiple connections between the models.
-    def __init__(self):
-        pass

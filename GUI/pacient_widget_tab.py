@@ -1,13 +1,14 @@
 import datetime
 import re
+import threading
 
 import cv2
 import numpy
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import pyqtSignal, QPoint
-from PyQt5.QtGui import QIntValidator, QPixmap
+from PyQt5.QtGui import QIntValidator, QPixmap, QImage
 from PyQt5.QtWidgets import QWidget, QCalendarWidget, QDateEdit, QLabel, QComboBox, QLineEdit, QDoubleSpinBox, \
-    QPushButton, QTabWidget, QToolButton
+    QPushButton, QTabWidget, QToolButton, QFileDialog
 from GUI.GUI_Resources import get_pacient_widget_ui, get_no_image_pixmap
 from GUI.MenuBar import Menu
 from GUI.actions import StaticActions
@@ -119,41 +120,41 @@ class PacientWidget(QWidget, PacientInterface):
         """Updates the instance."""
         combo_index = self.estadio_combo_box.currentIndex()
         gender_index = self.gender_combo_box.currentIndex()
+        if self.pacient is not None:
+            self.pacient.dni = self.dni_field.text()
+            self.pacient.apellidos = self.apellidos_field.text()
+            self.pacient.nombre = self.nombre_field.text()
+            self.pacient.nacimiento = self.nacimiento_field.date()
+            self.pacient.notas = self.notas_field.toPlainText()
+            self.pacient.estadio = self.estadio_combo_box.itemText(combo_index)
+            self.pacient.direccion = self.direccion_edit.text()
+            self.pacient.fecha_diagnostico = self.diagnostico_date_edit.date()
+            self.pacient.altura = self.altura_edit.value()
+            self.pacient.peso = self.peso_edit.value()
+            self.pacient.genero = self.gender_combo_box.itemText(gender_index)
+            self.pacient.mail = self.email_edit.text()
+            self.pacient.telefono = self.telefono_edit.text()
+            barray_body = QtCore.QByteArray()
+            barray_face = QtCore.QByteArray()
+            buff_body = QtCore.QBuffer(barray_body)
+            buff_face = QtCore.QBuffer(barray_face)
+            buff_face.open(QtCore.QIODevice.WriteOnly)
+            buff_body.open(QtCore.QIODevice.WriteOnly)
+            if self.cara_image.pixmap() != self.no_image:
+                pass
+                ok = self.cara_image.pixmap().save(buff_face, "PNG")
+                assert ok
+                self.pacient.fotocara = barray_face.data()
+            else:
+                self.pacient.fotocara = None  # TODO
 
-        self.pacient.dni = self.dni_field.text()
-        self.pacient.apellidos = self.apellidos_field.text()
-        self.pacient.nombre = self.nombre_field.text()
-        self.pacient.nacimiento = self.nacimiento_field.date()
-        self.pacient.notas = self.notas_field.toPlainText()
-        self.pacient.estadio = self.estadio_combo_box.itemText(combo_index)
-        self.pacient.direccion = self.direccion_edit.text()
-        self.pacient.fecha_diagnostico = self.diagnostico_date_edit.date()
-        self.pacient.altura = self.altura_edit.value()
-        self.pacient.peso = self.peso_edit.value()
-        self.pacient.genero = self.gender_combo_box.itemText(gender_index)
-        self.pacient.mail = self.email_edit.text()
-        self.pacient.telefono = self.telefono_edit.text()
-        barray_body = QtCore.QByteArray()
-        barray_face = QtCore.QByteArray()
-        buff_body = QtCore.QBuffer(barray_body)
-        buff_face = QtCore.QBuffer(barray_face)
-        buff_face.open(QtCore.QIODevice.WriteOnly)
-        buff_body.open(QtCore.QIODevice.WriteOnly)
-        if self.cara_image.pixmap() != self.no_image:
-            pass
-            ok = self.cara_image.pixmap().save(buff_face, "PNG")
-            assert ok
-            self.pacient.fotocara = barray_face.data()
-        else:
-            self.pacient.fotocara = None  # TODO
+            if self.cuerpo_image.pixmap() != self.no_image:
 
-        if self.cuerpo_image.pixmap() != self.no_image:
-
-            ok = self.cuerpo_image.pixmap().save(buff_body, "PNG")
-            assert ok
-            self.pacient.fotocuerpo = barray_body.data()
-        else:
-            self.pacient.fotocuerpo = None  # TODO
+                ok = self.cuerpo_image.pixmap().save(buff_body, "PNG")
+                assert ok
+                self.pacient.fotocuerpo = barray_body.data()
+            else:
+                self.pacient.fotocuerpo = None  # TODO
         return self.pacient
 
     def check_input(self):
@@ -208,10 +209,11 @@ class PacientWidget(QWidget, PacientInterface):
                     self.resultSignal.emit(True, self.index)
                     self.set_enabled(False)
         elif name == "cancel_button":
-            if self.save_pacient():
-                self.pacient = None
-                self.resultSignal.emit(False, -1)
-                self.set_enabled(False)
+            # self.pacient = None
+            threading.Thread(target=self.set_pics_worker,
+                             args=(self.pacient.fotocara, self.pacient.fotocuerpo,)).start()
+            self.resultSignal.emit(False, -1)
+            self.set_enabled(False)
 
     def pacientSelected(self, pacient: Pacient, row: int = None):
         """Overriden method from PacientInterface"""
@@ -279,6 +281,7 @@ class PacientWidget(QWidget, PacientInterface):
             gender_index = self.gender_items.index(pacient.genero)
         else:
             gender_index = 0
+
         self.pacient = pacient
         self.last_pacient = dni
         self.dni_field.setText(dni)
@@ -297,18 +300,7 @@ class PacientWidget(QWidget, PacientInterface):
         self.gender_combo_box.itemText(gender_index)
         self.email_edit.setText(mail)
         self.telefono_edit.setText(str(telefono))
-        if fotocara is not None and isinstance(fotocara, bytes) and fotocara != 0x0:
-            pix = QPixmap()
-            pix.loadFromData(fotocara)
-            self.cara_image.setPixmap(pix)
-        else:
-            self.cara_image.setPixmap(self.no_image)
-        if fotocuerpo is not None and isinstance(fotocuerpo, bytes) and fotocara != 0x0:
-            pix = QPixmap()
-            pix.loadFromData(fotocuerpo)
-            self.cuerpo_image.setPixmap(pix)
-        else:
-            self.cuerpo_image.setPixmap(self.no_image)
+        threading.Thread(target=self.set_pics_worker, args=(fotocara, fotocuerpo,)).start()
         self.calculate_imc()
 
     def set_enabled(self, enabled: bool):
@@ -336,7 +328,6 @@ class PacientWidget(QWidget, PacientInterface):
         self.error_nombre.setEnabled(enabled)
         self.context_button.setEnabled(enabled)
         self.imc_result.setEnabled(enabled)
-        self.foto_tab.setEnabled(enabled)
         self.finishedSignal.emit(not enabled)
 
     def pacient_selected(self) -> bool:
@@ -351,42 +342,60 @@ class PacientWidget(QWidget, PacientInterface):
             self.imc_result.setText("NaN")
         # https://www.seedo.es/index.php/pacientes/calculo-imc
 
-    def take_picture(self):  # TODO
+    def take_picture(self):
         if self.sender() == self.action_take_pic:
             cam = cv2.VideoCapture(0)
-            bytearr: narray = ...
-            while True:
+            window_name = "Pulsa ESC para salir. Espacio para tomar la foto"
+            ret, frame = cam.read()
+            cv2.imshow(window_name, frame)
+            while cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) >= 1:
                 ret, frame = cam.read()
                 if not ret:
-                    print("failed to grab frame")
                     break
-                show = cv2.imshow("Pulsa ESC para salir. Espacio para tomar la foto", frame)
+                cv2.imshow(window_name, frame)
                 k = cv2.waitKey(1)
                 if k % 256 == 27:
+                    cv2.destroyWindow(window_name)
                     break
                 elif k % 256 == 32:
-                    buffer = cv2.imencode("toto.jpg", frame)[1]
-                    bytearr: numpy.ndarray = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
-                    print(bytearr)
-                    print(type(bytearr))
-                    print(buffer)
-                    print(type(buffer))
+                    buffer = cv2.imencode("test.jpg", frame)[1]
+                    image: numpy.ndarray = cv2.imdecode(buffer, cv2.IMREAD_UNCHANGED)
                     cam.release()
-                    cv2.destroyAllWindows()
+                    cv2.destroyWindow(window_name)
+                    qformat = QImage.Format_Indexed8
+                    size = image.shape
+                    step = image.size / size[0]
+                    if len(size) == 3:
+                        if size[2] == 4:
+                            qformat = QImage.Format_RGBA8888
+                        else:
+                            qformat = QImage.Format_RGB888
+                    img = QImage(image, size[1], size[0], step, qformat)
+                    img = img.rgbSwapped()
+                    pixmap = QPixmap(QPixmap.fromImage(img))
+                    if self.foto_tab.currentWidget() == self.cara_tab:
+                        self.cara_image.setPixmap(pixmap)
+                        pass
+                    elif self.foto_tab.currentWidget() == self.cuerpo_tab:
+                        self.cuerpo_image.setPixmap(pixmap)
                     break
-            if bytearr is not None:
-                pixmap = QPixmap()
-                pixmap.loadFromData(bytearr.tobytes())
-                if self.foto_tab.currentWidget() == self.cara_tab and bytearr is not None:
-                    self.cara_image.setPixmap(pixmap)
-                    pass
-                elif self.foto_tab.currentWidget() == self.cuerpo_tab is not None:
-                    self.cuerpo_image.setPixmap(pixmap)
-            else:
-                pass
 
         elif self.sender() == self.action_select_pic:
-            pass
+            file_dialog = QFileDialog()
+            # file_dialog.setAcceptMode()
+            chosen_file = file_dialog.getOpenFileName(filter="Image Files (*.png *.jpg *.jpeg *.bmp)")
+            bites = open(chosen_file[0], "br").read()
+            if self.foto_tab.currentWidget() == self.cara_tab:
+                self.pacient.fotocara = bites
+                pixmap = QPixmap()
+                pixmap.loadFromData(bites)
+                self.cara_image.setPixmap(pixmap)
+                pass
+            elif self.foto_tab.currentWidget() == self.cuerpo_tab:
+                self.pacient.fotocuerpo = bites
+                pixmap = QPixmap()
+                pixmap.loadFromData(bites)
+                self.cuerpo_image.setPixmap(pixmap)
         else:
             pass
 
@@ -419,3 +428,38 @@ class PacientWidget(QWidget, PacientInterface):
         elif name == self.diagnostico_calendar.objectName() or name == self.diagnostico_date_edit.objectName():
             self.diagnostico_calendar.setSelectedDate(args[0])
             self.diagnostico_date_edit.setDate(args[0])
+
+    def set_pic_from_raw_worker(self, frame):
+        buffer = cv2.imencode("test.jpg", frame)[1]
+        image: numpy.ndarray = cv2.imdecode(buffer, cv2.IMREAD_UNCHANGED)
+        qformat = QImage.Format_Indexed8
+        size = image.shape
+        step = image.size / size[0]
+        if len(size) == 3:
+            if size[2] == 4:
+                qformat = QImage.Format_RGBA8888
+            else:
+                qformat = QImage.Format_RGB888
+        img = QImage(image, size[1], size[0], step, qformat)
+        # img = img.rgbSwapped()
+        pixmap = QPixmap(QPixmap.fromImage(img))
+        if self.foto_tab.currentWidget() == self.cara_tab:
+            self.cara_image.setPixmap(pixmap)
+            pass
+        elif self.foto_tab.currentWidget() == self.cuerpo_tab:
+            self.cuerpo_image.setPixmap(pixmap)
+
+    def set_pics_worker(self, fotocara, fotocuerpo):
+        """its planned to be a thread worker."""
+        if fotocara is not None and isinstance(fotocara, bytes):
+            pix = QPixmap()
+            pix.loadFromData(fotocara)
+            self.cara_image.setPixmap(pix)
+        else:
+            self.cara_image.setPixmap(self.no_image)
+        if fotocuerpo is not None and isinstance(fotocuerpo, bytes):
+            pix = QPixmap()
+            pix.loadFromData(fotocuerpo)
+            self.cuerpo_image.setPixmap(pix)
+        else:
+            self.cuerpo_image.setPixmap(self.no_image)

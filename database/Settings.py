@@ -3,7 +3,7 @@ from datetime import timedelta
 from sqlitedao import ColumnDict, SqliteDao
 
 import Utils
-from database.database_controller import Connection
+from database.deprecated_data_controller import Connection
 from database.entities_interface import Entity
 from database.usuari import Usuari
 
@@ -62,7 +62,7 @@ class Settings(Entity):
 
     def insert(self, conexion: Connection) -> any:
         if conexion.has_users():
-            results = conexion.execute(f"SELECT * FROM {self.get_tablename()} WHERE username like {self.user}")
+            results = conexion.execute(f"SELECT * FROM {self.get_tablenames()} WHERE username like {self.user}")
             for val,key in self.dictionary.items():
                 if {"key":key,"value":val,"username":self.user} in results:
                     pass
@@ -82,7 +82,7 @@ class Settings(Entity):
         return Settings.instance
 
     @staticmethod
-    def get_tablename():
+    def get_tablenames():
         return "settings"
 
     @classmethod
@@ -93,7 +93,7 @@ class Settings(Entity):
             user = connection.user
         else:
             user = cls.DEFAULT_USER
-        results = dao.search_table(cls.get_tablename(), {"username": user})
+        results = dao.search_table(cls.get_tablenames(), {"username": user})
         for result in results:
             settingsDictionary[result.get("key")] = result.get("value")
         settings = Settings(settingsDictionary, user)
@@ -106,4 +106,4 @@ class Settings(Entity):
         columns.add_column("value", "text")
         columns.add_column("username", "text", )
         columns.add_column("FOREIGN KEY(pacient_id)",
-                           f"REFERENCES {Usuari.get_tablename()}(username)")
+                           f"REFERENCES {Usuari.get_tablenames()}(username)")

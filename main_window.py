@@ -1,13 +1,16 @@
 import os
 import sys
+import threading
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import QThreadPool, pyqtSignal, Qt
-from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy, QScrollArea
+from PyQt5.QtCore import QThreadPool, pyqtSignal
+from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy
+from cv2.cv2 import VideoCapture
 
 from GUI.MenuBar import MenuBar, ToolBar
+from GUI.actions import StaticActions
 from GUI.main_window_javi import CentralWidgetParkingson
-from database.database_controller import Connection
+from database.deprecated_data_controller import Connection
 from database.usuari import Usuari
 from database.pacient import Pacient
 from database.models import PacientsListModel, ListModel, PruebasListModel
@@ -49,6 +52,9 @@ class UI(QMainWindow):
         self.menu_bar.add_pacient.triggered.connect(self.button_clicked)
         self.menu_bar.edit_pacient.triggered.connect(self.button_clicked)
         self.menu_bar.del_pacient.triggered.connect(self.button_clicked)
+        self.menu_bar.mod_prueba.triggered.connect(self.button_clicked)
+        self.menu_bar.del_prueba.triggered.connect(self.button_clicked)
+
         self.central.pacients_list_view.clicked.connect(self.on_listview_pacient_click)
         self.central.pacients_list_view.doubleClicked.connect(self.on_pacient_double_click)
         self.central.pacients_tab.finishedSignal.connect(self.on_finished)
@@ -59,8 +65,8 @@ class UI(QMainWindow):
         self.menu_bar.data.setEnabled(False)
         self.menu_bar.ajustes.setEnabled(False)
         self.menu_bar.ayuda.setEnabled(False)
-        self.menu_bar.pruebas.setEnabled(False)
-
+        #self.menu_bar.pruebas.setEnabled(False)
+        StaticActions.mod_prueba_action.setEnabled(False)
         self.menu_bar.edit_pacient.setEnabled(False)
         self.menu_bar.del_pacient.setEnabled(False)
 
@@ -100,9 +106,11 @@ class UI(QMainWindow):
         self.central.parent_tab_widget.setEnabled(False)
 
         # INIT Tab Components
+
         self.central.pacients_tab.init()
         self.central.cronometro_tab.init()
         self.central.rendimiento_tab.init()
+
         # El tab de pacientes sera el por defecto.
 
         pacient_index = self.central.parent_tab_widget.indexOf(self.central.pacients_tab)
@@ -117,6 +125,7 @@ class UI(QMainWindow):
             self.central.pacients_list_view.setModel(self.listview_model)
         else:
             sys.exit(0)
+        threading.Thread(target=self.check_camera_worker).start()
 
     def credentials(self):
         """ Funcion que pide las credenciales. Si le dan a cancelar, sale del programa. Si son incorrectas
@@ -141,7 +150,7 @@ class UI(QMainWindow):
         self.menu_bar.edit_pacient.setEnabled(True)
         self.menu_bar.del_pacient.setEnabled(True)
 
-    def hide_view(self,args):
+    def hide_view(self, *args):
         name = self.sender().objectName()
         if "action_view_toolbar" == name:
             if not self.sender().isChecked():
@@ -154,7 +163,7 @@ class UI(QMainWindow):
             self.central.parent_tab_widget.currentChanged.emit(self.central.parent_tab_widget.currentIndex())
             if not self.sender().isChecked():
                 self.central.parent_tab_widget.setTabVisible(2, False)
-                self.central.cronometro_tab.setVisible(self.central.cronometro_tab.is_on_focus())
+                self.central.cronometro_tab.setVisible(False)
             else:
                 self.central.parent_tab_widget.setTabVisible(2, True)
                 self.central.cronometro_tab.setVisible(self.central.cronometro_tab.is_on_focus())
@@ -164,7 +173,8 @@ class UI(QMainWindow):
             self.central.parent_tab_widget.currentChanged.emit(self.central.parent_tab_widget.currentIndex())
             if not self.sender().isChecked():
                 self.central.parent_tab_widget.setTabVisible(0, False)
-                self.central.pacients_tab.setVisible(self.central.cronometro_tab.is_on_focus())
+                self.central.pacients_tab.setVisible(False)
+                self.central.pacients_tab.cancel_button.clicked.emit()
             else:
                 self.central.parent_tab_widget.setTabVisible(0, True)
                 self.central.pacients_tab.setVisible(self.central.cronometro_tab.is_on_focus())
@@ -173,7 +183,7 @@ class UI(QMainWindow):
             self.central.parent_tab_widget.currentChanged.emit(self.central.parent_tab_widget.currentIndex())
             if not self.sender().isChecked():
                 self.central.parent_tab_widget.setTabVisible(1, False)
-                self.central.rendimiento_tab.setVisible(self.central.rendimiento_tab.is_on_focus())
+                self.central.rendimiento_tab.setVisible(False)
             else:
                 self.central.parent_tab_widget.setTabVisible(1, True)
                 self.central.rendimiento_tab.setVisible(self.central.rendimiento_tab.is_on_focus())
@@ -204,15 +214,12 @@ class UI(QMainWindow):
 
     def on_pacient_double_click(self, *args):
         row = args[0].row()
-
         p = self.listview_model.instance_class.get_object(row)
         self.status_bar.showMessage(f"Editando: {p}")
         self.menu_bar.edit_pacient.triggered.emit()
 
-
-
-    def changeStatus(self, str, seconds):
-        self.status_bar.showMessage(str, seconds * 1000)
+    def changeStatus(self, string, microseconds):
+        self.status_bar.showMessage(string, microseconds * 1000)
 
     def button_clicked(self, *args):
         sender_name = self.sender().objectName()
@@ -223,7 +230,7 @@ class UI(QMainWindow):
             self.central.pacients_tab.set_enabled(True)
             self.central.parent_tab_widget.setEnabled(True)
         elif sender_name == "del_pacient_action":
-            if len(self.listview_model.items) > 0 and self.central.pacients_tab.pacient_selected()  :
+            if len(self.listview_model.items) > 0 and self.central.pacients_tab.pacient_selected():
                 pacient = self.listview_model.items[self.central.pacients_tab.index]
                 dialog = GUI_Resources.get_confirmation_dialog_ui(f"Quieres eliminar el usuario {pacient}")
                 if dialog.exec_() == 1:
@@ -231,6 +238,11 @@ class UI(QMainWindow):
         elif sender_name == "edit_pacient_action":
             if len(self.listview_model.items) > 0 and self.central.pacients_tab.pacient_selected():
                 self.central.pacients_tab.set_enabled(True)
+        elif sender_name == "del_prueba_action":
+            dialog = GUI_Resources.get_confirmation_dialog_ui(
+                f"Quieres eliminar la prueba de rendimiento del paciente")
+            if dialog.exec_() == 1:
+                PruebasListModel.get_instance().delete(self.central.rendimiento_tab.selected_prueba)
 
     def on_crono_finished(self, prueba, row):
         PruebasListModel.get_instance().append(prueba)
@@ -247,3 +259,7 @@ class UI(QMainWindow):
         super().keyPressEvent(a0)
         self.key_press.emit(a0)
 
+    @staticmethod
+    def check_camera_worker():
+        if not VideoCapture(0).read()[0]:  # Compruebo si hay camara. si no la hay haz X
+            StaticActions.tomar_foto.setEnabled(False)

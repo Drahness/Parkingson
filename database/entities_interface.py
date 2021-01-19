@@ -1,5 +1,6 @@
 from sqlitedao import ColumnDict, SqliteDao
 
+
 # from Utils import get_timedeltas, get_timedelta
 
 
@@ -15,35 +16,35 @@ class Entity:
     def load(cls, connection) -> list:
         items = cls._get_list_of_instances()
         dao: SqliteDao = connection.dao
-        for obj in dao.search_table(cls.get_tablename(), {}):
+        for obj in dao.search_table(cls.get_tablenames()[0], {}):
             items.append(cls(dictionary=obj))
         Entity.__loaded_instances[cls] = items
         return items
 
     @staticmethod
-    def get_columns_dict() -> tuple or ColumnDict:
-        raise NotImplementedError()
+    @DeprecationWarning
+    def get_columns_dict() -> tuple:...
 
     @staticmethod
     def is_autoincrement() -> bool:
         return False
 
-    def insert(self, conexion) -> any:
-        raise NotImplementedError()
+    def insert(self, conexion) -> any:...
 
-    def update(self, conexion, to_updated):
-        raise NotImplementedError()
+    def update(self, conexion, to_updated):...
 
-    def delete(self, conexion):
-        raise NotImplementedError()
+    def delete(self, conexion):...
 
     @staticmethod
     def get_tables_count() -> int:
         return 1
 
     @staticmethod
-    def get_tablename():
-        raise NotImplementedError()
+    def get_tablenames() -> tuple:...
+
+    @classmethod
+    def get_tablename(cls,index):
+        return cls.get_tablenames()[index]
 
     """ Para mantener la sincronizacion con la BBDD"""
 
@@ -69,4 +70,6 @@ class Entity:
     def get_id(self):
         return self.id
 
-
+    @classmethod
+    def get_definitions(cls):
+        return [(cls.get_tablenames()[i], cls.get_columns_dict()[i]) for i in range(0, cls.get_tables_count())]

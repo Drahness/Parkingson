@@ -8,6 +8,31 @@ from GUI.GUI_Resources import get_error_dialog_msg
 from database.DB_Resources import get_db_connection
 from database.entities_interface import Entity
 
+class AbstractEntityModel:
+    def __init__(self,user:str, base: Type[Entity]):
+        self.instance_class = base
+        self.__check_subclass(base)
+        self.conn = get_db_connection()
+        self.items = base.load(self.conn)  # Al ser singleon, solo carga una vez y se matiene sincronizado.
+        self.showable_items = None
+
+    def reload(self):...
+    def change_model_list(self, list):...
+    def get(self, index):...
+    def append(self, entity):...
+    def __check_instance(self, entity):...
+    @staticmethod
+    def __check_subclass(type):...
+    def delete(self, entity):...
+    def update(self, entity, id_to_update):...
+    @classmethod
+    def get_instance(cls):
+        if cls not in ListModel.INSTANCES:
+            ListModel.INSTANCES[cls] = cls()
+        return ListModel.INSTANCES[cls]
+
+    def __len__(self) -> int:
+        return len(self.items)
 
 class ListModel(QAbstractListModel):
     INSTANCES = {}

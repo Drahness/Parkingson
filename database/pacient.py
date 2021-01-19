@@ -196,15 +196,15 @@ class Pacient(Entity):
         conexion.execute(sql, atributos)
 
     def delete(self, conexion):
-        conexion.execute(f"DELETE FROM {self.get_tablename()} WHERE dni = ?", [self.dni])
+        conexion.execute(f"DELETE FROM {self.get_tablenames()[0]} WHERE dni = ?", [self.dni])
         self.remove()
 
     @staticmethod
-    def get_tablename() -> tuple or str:
-        return "pacients"
+    def get_tablenames() -> tuple:
+        return "pacients",
 
     @staticmethod
-    def get_columns_dict() -> tuple or ColumnDict:
+    def get_columns_dict() -> tuple:
         columns = ColumnDict()
         columns.add_column("dni", "text", "PRIMARY KEY")
         columns.add_column("nombre", "text")
@@ -221,7 +221,7 @@ class Pacient(Entity):
         columns.add_column("genero", "text")
         columns.add_column("fecha_diagnostico", "date")
         columns.add_column("altura", "float")
-        return columns
+        return columns,
 
     def __str__(self):
         return f"{self.dni}:{self.apellidos}, {self.nombre}"

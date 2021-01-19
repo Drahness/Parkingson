@@ -46,15 +46,15 @@ class Usuari(Entity):
         self.remove()
 
     @staticmethod
-    def get_tablename() -> tuple or str:
-        return "users"
+    def get_tablenames() -> tuple:
+        return "users",
 
     @staticmethod
-    def get_columns_dict() -> tuple or ColumnDict:
+    def get_columns_dict() -> tuple:
         columns = ColumnDict()
         columns.add_column("username", "text", "PRIMARY KEY")
         columns.add_column("password", "text")
-        return columns
+        return columns,
 
     @staticmethod
     def valid_user(conn, username, password):
