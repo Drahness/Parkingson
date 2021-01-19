@@ -8,7 +8,6 @@ from PyQt5.QtCore import pyqtSignal, QPoint
 from PyQt5.QtGui import QIntValidator, QPixmap
 from PyQt5.QtWidgets import QWidget, QCalendarWidget, QDateEdit, QLabel, QComboBox, QLineEdit, QDoubleSpinBox, \
     QPushButton, QTabWidget, QToolButton
-from VideoCapture import Device
 from GUI.GUI_Resources import get_pacient_widget_ui, get_no_image_pixmap
 from GUI.MenuBar import Menu
 from GUI.actions import StaticActions
@@ -56,7 +55,7 @@ class PacientWidget(QWidget, PacientInterface):
         self.error_email: QLabel = self.error_email
         self.gender_combo_box: QComboBox = self.gender_combo_box
         self.diagnostico_date_edit: QDateEdit = self.diagnostico_date_edit
-        self.cara_image: QLabel= self.cara_image
+        self.cara_image: QLabel = self.cara_image
         self.cuerpo_image: QLabel = self.cuerpo_image
         self.current_calendar: QLabel = self.current_calendar
         self.diagnostico_calendar: QCalendarWidget = self.diagnostico_calendar
@@ -103,7 +102,7 @@ class PacientWidget(QWidget, PacientInterface):
         self.pacientSelected(None)
         self.set_enabled(False)
 
-    def popup_context_menu(self,*args):
+    def popup_context_menu(self, *args):
         widget = self.sender()
         x = 0
         y = 0
@@ -113,7 +112,7 @@ class PacientWidget(QWidget, PacientInterface):
             widget = widget.parent()
         x += widget.pos().x() + 15
         y += widget.pos().y() - 10
-        point = QPoint(x,y)
+        point = QPoint(x, y)
         self.menu.popup(point)
 
     def save_pacient(self):
@@ -226,13 +225,13 @@ class PacientWidget(QWidget, PacientInterface):
                 nacimiento = pacient.get("nacimiento", default=self.default_date)
                 notas = pacient.get("notas")
                 genero = pacient.get("genero")
-                altura = pacient.get("altura",default=0)
+                altura = pacient.get("altura", default=0)
                 mail = pacient.get("mail")
                 fotocuerpo = pacient.get("fotocuerpo")
                 fotocara = pacient.get("fotocara")
                 telefono = pacient.get("telefono")
                 direccion = pacient.get("direccion")
-                peso = pacient.get("peso",default=0)
+                peso = pacient.get("peso", default=0)
                 fecha_diagnostico = pacient.get("fecha_diagnostico", default=self.default_date)
             elif isinstance(pacient, Pacient):
                 dni = pacient.dni
@@ -272,7 +271,7 @@ class PacientWidget(QWidget, PacientInterface):
         if estadio is not None and self.combo_items.count(str(estadio)):
             estadio_index = self.combo_items.index(str(estadio))
         else:
-            if isinstance(estadio,float) and estadio.is_integer():
+            if isinstance(estadio, float) and estadio.is_integer():
                 estadio_index = self.combo_items.index(str(estadio.as_integer_ratio()[0]))
             else:
                 estadio_index = 0
@@ -298,13 +297,15 @@ class PacientWidget(QWidget, PacientInterface):
         self.gender_combo_box.itemText(gender_index)
         self.email_edit.setText(mail)
         self.telefono_edit.setText(str(telefono))
-        if fotocara is not None and isinstance(fotocara,bytes) and fotocara != 0x0:
-            pix = QPixmap().loadFromData(fotocara)
+        if fotocara is not None and isinstance(fotocara, bytes) and fotocara != 0x0:
+            pix = QPixmap()
+            pix.loadFromData(fotocara)
             self.cara_image.setPixmap(pix)
         else:
             self.cara_image.setPixmap(self.no_image)
-        if fotocuerpo is not None and isinstance(fotocuerpo,bytes) and fotocara != 0x0:
-            pix = QPixmap().loadFromData(fotocuerpo)
+        if fotocuerpo is not None and isinstance(fotocuerpo, bytes) and fotocara != 0x0:
+            pix = QPixmap()
+            pix.loadFromData(fotocuerpo)
             self.cuerpo_image.setPixmap(pix)
         else:
             self.cuerpo_image.setPixmap(self.no_image)
@@ -345,7 +346,7 @@ class PacientWidget(QWidget, PacientInterface):
         peso = self.peso_edit.value()
         altura = self.altura_edit.value()
         if altura != 0:
-            self.imc_result.setText(str(round(peso / (altura * altura),3)))
+            self.imc_result.setText(str(round(peso / (altura * altura), 3)))
         else:
             self.imc_result.setText("NaN")
         # https://www.seedo.es/index.php/pacientes/calculo-imc
@@ -353,7 +354,7 @@ class PacientWidget(QWidget, PacientInterface):
     def take_picture(self):  # TODO
         if self.sender() == self.action_take_pic:
             cam = cv2.VideoCapture(0)
-            bytearr = None
+            bytearr: narray = ...
             while True:
                 ret, frame = cam.read()
                 if not ret:
@@ -418,6 +419,3 @@ class PacientWidget(QWidget, PacientInterface):
         elif name == self.diagnostico_calendar.objectName() or name == self.diagnostico_date_edit.objectName():
             self.diagnostico_calendar.setSelectedDate(args[0])
             self.diagnostico_date_edit.setDate(args[0])
-
-
-
