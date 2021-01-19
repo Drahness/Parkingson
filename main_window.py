@@ -45,6 +45,8 @@ class UI(QMainWindow):
         self.menu_bar.add_pacient.triggered.connect(self.button_clicked)
         self.menu_bar.edit_pacient.triggered.connect(self.button_clicked)
         self.menu_bar.del_pacient.triggered.connect(self.button_clicked)
+        self.menu_bar.mod_prueba.triggered.connect(self.button_clicked)
+        self.menu_bar.del_prueba.triggered.connect(self.button_clicked)
         self.central.pacients_list_view.clicked.connect(self.on_listview_pacient_click)
         self.central.pacients_list_view.doubleClicked.connect(self.on_pacient_double_click)
         self.central.pacients_tab.finishedSignal.connect(self.on_finished)
@@ -55,7 +57,7 @@ class UI(QMainWindow):
         self.menu_bar.data.setEnabled(False)
         self.menu_bar.ajustes.setEnabled(False)
         self.menu_bar.ayuda.setEnabled(False)
-        self.menu_bar.pruebas.setEnabled(False)
+        #self.menu_bar.pruebas.setEnabled(False)
 
         self.menu_bar.edit_pacient.setEnabled(False)
         self.menu_bar.del_pacient.setEnabled(False)
@@ -162,6 +164,12 @@ class UI(QMainWindow):
         elif sender_name == "edit_pacient_action":
             if self.central.pacients_tab.pacient_selected():
                 self.central.pacients_tab.set_enabled(True)
+        elif sender_name == "del_prueba_action":
+            dialog = GUI_Resources.get_confirmation_dialog_ui(f"Quieres eliminar la prueba de rendimiento del paciente")
+            if dialog.exec_() == 1:
+                PruebasListModel.get_instance().delete(self.central.rendimiento_tab.selected_prueba)
+
+        
 
     def on_crono_finished(self, prueba, row):
         PruebasListModel.get_instance().append(prueba)
