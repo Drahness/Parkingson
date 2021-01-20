@@ -35,11 +35,11 @@ class Grafica(FigureCanvasQTAgg):
 
     funcformatter = ticker.FuncFormatter(formatter)
 
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
+    def __init__(self, user:str ,parent=None, width=5, height=4, dpi=100):
         PacientInterface.__init__(self)
         # fig = Figure(figsize=(width, height), dpi=dpi)
         # self.axes = fig.add_subplot(111)
-        self.model = PruebasListModel.get_instance()
+        self.model = PruebasListModel.get_instance(user)
         self.fig, self.ax = pyplot.subplots()
         self.line_lap0 = None
         self.line_lap1 = None
@@ -59,17 +59,18 @@ class Grafica(FigureCanvasQTAgg):
 
 class PerformanceTab(QWidget, PacientInterface):
 
-    def __init__(self):
+    def __init__(self,user):
         super(PerformanceTab, self).__init__()
         PacientInterface.__init__(self)
         GUI_Resources.get_performance_widget(self)
-        self.graph = Grafica()
-        self.model: PruebasListModel = PruebasListModel.get_instance()
+        self.graph = Grafica(user)
+        self.model: PruebasListModel = PruebasListModel.get_instance(user)
         self.listView: QListView = self.listView
         self.listView.setModel(self.model)
         self.model.change_model_list([])
         self.listView.clicked.connect(self.onPruebaClicked)
         self.horizontalLayout.addWidget(self.graph)
+
 
     def currentChanged(self, index):  # Tab changed
         super().currentChanged(index)

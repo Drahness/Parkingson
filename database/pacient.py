@@ -159,7 +159,7 @@ class Pacient(Entity):
                    peso = ?,
                    genero = ?,
                    fecha_diagnostico = ?,
-                   altura = ?,
+                   altura = ?
                     WHERE dni = ?"""
         else:
             atributos = [self.apellidos,

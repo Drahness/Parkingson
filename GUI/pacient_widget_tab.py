@@ -384,18 +384,19 @@ class PacientWidget(QWidget, PacientInterface):
             file_dialog = QFileDialog()
             # file_dialog.setAcceptMode()
             chosen_file = file_dialog.getOpenFileName(filter="Image Files (*.png *.jpg *.jpeg *.bmp)")
-            bites = open(chosen_file[0], "br").read()
-            if self.foto_tab.currentWidget() == self.cara_tab:
-                self.pacient.fotocara = bites
-                pixmap = QPixmap()
-                pixmap.loadFromData(bites)
-                self.cara_image.setPixmap(pixmap)
-                pass
-            elif self.foto_tab.currentWidget() == self.cuerpo_tab:
-                self.pacient.fotocuerpo = bites
-                pixmap = QPixmap()
-                pixmap.loadFromData(bites)
-                self.cuerpo_image.setPixmap(pixmap)
+            if chosen_file != '':
+                bites = open(chosen_file[0], "br").read()
+                if self.foto_tab.currentWidget() == self.cara_tab:
+                    self.pacient.fotocara = bites
+                    pixmap = QPixmap()
+                    pixmap.loadFromData(bites)
+                    self.cara_image.setPixmap(pixmap)
+                    pass
+                elif self.foto_tab.currentWidget() == self.cuerpo_tab:
+                    self.pacient.fotocuerpo = bites
+                    pixmap = QPixmap()
+                    pixmap.loadFromData(bites)
+                    self.cuerpo_image.setPixmap(pixmap)
         else:
             pass
 

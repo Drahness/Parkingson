@@ -30,11 +30,13 @@ class Prueba(Entity):
                  laps: list = None,
                  pacient_id: str = None,
                  datetime_of_test: datetime.datetime = None,
+                 notas: list = None,
                  dictionary: dict = None):
         if dictionary is not None:
             self.dictionary = dictionary
             identifier = dictionary["identifier"]
             laps = dictionary["laps"]
+            notas = dictionary["notas"]
             pacient_id = dictionary["pacient_id"]
             datetime_of_test = dictionary["datetime"]
         super().__init__(pacient_id)
@@ -47,6 +49,7 @@ class Prueba(Entity):
         else:
             self.laps = laps
         self.pacient_id = pacient_id
+        self.notas = notas
         if isinstance(datetime_of_test, str):
             self.datetime = datetime.datetime.strptime(datetime_of_test, '%Y-%m-%d %H:%M:%S.%f')
         else:
@@ -66,9 +69,11 @@ class Prueba(Entity):
                                                                                                 str(self.datetime)])
         for i_lap in range(0, len(self.laps)):
             curr_lap = self.laps[i_lap]
-            conexion.insert("INSERT INTO pruebas_data (identifier,tiempo,num_lap) VALUES (?,?,?)", [self.identifier,
+            curr_notas = self.notas[i_lap]
+            conexion.insert("INSERT INTO pruebas_data (identifier,tiempo,notas,num_lap) VALUES (?,?,?,?)", [self.identifier,
                                                                                                     curr_lap.seconds + curr_lap.microseconds / (
                                                                                                             10 ** 6),
+                                                                                                    curr_notas,
                                                                                                     i_lap])
         conexion.commit()
         conexion.set_auto_commit(True)
@@ -92,8 +97,9 @@ class Prueba(Entity):
                           identifier])
         for i in range(0, len(laps_to_update)):
             conexion.execute(
-                f"UPDATE {self.get_tablenames()[1]} SET identifier = ?, tiempo = ?, num_lap = ? WHERE rowid =", [
+                f"UPDATE {self.get_tablenames()[1]} SET identifier = ?, notas= ? ,tiempo = ?, num_lap = ? WHERE rowid =", [
                     self.identifier,
+                    self.notas,
                     self.laps[i],
                     i,
                     laps_to_update[i][0]
@@ -135,13 +141,16 @@ class Prueba(Entity):
                                                    order_by=["datetime"])  # Este order by sobra
         # Implementar __repr__ deberia ser lo normal.
         for dictionary in dictionaries:
-            tests_list = []
+            time_x_lap = []
+            notas_x_lap = []
             list_laps = connection.dao.search_table(table_name=Prueba.get_tablenames()[1],
                                                     search_dict={"identifier": dictionary["identifier"]},
                                                     order_by=["num_lap"])
             for lap in list_laps:
-                tests_list.append(lap["tiempo"])
-            dictionary["laps"] = tests_list
+                time_x_lap.append(lap["tiempo"])
+                notas_x_lap.append(lap["notas"])
+            dictionary["laps"] = time_x_lap
+            dictionary["notas"] = notas_x_lap
             items.append(cls(dictionary=dictionary))
         return items
 
@@ -165,6 +174,7 @@ class Prueba(Entity):
         second_table = ColumnDict()
         second_table.add_column("identifier", "INTEGER")  # id de la prueba
         second_table.add_column("tiempo", "REAL")  # Real en segundos.microsegundos
+        second_table.add_column("notas","TEXT")
         second_table.add_column("num_lap", "INTEGER")
         return first_table, second_table
 

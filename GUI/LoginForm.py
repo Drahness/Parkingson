@@ -3,7 +3,7 @@ import sys
 import Utils
 from GUI import GUI_Resources
 
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, uic, QtGui, Qt, QtCore
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTabWidget
 
 
@@ -24,15 +24,15 @@ class LoginRegisterWindow(QDialog):
         super(LoginRegisterWindow, self).__init__()
         self.result = {}
         self.conn = conn
-        tab: QTabWidget = QTabWidget()
+        self.tab: QTabWidget = QTabWidget()
         layout = QVBoxLayout()
-        layout.addWidget(tab)
+        layout.addWidget(self.tab)
         self._login_validator = self.validator_debug  # method
         self.login_widget = GUI_Resources.get_login_tab()
         self.register_widget = GUI_Resources.get_register_tab()
 
-        tab.addTab(self.login_widget, "Login")
-        tab.addTab(self.register_widget, "Registro")
+        self.tab.addTab(self.login_widget, "Login")
+        self.tab.addTab(self.register_widget, "Registro")
         self.setLayout(layout)
         self.debug = False
         self.login_widget.positive.clicked.connect(self.__positive_login)
@@ -81,6 +81,16 @@ class LoginRegisterWindow(QDialog):
     @staticmethod
     def validator_debug(*args):
         return True
+
+    def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
+        if a0 == QtCore.Qt.Key_Enter:
+            if self.tab.currentWidget() == self.login_widget:
+                self.login_widget.positive.clicked.emit()
+            elif self.tab.currentWidget() == self.register_widget:
+                self.register_widget.positive.clicked.emit()
+        elif 10 == QtCore.Qt.Key_Escape:
+            self.__cancel_buttons()
+        super().keyPressEvent(a0)
 
 
 if __name__ == '__main__':

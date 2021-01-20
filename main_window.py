@@ -2,15 +2,17 @@ import os
 import sys
 import threading
 
-from PyQt5 import QtGui
-from PyQt5.QtCore import QThreadPool, pyqtSignal
-from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import QThreadPool, pyqtSignal, QSize, QRect, QPoint
+from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy, QApplication
 from cv2.cv2 import VideoCapture
 
 from GUI.MenuBar import MenuBar, ToolBar
 from GUI.actions import StaticActions
 from GUI.main_window_javi import CentralWidgetParkingson
-from database.deprecated_data_controller import Connection
+from database.Settings import Settings, UserSettings
+from database.deprecated_data_controller import Connection  # TODO change to a new more basic Connection manager.
+from database.new_models import AbstractEntityModel
 from database.usuari import Usuari
 from database.pacient import Pacient
 from database.models import PacientsListModel, ListModel, PruebasListModel
@@ -23,10 +25,12 @@ class UI(QMainWindow):
     changeStatusBar = pyqtSignal(str, int)
     hideViews = pyqtSignal(bool)
     key_press = pyqtSignal(QtGui.QKeyEvent)
+    inited = False
 
     def __init__(self, debug=False):
         super().__init__()
         self.setObjectName("Main_window")
+        self.settings = None
         # TODO SINGLETONS ?¿?¿?¿?¿
         UI.instance = self
         UI.DB = "db" + os.sep + f"default.db"
@@ -37,9 +41,36 @@ class UI(QMainWindow):
         self.connection = Connection()
         self.login_form = GUI_Resources.get_login_register_dialog(self.connection)
         self.user_credentials = {"result": False}
-
+        self.credentials()
+        if self.user_credentials["result"]:
+            self.show()
+        else:
+            sys.exit(0)
         # Recogemos el Central widget, lo añadimos y luego lo inicializamos
-        self.central = CentralWidgetParkingson(debug=debug)
+        if debug and self.user_credentials["username"] == '':
+            self.user_credentials["username"] = "Admin"
+
+        self.central = CentralWidgetParkingson(self.user_credentials["username"], debug=debug)
+        self.setCentralWidget(self.central)
+        # Creamos el objeto settings
+        self.settings = UserSettings(self.user_credentials["username"])
+
+        if self.settings.value(self.settings.SIZE):
+            rect = self.settings.value(self.settings.SIZE, type=QSize)
+            self.resize(rect.width(), rect.height())
+        if self.settings.value(self.settings.FULLSCREEN, False, bool):
+            self.showMaximized()
+
+        pos = self.settings.value(self.settings.POSITION, QPoint(50,50), QPoint)
+        self.move(pos)
+
+
+
+
+
+        PruebasListModel.get_instance(self.user_credentials["username"])
+        self.listview_model: AbstractEntityModel = PacientsListModel.get_instance(self.user_credentials["username"])
+        self.central.pacients_list_view.setModel(self.listview_model)
 
         self.setCentralWidget(self.central)
         self.menu_bar = MenuBar()
@@ -65,7 +96,7 @@ class UI(QMainWindow):
         self.menu_bar.data.setEnabled(False)
         self.menu_bar.ajustes.setEnabled(False)
         self.menu_bar.ayuda.setEnabled(False)
-        #self.menu_bar.pruebas.setEnabled(False)
+        # self.menu_bar.pruebas.setEnabled(False)
         StaticActions.mod_prueba_action.setEnabled(False)
         self.menu_bar.edit_pacient.setEnabled(False)
         self.menu_bar.del_pacient.setEnabled(False)
@@ -117,15 +148,8 @@ class UI(QMainWindow):
         self.central.parent_tab_widget.setCurrentIndex(pacient_index)
         self.iconSizeChanged.connect(self.iconSizeChanged)
 
-        self.credentials()
-        if self.user_credentials["result"]:
-            self.setCentralWidget(self.central)
-            self.show()
-            self.listview_model: ListModel = PacientsListModel.get_instance()
-            self.central.pacients_list_view.setModel(self.listview_model)
-        else:
-            sys.exit(0)
         threading.Thread(target=self.check_camera_worker).start()
+        self.inited = True
 
     def credentials(self):
         """ Funcion que pide las credenciales. Si le dan a cancelar, sale del programa. Si son incorrectas
@@ -144,7 +168,7 @@ class UI(QMainWindow):
         row = args[0].row()
         if not self.central.parent_tab_widget.isEnabled():
             self.central.parent_tab_widget.setEnabled(True)
-        p = self.listview_model.instance_class.get_object(row)
+        p = self.listview_model.get(row)
         self.changeStatusBar.emit(f"Selecionado: {p}", 1)
         self.pacientSelected.emit(p, row)
         self.menu_bar.edit_pacient.setEnabled(True)
@@ -214,7 +238,7 @@ class UI(QMainWindow):
 
     def on_pacient_double_click(self, *args):
         row = args[0].row()
-        p = self.listview_model.instance_class.get_object(row)
+        p = self.listview_model.get(row)
         self.status_bar.showMessage(f"Editando: {p}")
         self.menu_bar.edit_pacient.triggered.emit()
 
@@ -222,37 +246,39 @@ class UI(QMainWindow):
         self.status_bar.showMessage(string, microseconds * 1000)
 
     def button_clicked(self, *args):
-        sender_name = self.sender().objectName()
         pacient_index = self.central.parent_tab_widget.indexOf(self.central.pacients_tab)
         self.central.parent_tab_widget.setCurrentIndex(pacient_index)
-        if sender_name == "add_pacient_action":
+        if self.sender() == StaticActions.add_pacient_action:
             self.central.pacients_tab.pacientSelected(Pacient(), -1)
             self.central.pacients_tab.set_enabled(True)
             self.central.parent_tab_widget.setEnabled(True)
-        elif sender_name == "del_pacient_action":
-            if len(self.listview_model.items) > 0 and self.central.pacients_tab.pacient_selected():
-                pacient = self.listview_model.items[self.central.pacients_tab.index]
+        elif self.sender() == StaticActions.del_pacient_action:
+            if len(self.listview_model) > 0 and self.central.pacients_tab.pacient_selected():
+                pacient = self.listview_model.entities[self.central.pacients_tab.index]
                 dialog = GUI_Resources.get_confirmation_dialog_ui(f"Quieres eliminar el usuario {pacient}")
                 if dialog.exec_() == 1:
                     self.listview_model.delete(pacient)
-        elif sender_name == "edit_pacient_action":
-            if len(self.listview_model.items) > 0 and self.central.pacients_tab.pacient_selected():
+        elif self.sender() == StaticActions.edit_pacient_action:
+            if len(self.listview_model.entities) > 0 and self.central.pacients_tab.pacient_selected():
                 self.central.pacients_tab.set_enabled(True)
-        elif sender_name == "del_prueba_action":
+        elif self.sender() == StaticActions.del_prueba_action:
             dialog = GUI_Resources.get_confirmation_dialog_ui(
                 f"Quieres eliminar la prueba de rendimiento del paciente")
             if dialog.exec_() == 1:
                 PruebasListModel.get_instance().delete(self.central.rendimiento_tab.selected_prueba)
 
     def on_crono_finished(self, prueba, row):
-        PruebasListModel.get_instance().append(prueba)
-        p = self.listview_model.instance_class.get_object(row)
+        PruebasListModel.get_instance(self.user_credentials["username"]).append(prueba)
+        p = self.listview_model.get(row)
         self.status_bar.showMessage(f"Insertada nueva prueba a {p}")
 
     def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
         super().resizeEvent(a0)
         size = a0.size()
         old_size = a0.oldSize()
+        if self.inited:
+            self.settings.setValue(self.settings.SIZE, a0.size())
+            self.settings.setValue(self.settings.FULLSCREEN, self.isFullScreen())
         print(f"{size} {old_size}")
 
     def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
@@ -263,3 +289,10 @@ class UI(QMainWindow):
     def check_camera_worker():
         if not VideoCapture(0).read()[0]:  # Compruebo si hay camara. si no la hay haz X
             StaticActions.tomar_foto.setEnabled(False)
+
+    def moveEvent(self, a0: QtGui.QMoveEvent) -> None:
+        super().moveEvent(a0)
+        if self.inited:
+            self.settings.setValue(self.settings.POSITION, self.pos())
+
+
