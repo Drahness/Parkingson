@@ -2,37 +2,15 @@ import typing
 
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt
 from typing import Type
-import traceback
 
 from GUI.GUI_Resources import get_error_dialog_msg
 from database.DB_Resources import get_db_connection
 from database.entities_interface import Entity
+from database.new_models import NewListModel
+from database.pacient import Pacient
+from database.prueba import Prueba
+from database.usuari import Usuari
 
-class AbstractEntityModel:
-    def __init__(self,user:str, base: Type[Entity]):
-        self.instance_class = base
-        self.__check_subclass(base)
-        self.conn = get_db_connection()
-        self.items = base.load(self.conn)  # Al ser singleon, solo carga una vez y se matiene sincronizado.
-        self.showable_items = None
-
-    def reload(self):...
-    def change_model_list(self, list):...
-    def get(self, index):...
-    def append(self, entity):...
-    def __check_instance(self, entity):...
-    @staticmethod
-    def __check_subclass(type):...
-    def delete(self, entity):...
-    def update(self, entity, id_to_update):...
-    @classmethod
-    def get_instance(cls):
-        if cls not in ListModel.INSTANCES:
-            ListModel.INSTANCES[cls] = cls()
-        return ListModel.INSTANCES[cls]
-
-    def __len__(self) -> int:
-        return len(self.items)
 
 class ListModel(QAbstractListModel):
     INSTANCES = {}
@@ -127,18 +105,20 @@ class ListModel(QAbstractListModel):
         return len(self.items)
 
 
-class UsuariListModel(ListModel):
+class UsuariListModel(NewListModel):
     """ No se si la voy a usar"""
 
-    def __init__(self):
-        from database.usuari import Usuari
-        super(UsuariListModel, self).__init__(Usuari)
+    def __init__(self, user="Admin", base=Usuari):
+        super(UsuariListModel, self).__init__(user, base, implementation)
+
+    @classmethod
+    def get_instance(cls, user, type=Pacient, implementation=None):
+        super(UsuariListModel, cls).get_instance(user, type)
 
 
-class PacientsListModel(ListModel):
-    def __init__(self):
-        from database.pacient import Pacient
-        super(PacientsListModel, self).__init__(Pacient)
+class PacientsListModel(NewListModel):
+    def __init__(self, user="Admin", base=Pacient, implementation=QAbstractListModel):
+        super(PacientsListModel, self).__init__(user, Pacient)
         pass
 
     def data(self, index: QModelIndex, role: int = ...):
@@ -146,11 +126,14 @@ class PacientsListModel(ListModel):
         if pacient is not None:
             return str(pacient)
 
+    @classmethod
+    def get_instance(cls, user, type=Pacient, implementation=None):
+        return super(PacientsListModel, cls).get_instance(user, type)
 
-class PruebasListModel(ListModel):
-    def __init__(self):
-        from database.prueba import Prueba
-        super(PruebasListModel, self).__init__(Prueba)
+
+class PruebasListModel(NewListModel):
+    def __init__(self, user="Admin"):
+        super(PruebasListModel, self).__init__(user, Prueba)
 
     def get_pruebas(self, pacient) -> list:
         pruebas = []
@@ -164,3 +147,7 @@ class PruebasListModel(ListModel):
         prueba = super(PruebasListModel, self).data(index, role)
         if prueba is not None:
             return str(prueba.datetime.strftime("%m/%d/%Y, %H:%M:%S"))
+
+    @classmethod
+    def get_instance(cls, user, type=Prueba, implementation=None):
+        super(PruebasListModel, cls).get_instance(user, type)

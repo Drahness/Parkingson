@@ -48,7 +48,7 @@ class CentralWidgetParkingson(QWidget):
     DELETE_button_key = "delete"
     EDIT_button_key = "edit"
 
-    def __init__(self, parent=None, debug=False):
+    def __init__(self, user:str, parent=None, debug=False):
         super(QWidget, self).__init__(parent)
         self.general_layout = QVBoxLayout()
         self.buttons_layout = QHBoxLayout()
@@ -75,7 +75,7 @@ class CentralWidgetParkingson(QWidget):
         self.pacients_tab: PacientWidget = PacientWidget(debug)  # Tab1 Color
 
         # self.rendimiento_tab = MplCanvas(self, width=5, height=4, dpi=100)  # Tab2 Grafica
-        self.rendimiento_tab = PerformanceTab()
+        self.rendimiento_tab = PerformanceTab(user)
 
         self.cronometro_tab = Cronometro()
         QIcon()

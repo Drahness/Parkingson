@@ -20,6 +20,7 @@ class ModelConnection:
     # 1 model == 1 connection
     def __init__(self, user, entity=Type[Entity], version_control: int = 1):
         self.path = user
+        self.inited = False
         self.version_control = version_control
         self.dbname = entity.__name__ + ".db"
         self.model: Type[Entity] = entity
@@ -50,23 +51,22 @@ class ModelConnection:
         return len(tables) == i
 
     def init(self):
-        try:
-            if self.first_init():
-                if not self.check_existence():
-                    for name, columns in self.model.get_definitions():
-                        self.create_tables(name, columns)
-                #self.execute(f"INSERT OR IGNORE INTO {Usuari.get_tablename()} VALUES ('Admin','{Utils.cypher('Admin')}')")
-                #self.execute(f"UPDATE first_init SET boolean_init = 1")
-            version = self.get_version_control()
-            if self.version_control > version:
-                self.upgrade_version(version, self.version_control)
-            elif self.version_control < version:
-                self.downgrade_version(version, self.version_control)
-        except sqlite3.OperationalError:
-            traceback.print_exc()
-            self.conn.close()
-            self.dao.close()
-            os.remove(self.path + os.sep + self.dbname)
+        if not self.inited:
+            try:
+                if self.first_init():
+                    if not self.check_existence():
+                        for name, columns in self.model.get_definitions():
+                            self.create_tables(name, columns)
+                version = self.get_version_control()
+                if self.version_control > version:
+                    self.upgrade_version(version, self.version_control)
+                elif self.version_control < version:
+                    self.downgrade_version(version, self.version_control)
+            except sqlite3.OperationalError:
+                traceback.print_exc()
+                self.conn.close()
+                self.dao.close()
+                os.remove(self.path + os.sep + self.dbname)
 
     @classmethod
     def get_instance(cls, user: str, model: Type[Entity]):
@@ -76,8 +76,7 @@ class ModelConnection:
             cls.__INSTANCE_MAP[user] = {model: ModelConnection(user, model)}
         elif model not in cls.__INSTANCE_MAP[user].keys():
             cls.__INSTANCE_MAP[user][model] = ModelConnection(user, model)
-        else:
-            return cls.__INSTANCE_MAP[user][model]
+        return cls.__INSTANCE_MAP[user][model]
 
     def first_init(self):
         try:
@@ -117,7 +116,7 @@ class ModelConnection:
             self.execute(sql)
         else:
             self.execute(sql, parameters)
-
+    # Cronometro anadir notas
     def get_version_control(self) -> int:
         return 1  # query the database pls
 
@@ -126,8 +125,3 @@ class ModelConnection:
 
     def downgrade_version(self, old, new) -> None:
         ...  ## this tecnically is pointless here
-
-
-ModelConnection("User", Prueba).init()
-ModelConnection("User", Usuari).init()
-ModelConnection("User", Pacient).init()

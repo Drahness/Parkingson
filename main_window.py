@@ -38,8 +38,20 @@ class UI(QMainWindow):
         self.login_form = GUI_Resources.get_login_register_dialog(self.connection)
         self.user_credentials = {"result": False}
 
+        self.credentials()
+        if self.user_credentials["result"]:
+            self.show()
+        else:
+            sys.exit(0)
         # Recogemos el Central widget, lo añadimos y luego lo inicializamos
-        self.central = CentralWidgetParkingson(debug=debug)
+        if debug and self.user_credentials["username"] == '':
+            self.user_credentials["username"] = "Admin"
+        self.central = CentralWidgetParkingson(self.user_credentials["username"],debug=debug)
+
+        self.setCentralWidget(self.central)
+
+        self.listview_model: ListModel = PacientsListModel.get_instance()
+        self.central.pacients_list_view.setModel(self.listview_model)
 
         self.setCentralWidget(self.central)
         self.menu_bar = MenuBar()
@@ -117,14 +129,6 @@ class UI(QMainWindow):
         self.central.parent_tab_widget.setCurrentIndex(pacient_index)
         self.iconSizeChanged.connect(self.iconSizeChanged)
 
-        self.credentials()
-        if self.user_credentials["result"]:
-            self.setCentralWidget(self.central)
-            self.show()
-            self.listview_model: ListModel = PacientsListModel.get_instance()
-            self.central.pacients_list_view.setModel(self.listview_model)
-        else:
-            sys.exit(0)
         threading.Thread(target=self.check_camera_worker).start()
 
     def credentials(self):
