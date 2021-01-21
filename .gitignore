@@ -2,3 +2,4 @@ venv
 Linuxvenv
 .idea
 /test/
+/main.spec
