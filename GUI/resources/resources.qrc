@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons">
+    <file alias="hidden">oculto.png</file>
+    <file alias="shown">visible.png</file>
     <file>no_image.png</file>
     <file alias="add">anadir.png</file>
     <file alias="del">borrar.png</file>

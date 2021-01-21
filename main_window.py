@@ -13,7 +13,7 @@ from GUI.main_window_javi import CentralWidgetParkingson
 from database.Settings import Settings, UserSettings
 from database.deprecated_data_controller import Connection  # TODO change to a new more basic Connection manager.
 from database.new_models import AbstractEntityModel
-from database.usuari import Usuari
+from database.usuari import Usuari, AuthConnection
 from database.pacient import Pacient
 from database.models import PacientsListModel, ListModel, PruebasListModel
 from GUI import GUI_Resources
@@ -38,7 +38,7 @@ class UI(QMainWindow):
         UI.DEBUG = debug
         # TODO SINGLETONS ?¿?¿?¿?¿ THEY ARE REALLY NEEDED?
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-        self.connection = Connection()
+        self.connection = AuthConnection()
         self.login_form = GUI_Resources.get_login_register_dialog(self.connection)
         self.user_credentials = {"result": False}
         self.credentials()
@@ -50,10 +50,11 @@ class UI(QMainWindow):
         if debug and self.user_credentials["username"] == '':
             self.user_credentials["username"] = "Admin"
 
+        self.settings = UserSettings(self.user_credentials["username"])
+
         self.central = CentralWidgetParkingson(self.user_credentials["username"], debug=debug)
         self.setCentralWidget(self.central)
         # Creamos el objeto settings
-        self.settings = UserSettings(self.user_credentials["username"])
 
         if self.settings.value(self.settings.SIZE):
             rect = self.settings.value(self.settings.SIZE, type=QSize)
@@ -61,12 +62,8 @@ class UI(QMainWindow):
         if self.settings.value(self.settings.FULLSCREEN, False, bool):
             self.showMaximized()
 
-        pos = self.settings.value(self.settings.POSITION, QPoint(50,50), QPoint)
+        pos = self.settings.value(self.settings.POSITION, QPoint(50, 50), QPoint)
         self.move(pos)
-
-
-
-
 
         PruebasListModel.get_instance(self.user_credentials["username"])
         self.listview_model: AbstractEntityModel = PacientsListModel.get_instance(self.user_credentials["username"])
@@ -156,7 +153,7 @@ class UI(QMainWindow):
         reintenta la conexion indefinidamente"""
         self.login_form.show()
         if not self.DEBUG:
-            self.login_form.login_validator = Usuari.valid_user
+            self.login_form.login_validator = self.connection.valid_user
         result = self.login_form.exec_()
         if result == 1 and self.login_form.result.get("result", False):
             self.user_credentials = self.login_form.result
@@ -294,5 +291,3 @@ class UI(QMainWindow):
         super().moveEvent(a0)
         if self.inited:
             self.settings.setValue(self.settings.POSITION, self.pos())
-
-

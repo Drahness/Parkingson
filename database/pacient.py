@@ -116,7 +116,7 @@ class Pacient(Entity):
               "altura)" \
               " VALUES "
         sql = (sql + "(" + ("?," * len(attributes)))[:-1] + ")"
-        conexion.insert(sql, attributes)
+        conexion.execute(sql, attributes)
         self.append()
         return self.dni
 

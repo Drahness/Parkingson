@@ -1,16 +1,17 @@
 import sys
 
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QPushButton, QLineEdit, QTabWidget, QVBoxLayout, QDialog
+
 import Utils
 from GUI import GUI_Resources
-
-from PyQt5 import QtWidgets, uic, QtGui, Qt, QtCore
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTabWidget
+from GUI.GUI_Resources import get_shown_icon, get_hidden_icon
 
 
 class LoginRegisterWindow(QDialog):
     """
     Formulario de Login/Registro, la variable result guardara el resultado, al darle aceptar.
-
     Una entrada correcta, dara como resultado una mapa asi:
 
     {\n"order": "login",
@@ -31,14 +32,26 @@ class LoginRegisterWindow(QDialog):
         self.login_widget = GUI_Resources.get_login_tab()
         self.register_widget = GUI_Resources.get_register_tab()
 
+        self.oculto_login: QPushButton = self.login_widget.oculto
+        self.oculto_register: QPushButton = self.register_widget.oculto
+
+        self.oculto_login.pressed.connect(self.show_handler)
+        self.oculto_login.released.connect(self.hide_handler)
+        self.oculto_register.released.connect(self.hide_handler)
+        self.oculto_register.pressed.connect(self.show_handler)
+        self.login_widget.passwordfield.textEdited.connect(self.hide_handler)
+        self.register_widget.passwordfield.textEdited.connect(self.hide_handler)
         self.tab.addTab(self.login_widget, "Login")
         self.tab.addTab(self.register_widget, "Registro")
         self.setLayout(layout)
+        self.shown: QIcon = get_shown_icon()
+        self.hidden: QIcon = get_hidden_icon()
         self.debug = False
         self.login_widget.positive.clicked.connect(self.__positive_login)
         self.login_widget.negative.clicked.connect(self.__cancel_buttons)
         self.register_widget.Rnegative.clicked.connect(self.__cancel_buttons)
         self.register_widget.Rpositive.clicked.connect(self.__positive_register)
+
 
     def __cancel_buttons(self):
         sys.exit(0)
@@ -59,13 +72,29 @@ class LoginRegisterWindow(QDialog):
                        "username": "Admin" if self.debug else self.login_widget.usernamefield.text(),
                        "password": Utils.cypher(self.login_widget.passwordfield.text())
                        }
-        self.result["result"] = self._login_validator(self.conn,self.result["username"], self.result["password"])
+        self.result["result"] = self._login_validator(self.result["username"], self.result["password"])
         if self.result["result"]:
             self.accept()
         else:
             self.login_widget.error_label.setText("Usuario o contraseña incorrectos.")
             self.login_widget.passwordfield.setFocus()
             self.login_widget.passwordfield.selectAll()
+
+    def hide_handler(self):
+        if self.sender() == self.oculto_login or self.sender() == self.login_widget.passwordfield:
+            self.login_widget.passwordfield.setEchoMode(QLineEdit.Password)
+            self.oculto_login.setIcon(self.hidden)
+        elif self.sender() == self.oculto_register or self.sender() == self.register_widget.passwordfield:
+            self.register_widget.passwordfield.setEchoMode(QLineEdit.Password)
+            self.oculto_register.setIcon(self.hidden)
+
+    def show_handler(self):
+        if self.sender() == self.oculto_login:
+            self.login_widget.passwordfield.setEchoMode(QLineEdit.Normal)
+            self.oculto_login.setIcon(self.shown)
+        elif self.sender() == self.oculto_register:
+            self.register_widget.passwordfield.setEchoMode(QLineEdit.Normal)
+            self.oculto_register.setIcon(self.shown)
 
     @property
     def login_validator(self):
@@ -92,9 +121,3 @@ class LoginRegisterWindow(QDialog):
             self.__cancel_buttons()
         super().keyPressEvent(a0)
 
-
-if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
-    window = LoginRegisterWindow()
-    window.show()
-    app.exec()

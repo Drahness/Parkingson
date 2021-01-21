@@ -371,21 +371,21 @@ class QRoundTimer(QRoundProgressBar):
         if not isinstance(self._min, datetime.timedelta):
             return self._min
         else:
-            return self._min.seconds + (self._min.microseconds / (10 ** 6))
+            return self._min.total_seconds()
 
     @property
     def max(self):  # in seconds and microseconds
         if not isinstance(self._max, datetime.timedelta):
             return self._max
         else:
-            return self._max.seconds + (self._max.microseconds / (10 ** 6))
+            return self._max.total_seconds()
 
     @property
     def value(self):  # in seconds and microseconds
         if not isinstance(self._value, datetime.timedelta):
             return self._value
         else:
-            return self._value.seconds + (self._value.microseconds / (10 ** 6))
+            return self._value.total_seconds()
 
     @min.setter
     def min(self, min):

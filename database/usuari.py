@@ -1,5 +1,7 @@
 from sqlitedao import ColumnDict
 
+import Utils
+from database.database_connection import ModelConnection
 from database.entities_interface import Entity
 
 
@@ -23,13 +25,13 @@ class Usuari(Entity):
     def __str__(self):
         return f"{self.username}"
 
-    def insert(self, conexion):
-        conexion.insert("INSERT INTO pacients (username,password) VALUES (?,?)", [self.username,
+    def insert(self, conexion: ModelConnection):
+        conexion.execute("INSERT INTO pacients (username,password) VALUES (?,?)", [self.username,
                                                                                   self.password])
         self.append()
         return self.username
 
-    def update(self, conexion, to_updated):
+    def update(self, conexion: ModelConnection, to_updated):
         if isinstance(to_updated, str):
             username: str = to_updated
         elif isinstance(to_updated, Usuari):
@@ -41,7 +43,7 @@ class Usuari(Entity):
                           self.password,
                           username])
 
-    def delete(self, conexion):
+    def delete(self, conexion: ModelConnection):
         conexion.execute("DELETE FROM users WHERE dni = ?", [self.username])
         self.remove()
 
@@ -59,4 +61,19 @@ class Usuari(Entity):
     @staticmethod
     def valid_user(conn, username, password):
         dao = conn.dao
-        return len(dao.search_table("users", {"username": username, "password": password})) > 0
+        return len(dao.search_table(Usuari.get_tablenames()[0], {"username": username, "password": password})) > 0
+
+class AuthConnection(ModelConnection):
+    default_user = "admin"
+    default_password = Utils.cypher(default_user)
+    def __init__(self):
+        super(AuthConnection, self).__init__("default", Usuari)
+        self.init()
+
+    def valid_user(self, username, password):
+        return len(self.dao.search_table(Usuari.get_tablenames()[0], {"username": username, "password": password})) > 0
+
+    def init(self):
+        super(AuthConnection, self).init()
+        self.execute(f"INSERT OR IGNORE INTO {self.model.get_tablenames()[0]} (username,password) VALUES (?,?)",
+                     [self.default_user, self.default_password])

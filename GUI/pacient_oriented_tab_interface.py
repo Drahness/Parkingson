@@ -49,12 +49,10 @@ class PacientInterface:
 
     def init(self):
         """Inicializas el widget. Concretamente las señales desde el mainWindow."""
-        # UI.get_instance().pacientSelected.connect(self.pacientSelected)
         self.pacientSelectedSignal.connect(self.pacientSelected)
         self.currentChangedSignal.connect(self.currentChanged)
         self.key_pressedSignal.connect(self.key_pressed)
-        # UI.get_instance().central.parent_tab_widget.currentChanged.connect(self.currentChanged)
-        # self.statusChangeSlot = UI.get_instance().changeStatusBar
+
 
     def set_change_status_bar(self, signal: pyqtSignal):
         self.statusChangeSlot = signal

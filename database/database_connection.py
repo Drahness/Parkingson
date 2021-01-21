@@ -1,16 +1,14 @@
 import os
 import sqlite3
 import traceback
+from concurrent.futures._base import Future
+from concurrent.futures.thread import ThreadPoolExecutor
 from sqlite3 import Connection
 from typing import Type, Iterable
 
 from sqlitedao import SqliteDao, ColumnDict
 
-import Utils
 from database.entities_interface import Entity
-from database.pacient import Pacient
-from database.prueba import Prueba
-from database.usuari import Usuari
 
 
 class ModelConnection:
@@ -19,17 +17,17 @@ class ModelConnection:
     # Its a connection for a model, i think its better to be multiple connections between the models.
     # 1 model == 1 connection
     def __init__(self, user, entity=Type[Entity], version_control: int = 1):
-        self.path = user
+        self.path = "data"
         self.inited = False
+        self.user = user
         self.version_control = version_control
-        self.dbname = entity.__name__ + ".db"
+        self.dbname = user + "_" + entity.__name__ + ".db"
         self.model: Type[Entity] = entity
         filepath = self.path + os.sep + self.dbname
         if not os.path.exists(filepath):
             os.makedirs(self.path, exist_ok=True)
         self.conn: Connection = sqlite3.connect(filepath)
         self.dao: SqliteDao = SqliteDao.get_instance(filepath)
-        self.user = user
         self.autocommit = True
         self.cursor = self.conn.cursor()
 
@@ -79,6 +77,7 @@ class ModelConnection:
         return cls.__INSTANCE_MAP[user][model]
 
     def first_init(self):
+
         try:
             return self.execute(f"SELECT * FROM first_init")[0] == 0
         except:
@@ -96,6 +95,7 @@ class ModelConnection:
         self.dao.create_table(tablename, columns, indexes)
 
     def execute(self, sql, parameters: Iterable = None) -> list:
+        """Executes the given statement withouts searching if it is correct."""
         print(f"DB:{self.path}/{self.dbname} - Operation: {sql} ¦ {parameters}")
         if parameters is None:
             self.cursor.execute(sql)
@@ -105,17 +105,21 @@ class ModelConnection:
             self.conn.commit()
         return self.cursor.fetchall()
 
+    def execute_async(self, sql, parameters) -> Future:
+        """ Executes a statement and returns a Future instance, of the task. When you want
+        call the future.result() method.
+
+        Its buggy, dont execute in the database really but it prints the """
+        with ThreadPoolExecutor() as executor:
+            future = executor.submit(self.execute, sql, parameters)
+            return future
+
     def commit(self):
         self.conn.commit()
 
     def set_auto_commit(self, boolean: bool) -> None:
         self.autocommit = boolean
 
-    def insert(self, sql, parameters: Iterable = None) -> None:
-        if parameters is None:
-            self.execute(sql)
-        else:
-            self.execute(sql, parameters)
     # Cronometro anadir notas
     def get_version_control(self) -> int:
         return 1  # query the database pls
@@ -125,3 +129,4 @@ class ModelConnection:
 
     def downgrade_version(self, old, new) -> None:
         ...  ## this tecnically is pointless here
+

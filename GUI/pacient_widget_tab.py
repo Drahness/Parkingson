@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import QWidget, QCalendarWidget, QDateEdit, QLabel, QComboB
 from GUI.GUI_Resources import get_pacient_widget_ui, get_no_image_pixmap
 from GUI.MenuBar import Menu
 from GUI.actions import StaticActions
-from GUI.tab_widgets import PacientInterface
+from GUI.pacient_oriented_tab_interface import PacientInterface
 from database.pacient import Pacient
 
 

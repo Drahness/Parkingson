@@ -7,7 +7,7 @@ from matplotlib.dates import AutoDateLocator, ConciseDateFormatter, date2num
 from GUI import GUI_Resources
 from GUI.GUI_Resources import get_error_dialog_msg
 
-from GUI.tab_widgets import PacientInterface
+from GUI.pacient_oriented_tab_interface import PacientInterface
 from database.models import PruebasListModel
 
 matplotlib.use('Qt5Agg')
@@ -16,12 +16,12 @@ matplotlib.use('Qt5Agg')
 class Grafica(FigureCanvasQTAgg):
     autox = AutoDateLocator()
     formatterx = ConciseDateFormatter(autox)
-    formatterx.formats = ['%y',  # ticks are mostly years
-                          '%b',  # ticks are mostly months
-                          '%d',  # ticks are mostly days
-                          '%H:%M',  # hrs
-                          '%H:%M',  # min
-                          '%S.%f', ]  # secs
+    formatterx.formats = ['año %y',  # ticks are mostly years
+                          'mes %b',  # ticks are mostly months
+                          'dia %d',  # ticks are mostly days
+                          'horas %H:%M',  # hrs
+                          'horas %H:%M',  # min
+                          'segundos %Ss.%f', ]  # secs
 
     def formatter(x, pos):
         hours, remainder = divmod(x, 3600)
@@ -35,10 +35,9 @@ class Grafica(FigureCanvasQTAgg):
 
     funcformatter = ticker.FuncFormatter(formatter)
 
-    def __init__(self, user:str ,parent=None, width=5, height=4, dpi=100):
+    def __init__(self, user: str, parent=None, width=5, height=4, dpi=100):
         PacientInterface.__init__(self)
-        # fig = Figure(figsize=(width, height), dpi=dpi)
-        # self.axes = fig.add_subplot(111)
+
         self.model = PruebasListModel.get_instance(user)
         self.fig, self.ax = pyplot.subplots()
         self.line_lap0 = None
@@ -59,7 +58,7 @@ class Grafica(FigureCanvasQTAgg):
 
 class PerformanceTab(QWidget, PacientInterface):
 
-    def __init__(self,user):
+    def __init__(self, user):
         super(PerformanceTab, self).__init__()
         PacientInterface.__init__(self)
         GUI_Resources.get_performance_widget(self)
@@ -70,7 +69,6 @@ class PerformanceTab(QWidget, PacientInterface):
         self.model.change_model_list([])
         self.listView.clicked.connect(self.onPruebaClicked)
         self.horizontalLayout.addWidget(self.graph)
-
 
     def currentChanged(self, index):  # Tab changed
         super().currentChanged(index)
@@ -103,7 +101,7 @@ class PerformanceTab(QWidget, PacientInterface):
                                                  markersize=20, color="green")
         self.graph.markers2 = self.graph.ax.plot(prueba.datetime, prueba.laps[2].total_seconds(), marker="+",
                                                  markersize=20, color="brown")
-# todo
+        # todo
 
         self.graph.markers_total = self.graph.ax.plot(prueba.datetime, total, marker="+", markersize=20, color="red")
         self.graph.draw()

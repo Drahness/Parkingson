@@ -39,6 +39,11 @@ def get_add_icon():
 def get_delete_icon():
     return QIcon(":/icons/del")
 
+def get_hidden_icon():
+    return QIcon(":/icons/hidden")
+
+def get_shown_icon():
+    return QIcon(":/icons/shown")
 
 def get_edit_icon():
     return QIcon(":/icons/edit")

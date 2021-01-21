@@ -39,6 +39,10 @@ class SystemSettings(Settings):
 
 
 class UserSettings(SystemSettings):
+    LAP_NAME_FORMAT = "lap{}_name"
+    LAP_LOWMEDIUM_FORMAT = "lap{}_lowmedium_start"
+    LAP_MEDIUMHARD_FORMAT ="lap{}_mediumhard_start"
+    LAP3_NAME = "Acabar"
     LAP0_NAME = "lap0_name"
     LAP1_NAME = "lap1_name"
     LAP2_NAME = "lap2_name"
@@ -47,9 +51,18 @@ class UserSettings(SystemSettings):
     LAP0_LOWMEDIUM_START = "lap0_lowmedium_start"
     LAP1_LOWMEDIUM_START = "lap1_lowmedium_start"
     LAP2_LOWMEDIUM_START = "lap2_lowmedium_start"
-    LAP0_MEDIUMHARD_START = "LAP0_MEDIUMHARD_START"
-    LAP1_MEDIUMHARD_START = "LAP1_MEDIUMHARD_START"
-    LAP2_MEDIUMHARD_START = "LAP2_MEDIUMHARD_START"
+    LAP0_MEDIUMHARD_START = "lap0_mediumhard_start"
+    LAP1_MEDIUMHARD_START = "lap1_mediumhard_start"
+    LAP2_MEDIUMHARD_START = "lap2_mediumhard_start"
+
+    def get_lap_name(self, lap: int):
+        return self.value(self.LAP_NAME_FORMAT.format(lap))
+
+    def get_lap_time(self, lap:int, importance: int):
+        if importance % 2 == 0:
+            return self.value(self.LAP_LOWMEDIUM_FORMAT.format(lap))
+        elif importance % 2 == 1:
+            return self.value(self.LAP_MEDIUMHARD_FORMAT.format(lap))
 
     def __init__(self, username):
         super(UserSettings, self).__init__(QSettings.UserScope)
@@ -57,9 +70,9 @@ class UserSettings(SystemSettings):
         self.set_value_if_not_present("lap0_name", "Marcha")
         self.set_value_if_not_present("lap1_name", "Equilibrio")
         self.set_value_if_not_present("lap2_name", "Doble Tarea")
+        self.set_value_if_not_present(self.LAP3_NAME, "Finalizar")
         self.set_value_if_not_present("lap_total_name", "Circuit")
         self.set_value_if_not_present("lap_number", 3)
-        # self.setValueIfNotPresent("language","ES")
         self.set_value_if_not_present("lap0_lowmedium_start", timedelta(seconds=17, microseconds=160000))
         self.set_value_if_not_present("lap1_lowmedium_start", timedelta(seconds=15, microseconds=140000))
         self.set_value_if_not_present("lap2_lowmedium_start", timedelta(seconds=10, microseconds=430000))

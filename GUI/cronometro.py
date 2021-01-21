@@ -27,6 +27,7 @@ class Timer(QRunnable):
         self.is_running = False
         self.emit_again = True
         self.laps: list = []
+        self.stops = []
 
     @pyqtSlot()
     def run(self):
@@ -73,12 +74,29 @@ class ProgressCronometro(QRoundTimer):
         self.setDecimals(self.MILISECONDS)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setFormat('%t')
-        self.setDataColors(
-            [
+        self.colors = [
                 (0., QColor.fromRgb(0, 255, 0)),
                 (0.45, QColor.fromRgb(255, 255, 0)),
                 (0.90, QColor.fromRgb(255, 0, 0))
-            ])
+            ]
+        self.setDataColors(
+            self.colors)
         self.min = 0.0
         self.value = 0.0
         self.max = 10.0
+
+    def changeYellowThereshold(self, time: datetime.timedelta):
+        self.colors = [
+                (0., QColor.fromRgb(0, 255, 0)),
+                (time.total_seconds() / self.max, QColor.fromRgb(255, 255, 0)),
+                (0.90, QColor.fromRgb(255, 0, 0))
+            ]
+        self.setDataColors(self.colors)
+
+    def changeRedThreshold(self, time: datetime.timedelta):
+        self.colors = [
+                (0., QColor.fromRgb(0, 255, 0)),
+                (time.total_seconds() / self.max, QColor.fromRgb(255, 255, 0)),
+                (0.90, QColor.fromRgb(255, 0, 0))
+            ]
+        self.setDataColors(self.colors)

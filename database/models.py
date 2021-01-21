@@ -61,7 +61,7 @@ class ListModel(QAbstractListModel):
         """Append to the list."""
         try:
             self.__check_instance(entity)
-            entity.insert(self.conn)
+            entity.execute(self.conn)
             self.layoutChanged.emit()
         except Exception as e:
             string = f"""Error mientras se agregaba la entidad {type(entity).__name__} con identificador {entity.get_id()}"""

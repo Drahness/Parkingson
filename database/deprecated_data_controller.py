@@ -81,7 +81,7 @@ class Connection:
         if isinstance(model, str):
             table = model
         elif issubclass(model, Entity):
-            table = model.get_tablenames()
+            table = model.get_tablenames()[0]
         else:
             raise AssertionError(f"Bad arguments. expected {str} or {type(Entity)} got {type(model)}")
         self.execute(f"SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{table}'")
