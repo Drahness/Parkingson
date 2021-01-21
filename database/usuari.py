@@ -27,7 +27,7 @@ class Usuari(Entity):
 
     def insert(self, conexion: ModelConnection):
         conexion.execute("INSERT INTO pacients (username,password) VALUES (?,?)", [self.username,
-                                                                                  self.password])
+                                                                                   self.password])
         self.append()
         return self.username
 
@@ -63,9 +63,11 @@ class Usuari(Entity):
         dao = conn.dao
         return len(dao.search_table(Usuari.get_tablenames()[0], {"username": username, "password": password})) > 0
 
+
 class AuthConnection(ModelConnection):
     default_user = "admin"
     default_password = Utils.cypher(default_user)
+
     def __init__(self):
         super(AuthConnection, self).__init__("default", Usuari)
         self.init()
