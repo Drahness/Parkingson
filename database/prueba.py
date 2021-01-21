@@ -64,13 +64,13 @@ class Prueba(Entity):
         else:
             result = result[0][0] + 1
         self.identifier = result
-        conexion.execute_async("INSERT INTO pruebas (identifier,pacient_id,datetime) VALUES (?,?,?)", [self.identifier,
+        conexion.execute("INSERT INTO pruebas (identifier,pacient_id,datetime) VALUES (?,?,?)", [self.identifier,
                                                                                                 self.pacient_id,
                                                                                                 str(self.datetime)])
         for i_lap in range(0, len(self.laps)):
             curr_lap = self.laps[i_lap]
             curr_notas = self.notas[i_lap]
-            conexion.execute_async("INSERT INTO pruebas_data (identifier,tiempo,notas,num_lap) VALUES (?,?,?,?)", [self.identifier,
+            conexion.execute("INSERT INTO pruebas_data (identifier,tiempo,notas,num_lap) VALUES (?,?,?,?)", [self.identifier,
                                                                                                     curr_lap.seconds + curr_lap.microseconds / (
                                                                                                             10 ** 6),
                                                                                                     curr_notas,

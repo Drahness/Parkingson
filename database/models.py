@@ -140,15 +140,20 @@ class PruebasListModel(NewListModel):
         pruebas = []
         for prueba in self.entities:
             if pacient.dni == prueba.pacient_id:
-                pruebas.append(prueba)
-        self.change_model_list(sorted(pruebas))
+                pruebas.insert(0,prueba)
+        #self.change_model_list(sorted(pruebas)) esto no va aqui lol joan.
         return pruebas
 
     def data(self, index: QModelIndex, role: int = ...):
         prueba = super(PruebasListModel, self).data(index, role)
         if prueba is not None:
-            return str(prueba.datetime.strftime("%m/%d/%Y, %H:%M:%S"))
+            return str(str(index.row())+": "+prueba.datetime.strftime("%m/%d/%Y, %H:%M:%S"))
 
     @classmethod
     def get_instance(cls, user, typee=Prueba, implementation=None) -> PruebasListModel:
         return super(PruebasListModel, cls).get_instance(user, typee)
+
+    def append(self, entity):
+        super().append(entity)
+
+

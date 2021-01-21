@@ -47,8 +47,8 @@ class UI(QMainWindow):
         else:
             sys.exit(0)
         # Recogemos el Central widget, lo añadimos y luego lo inicializamos
-        if debug and self.user_credentials["username"] == '':
-            self.user_credentials["username"] = "Admin"
+        if debug:
+            self.user_credentials["username"] = AuthConnection.default_user
 
         self.settings = UserSettings(self.user_credentials["username"])
 
@@ -100,19 +100,19 @@ class UI(QMainWindow):
 
         self.central.pacients_tab.set_signal_pacient_selected(self.pacientSelected)
         self.central.cronometro_tab.set_signal_pacient_selected(self.pacientSelected)
-        self.central.rendimiento_tab.set_signal_pacient_selected(self.pacientSelected)
+        self.central.evolution_tab.set_signal_pacient_selected(self.pacientSelected)
 
         self.central.pacients_tab.set_change_status_bar(self.changeStatusBar)
         self.central.cronometro_tab.set_change_status_bar(self.changeStatusBar)
-        self.central.rendimiento_tab.set_change_status_bar(self.changeStatusBar)
+        self.central.evolution_tab.set_change_status_bar(self.changeStatusBar)
 
         self.central.pacients_tab.set_key_pressed(self.key_press)
         self.central.cronometro_tab.set_key_pressed(self.key_press)
-        self.central.rendimiento_tab.set_key_pressed(self.key_press)
+        self.central.evolution_tab.set_key_pressed(self.key_press)
 
         self.central.pacients_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
         self.central.cronometro_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
-        self.central.rendimiento_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
+        self.central.evolution_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
 
         self.hideViews.connect(self.hide_view)
 
@@ -137,7 +137,7 @@ class UI(QMainWindow):
 
         self.central.pacients_tab.init()
         self.central.cronometro_tab.init()
-        self.central.rendimiento_tab.init()
+        self.central.evolution_tab.init()
 
         # El tab de pacientes sera el por defecto.
 
@@ -200,14 +200,14 @@ class UI(QMainWindow):
                 self.central.parent_tab_widget.setTabVisible(0, True)
                 self.central.pacients_tab.setVisible(self.central.cronometro_tab.is_on_focus())
         elif "action_view_rendimiento" == name:
-            self.central.rendimiento_tab.setVisible(self.sender().isChecked())
+            self.central.evolution_tab.setVisible(self.sender().isChecked())
             self.central.parent_tab_widget.currentChanged.emit(self.central.parent_tab_widget.currentIndex())
             if not self.sender().isChecked():
                 self.central.parent_tab_widget.setTabVisible(1, False)
-                self.central.rendimiento_tab.setVisible(False)
+                self.central.evolution_tab.setVisible(False)
             else:
                 self.central.parent_tab_widget.setTabVisible(1, True)
-                self.central.rendimiento_tab.setVisible(self.central.rendimiento_tab.is_on_focus())
+                self.central.evolution_tab.setVisible(self.central.evolution_tab.is_on_focus())
         #  slf.update()
 
     @staticmethod
@@ -262,7 +262,7 @@ class UI(QMainWindow):
             dialog = GUI_Resources.get_confirmation_dialog_ui(
                 f"Quieres eliminar la prueba de rendimiento del paciente")
             if dialog.exec_() == 1:
-                PruebasListModel.get_instance().delete(self.central.rendimiento_tab.selected_prueba)
+                PruebasListModel.get_instance().delete(self.central.evolution_tab.selected_prueba)
 
     def on_crono_finished(self, prueba, row):
         PruebasListModel.get_instance(self.user_credentials["username"]).append(prueba)

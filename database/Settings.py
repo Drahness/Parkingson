@@ -21,7 +21,7 @@ class Settings(QSettings):
         memo_values = self.__keys.copy()
         while True:
             for key in self.__keys:
-                self.value()
+                pass
 
     def attach_to(self, key, method_to_be_called):
         self._keys[key].append(method_to_be_called)
@@ -31,11 +31,12 @@ class SystemSettings(Settings):
     FULLSCREEN = "fullscreen"
     SIZE = "size"
     POSITION = "position"
+
     def __init__(self, scope: QSettings.Scope = QSettings.SystemScope):
         super(SystemSettings, self).__init__(scope, "Sofistically Fair Inheritance", "InRellity")
-        self.set_value_if_not_present("fullscreen", False)
-        self.set_value_if_not_present("size", 0)
-        self.set_value_if_not_present("position", 0)
+        self.set_value_if_not_present(self.FULLSCREEN, False)
+        self.set_value_if_not_present(self.SIZE, 0)
+        self.set_value_if_not_present(self.POSITION, 0)
 
 
 class UserSettings(SystemSettings):
@@ -67,15 +68,15 @@ class UserSettings(SystemSettings):
     def __init__(self, username):
         super(UserSettings, self).__init__(QSettings.UserScope)
         self.beginGroup(username)
-        self.set_value_if_not_present("lap0_name", "Marcha")
-        self.set_value_if_not_present("lap1_name", "Equilibrio")
-        self.set_value_if_not_present("lap2_name", "Doble Tarea")
+        self.set_value_if_not_present(self.LAP0_NAME, "Marcha")
+        self.set_value_if_not_present(self.LAP1_NAME, "Equilibrio")
+        self.set_value_if_not_present(self.LAP2_NAME, "Doble Tarea")
         self.set_value_if_not_present(self.LAP3_NAME, "Finalizar")
-        self.set_value_if_not_present("lap_total_name", "Circuit")
-        self.set_value_if_not_present("lap_number", 3)
-        self.set_value_if_not_present("lap0_lowmedium_start", timedelta(seconds=17, microseconds=160000))
-        self.set_value_if_not_present("lap1_lowmedium_start", timedelta(seconds=15, microseconds=140000))
-        self.set_value_if_not_present("lap2_lowmedium_start", timedelta(seconds=10, microseconds=430000))
-        self.set_value_if_not_present("lap0_mediumhard_start", timedelta(seconds=23, microseconds=560000))
-        self.set_value_if_not_present("lap1_mediumhard_start", timedelta(seconds=25, microseconds=900000))
-        self.set_value_if_not_present("lap2_mediumhard_start", timedelta(seconds=13, microseconds=340000))
+        self.set_value_if_not_present(self.LAP_TOTAL_NAME, "Circuit")
+        self.set_value_if_not_present(self.LAP_NUMBER, 3)
+        self.set_value_if_not_present(self.LAP0_LOWMEDIUM_START, timedelta(seconds=17, microseconds=160000))
+        self.set_value_if_not_present(self.LAP1_LOWMEDIUM_START, timedelta(seconds=15, microseconds=140000))
+        self.set_value_if_not_present(self.LAP2_LOWMEDIUM_START, timedelta(seconds=10, microseconds=430000))
+        self.set_value_if_not_present(self.LAP0_MEDIUMHARD_START, timedelta(seconds=23, microseconds=560000))
+        self.set_value_if_not_present(self.LAP1_MEDIUMHARD_START, timedelta(seconds=25, microseconds=900000))
+        self.set_value_if_not_present(self.LAP2_MEDIUMHARD_START, timedelta(seconds=13, microseconds=340000))

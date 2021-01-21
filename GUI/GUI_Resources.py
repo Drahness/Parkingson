@@ -30,11 +30,10 @@ NO_EDITABLE_PACIENT_WIDGET: Path = UIS_FOLDER / Path("pacients_widget_noeditable
 CONFIRMATION_DIALOG: Path = UIS_FOLDER / Path("confirmation_dialog.ui")
 GRAPH_WIDGET: Path = UIS_FOLDER / Path("graph_widget.ui")
 PIXMAP_NO_IMAGE: Path = UIS_FOLDER / Path("no_image.png")
-
+EVOLUTION_TAB: Path = UIS_FOLDER / Path("rendimiento.ui")
 
 def get_add_icon():
     return QIcon(":/icons/add")
-
 
 def get_delete_icon():
     return QIcon(":/icons/del")
@@ -62,6 +61,13 @@ def get_basic_form(to: QDialog = None) -> QDialog:
         return uic.loadUi(BASIC_FORM, QDialog())
     else:
         return uic.loadUi(BASIC_FORM, to)
+
+
+def get_evolution_tab(to: QWidget = None) -> QWidget:
+    if to is None:
+        return uic.loadUi(EVOLUTION_TAB, QDialog())
+    else:
+        return uic.loadUi(EVOLUTION_TAB, to)
 
 
 def get_login_tab(to: QDialog = None) -> QDialog:
@@ -149,11 +155,3 @@ def get_confirmation_dialog_ui(msg: str, to: QDialog = None):
 
     confirmation_dialog.confirm_label.setText(msg)
     return confirmation_dialog
-
-
-def get_performance_widget(to: QWidget = None) -> QWidget:
-    if to is None:
-        performance = uic.loadUi(GRAPH_WIDGET, QDialog())
-    else:
-        performance = uic.loadUi(GRAPH_WIDGET, to)
-    return performance

@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPalette, QColor, QIcon
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTabWidget, QListView
 
-from GUI.grafica_tab import PerformanceTab
+from GUI.grafica_tab import EvolutionTab
 from GUI.cronometro_tab import Cronometro
 from GUI.pacient_widget_tab import PacientWidget
 
@@ -35,7 +35,7 @@ class App(QMainWindow):
 class CentralWidgetParkingson(QWidget):
     pacients_tab: QWidget  # Una vez seleccionado paciente, mostrara sus datos
     cronometro_tab: QWidget  # Una vez seleccionado paciente, lo testara
-    rendimiento_tab: QWidget  # Una vez seleccionado paciente, mostrara su rendimiento
+    evolution_tab: QWidget  # Una vez seleccionado paciente, mostrara su rendimiento
 
     pacients_list_view: QListView  # Mostrara los pacientes en lista
     actions_buttons: dict  # Continene los botones de la app
@@ -75,13 +75,13 @@ class CentralWidgetParkingson(QWidget):
         self.pacients_tab: PacientWidget = PacientWidget(debug)  # Tab1 Color
 
         # self.rendimiento_tab = MplCanvas(self, width=5, height=4, dpi=100)  # Tab2 Grafica
-        self.rendimiento_tab = PerformanceTab(user)
+        self.evolution_tab = EvolutionTab(user)
 
         self.cronometro_tab = Cronometro(user)
         self.parent_tab_widget.resize(300, 300)  # Tab Parent
 
         self.parent_tab_widget.addTab(self.pacients_tab, "Paciente")
-        self.parent_tab_widget.addTab(self.rendimiento_tab, "Rendimiento")
+        self.parent_tab_widget.addTab(self.evolution_tab, "Evolucion")
         self.parent_tab_widget.addTab(self.cronometro_tab, "Cronómetro")
 
         self.pacients_list_view.setMinimumSize(200, 400)

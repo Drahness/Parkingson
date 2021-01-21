@@ -21,7 +21,8 @@ class AbstractEntityModel:
         self.entities = base.load(self.conn)  # Al ser singleon, solo carga una vez y se matiene sincronizado.
         self.showable_items = None
 
-    def change_callback(self): ...
+    def change_callback(self):
+        ...
 
     def reload(self):
         self.entities = self.entity_type.load(self.conn)
@@ -94,13 +95,12 @@ class AbstractEntityModel:
         return len(self.entities)
 
 
-class NewListModel(AbstractEntityModel,QAbstractListModel):
+class NewListModel(AbstractEntityModel, QAbstractListModel):
     INSTANCES = {}
 
     def __init__(self, user: str, base: Type[Entity]):
         super(NewListModel, self).__init__(user, base, QAbstractListModel)
         QAbstractListModel.__init__(self)
-
 
     def data(self, index: QModelIndex, role: int = ...) -> typing.Any:
         """Retornara el objeto convertido a string sin mas
@@ -121,4 +121,3 @@ class NewListModel(AbstractEntityModel,QAbstractListModel):
 
     def change_callback(self):
         self.layoutChanged.emit()
-

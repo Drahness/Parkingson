@@ -4,6 +4,8 @@ import matplotlib
 from PyQt5 import QtGui
 from PyQt5.QtCore import pyqtSignal, QObject
 
+from database.pacient import Pacient
+
 matplotlib.use('Qt5Agg')
 
 
@@ -12,7 +14,7 @@ class PacientInterface:
 
     def __init__(self):
         self.last_pacient = None
-        self.pacient = None
+        self.pacient: Pacient = None
         self.index = None
         self.on_focus = False
         self.statusChangeSlot = None
@@ -53,7 +55,6 @@ class PacientInterface:
         self.currentChangedSignal.connect(self.currentChanged)
         self.key_pressedSignal.connect(self.key_pressed)
 
-
     def set_change_status_bar(self, signal: pyqtSignal):
         self.statusChangeSlot = signal
 
@@ -68,4 +69,5 @@ class PacientInterface:
         pass
 
     def sender(self) -> QObject: ...
+
     """Para que no dé warnings, normalmente es un metodo heredado de QObject"""
