@@ -4,33 +4,37 @@ import threading
 
 import cv2
 import numpy
-from PyQt5 import QtGui, QtCore
-from PyQt5.QtCore import pyqtSignal, QPoint
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QIntValidator, QPixmap, QImage
 from PyQt5.QtWidgets import QWidget, QCalendarWidget, QDateEdit, QLabel, QComboBox, QLineEdit, QDoubleSpinBox, \
     QPushButton, QTabWidget, QToolButton, QFileDialog
+from Tools.scripts import pysource
+
+import Utils
 from GUI.GUI_Resources import get_pacient_widget_ui, get_no_image_pixmap
 from GUI.MenuBar import Menu
-from GUI.actions import StaticActions
+from GUI.static_actions import StaticActions
 from GUI.pacient_oriented_tab_interface import PacientInterface
+from Utils import get_pixmap_from_bytes, get_bytes_from_pixmap
 from database.pacient import Pacient
 
 
 class PacientWidget(QWidget, PacientInterface):
     no_image = get_no_image_pixmap()
+    no_image_bytes = get_bytes_from_pixmap(no_image)
     default_date = datetime.date(1990, 12, 12)
     finishedSignal: pyqtSignal = pyqtSignal(bool)  # maybe another name is better
     resultSignal: pyqtSignal = pyqtSignal(bool, int)
-    """ bool if canceled or accepted. int, the row of the pacient or -1 if new pacient """
 
-    def __init__(self, debug=False):
+    def __init__(self):
         PacientInterface.__init__(self)
         QWidget.__init__(self)
         get_pacient_widget_ui(self)
         # Variables.
-        self.combo_items = ["", "0", "1", "1.5", "2", "2.5", "3", "4", "5"]
+        self.email_regex = re.compile(u'(?:[a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])')
+        self.dni_regex = re.compile("((([X-Z])|([LM])){1}([-]?)((\d){7})([-]?)([A-Z]{1}))|((\d{8})([-]?)([A-Z]))")
+        self.combo_items = ["", "1", "1.5", "2", "2.5", "3", "4", "5", "0"]
         self.gender_items = ["", "Hombre", "Mujer"]
-        self.debug = debug
         self.on_focus = True
         # Declaramos los objetos
         self.nacimiento_calendar: QCalendarWidget = self.nacimiento_calendar
@@ -51,6 +55,7 @@ class PacientWidget(QWidget, PacientInterface):
         self.error_dni: QLabel = self.error_dni
         self.error_estadio: QLabel = self.error_estadio
         self.error_nombre: QLabel = self.error_nombre
+        self.error_altura: QLabel = self.error_altura
         self.error_telefono: QLabel = self.error_telefono
         self.error_gender: QLabel = self.error_gender
         self.error_email: QLabel = self.error_email
@@ -91,37 +96,26 @@ class PacientWidget(QWidget, PacientInterface):
         self.altura_edit.setSingleStep(0.01)
         self.peso_edit.setRange(0, 500)
         self.altura_edit.setRange(0, 3.0)
-
         self.menu = Menu()
         self.action_select_pic = self.menu.addAction(StaticActions.seleccionar_foto)
         self.action_select_pic.triggered.connect(self.take_picture)
         self.action_take_pic = self.menu.addAction(StaticActions.tomar_foto)
         self.action_take_pic.triggered.connect(self.take_picture)
-
         self.context_button.clicked.connect(self.popup_context_menu)
+        self.context_button.customContextMenuRequested.connect(self.popup_context_menu)
         self.consejo_imc.setVisible(False)  # TODO Cambiar cuando acabe con el objeto settings
         self.pacientSelected(None)
         self.set_enabled(False)
 
-    def popup_context_menu(self, *args):
-        widget = self.sender()
-        x = 0
-        y = 0
-        while widget.parent() is not None:
-            x += widget.pos().x()
-            y += widget.pos().y()
-            widget = widget.parent()
-        x += widget.pos().x() + 15
-        y += widget.pos().y() - 10
-        point = QPoint(x, y)
-        self.menu.popup(point)
+    def popup_context_menu(self):
+        Utils.popup_context_menu(self.sender(),self.menu)
 
     def save_pacient(self):
         """Updates the instance."""
         combo_index = self.estadio_combo_box.currentIndex()
         gender_index = self.gender_combo_box.currentIndex()
         if self.pacient is not None:
-            self.pacient.dni = self.dni_field.text()
+            self.pacient.id = self.dni_field.text()
             self.pacient.apellidos = self.apellidos_field.text()
             self.pacient.nombre = self.nombre_field.text()
             self.pacient.nacimiento = self.nacimiento_field.date()
@@ -134,25 +128,15 @@ class PacientWidget(QWidget, PacientInterface):
             self.pacient.genero = self.gender_combo_box.itemText(gender_index)
             self.pacient.mail = self.email_edit.text()
             self.pacient.telefono = self.telefono_edit.text()
-            barray_body = QtCore.QByteArray()
-            barray_face = QtCore.QByteArray()
-            buff_body = QtCore.QBuffer(barray_body)
-            buff_face = QtCore.QBuffer(barray_face)
-            buff_face.open(QtCore.QIODevice.WriteOnly)
-            buff_body.open(QtCore.QIODevice.WriteOnly)
-            if self.cara_image.pixmap() != self.no_image:
-                pass
-                ok = self.cara_image.pixmap().save(buff_face, "PNG")
-                assert ok
-                self.pacient.fotocara = barray_face.data()
+
+            fotocara = get_bytes_from_pixmap(self.cara_image.pixmap())
+            fotocuerpo = get_bytes_from_pixmap(self.cuerpo_image.pixmap())
+            if fotocara != self.no_image_bytes:
+                self.pacient.fotocara = fotocara
             else:
-                self.pacient.fotocara = None  # TODO
-
-            if self.cuerpo_image.pixmap() != self.no_image:
-
-                ok = self.cuerpo_image.pixmap().save(buff_body, "PNG")
-                assert ok
-                self.pacient.fotocuerpo = barray_body.data()
+                self.pacient.fotocara = None
+            if fotocuerpo != self.no_image_bytes:
+                self.pacient.fotocuerpo = fotocuerpo
             else:
                 self.pacient.fotocuerpo = None  # TODO
         return self.pacient
@@ -161,40 +145,36 @@ class PacientWidget(QWidget, PacientInterface):
         errored = False
         combo_index = self.estadio_combo_box.currentIndex()
         gender_index = self.gender_combo_box.currentIndex()
-        if not re.fullmatch("((([X-Z])|([LM])){1}([-]?)((\d){7})([-]?)([A-Z]{1}))|((\d{8})([-]?)([A-Z]))",
-                            self.dni_field.text()) and not re.fullmatch("/^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$/i",
-                                                                        self.dni_field.text()) and not self.debug:
+        if not re.fullmatch(self.dni_regex,self.dni_field.text()) and not pysource.debug:
             errored = True
             self.error_dni.setText("No has introducido un documento de identidad valido.")
-        if not len(self.apellidos_field.text()) > 0 and not self.debug:
+        if not len(self.apellidos_field.text()) > 0 and not pysource.debug:
             errored = True
             self.error_apellidos.setText("Este campo no debe estar vacio.")
-        if not len(self.nombre_field.text()) > 0 and not self.debug:
+        if not len(self.nombre_field.text()) > 0 and not pysource.debug:
             errored = True
             self.error_nombre.setText("Este campo no debe estar vacio.")
-        if self.estadio_combo_box.itemText(combo_index) == "" and not self.debug:
+        if self.estadio_combo_box.itemText(combo_index) == "" and not pysource.debug:
             errored = True
             self.error_estadio.setText("No has introducido un estadio valido.")
-        if re.match("[^@]+@[^@]+\.[^@]+", self.email_edit.text()) and not self.debug:  # TODO
+        if not re.fullmatch(self.email_regex, self.email_edit.text()) and not pysource.debug:  # TODO
             errored = True
             self.error_email.setText("No has introducido un email valido.")
-        if self.gender_combo_box.itemText(gender_index) == "" and not self.debug:
+        if self.gender_combo_box.itemText(gender_index) == "" and not pysource.debug:
             errored = True
             self.error_gender.setText("No has introducido un genero valido.")
-        if self.altura_edit.value() == 0 and not self.debug:
+        if self.altura_edit.value() == 0 and not pysource.debug:
             errored = True
             self.error_altura.setText("No has introducido la altura del paciente.")
-        if self.peso_edit.value() == 0 and not self.debug:
+        if self.peso_edit.value() == 0 and not pysource.debug:
             errored = True
             self.error_peso.setText("No has introducido el peso del paciente.")
-        if self.telefono_edit.text() == "" and not self.debug:
+        if self.telefono_edit.text() == "" and not pysource.debug:
             errored = True
             self.error_telefono.setText("No has introducido el telefono del paciente.")
         return not errored
 
     def buttons(self, *args):
-        name = self.sender().objectName()
-        print(name)
         self.error_dni.setText("")
         self.error_estadio.setText("")
         self.error_nombre.setText("")
@@ -202,16 +182,18 @@ class PacientWidget(QWidget, PacientInterface):
         self.error_apellidos.setText("")
         self.error_gender.setText("")
         self.error_email.setText("")
+        self.error_altura.setText("")
         self.error_peso.setText("")
-        if name == "accept_button":
+        if self.sender() == self.accept_button:
             if self.save_pacient():
                 if self.check_input():
                     self.resultSignal.emit(True, self.index)
                     self.set_enabled(False)
-        elif name == "cancel_button":
+        elif self.sender() == self.cancel_button:
             # self.pacient = None
-            threading.Thread(target=self.set_pics_worker,
-                             args=(self.pacient.fotocara, self.pacient.fotocuerpo,)).start()
+            if self.pacient != None:
+                threading.Thread(target=self.set_pics_worker,
+                                 args=(self.pacient.fotocara, self.pacient.fotocuerpo,)).start()
             self.resultSignal.emit(False, -1)
             self.set_enabled(False)
 
@@ -236,7 +218,7 @@ class PacientWidget(QWidget, PacientInterface):
                 peso = pacient.get("peso", default=0)
                 fecha_diagnostico = pacient.get("fecha_diagnostico", default=self.default_date)
             elif isinstance(pacient, Pacient):
-                dni = pacient.dni
+                dni = pacient.id
                 nombre = pacient.nombre
                 apellidos = pacient.apellidos
                 estadio = pacient.estadio or 0
@@ -252,7 +234,7 @@ class PacientWidget(QWidget, PacientInterface):
                 peso = pacient.peso or 0
                 fecha_diagnostico = pacient.fecha_diagnostico or self.default_date
             else:
-                raise AssertionError()
+                raise AssertionError("Pasale un paciente a la funcion pacientSelected")
         else:
             dni = None
             nombre = None
@@ -299,7 +281,8 @@ class PacientWidget(QWidget, PacientInterface):
         self.peso_edit.setValue(peso)
         self.gender_combo_box.itemText(gender_index)
         self.email_edit.setText(mail)
-        self.telefono_edit.setText(str(telefono))
+        if telefono is not None:
+            self.telefono_edit.setText(str(telefono))
         threading.Thread(target=self.set_pics_worker, args=(fotocara, fotocuerpo,)).start()
         self.calculate_imc()
 
@@ -384,25 +367,19 @@ class PacientWidget(QWidget, PacientInterface):
             file_dialog = QFileDialog()
             # file_dialog.setAcceptMode()
             chosen_file = file_dialog.getOpenFileName(filter="Image Files (*.png *.jpg *.jpeg *.bmp)")
-            if chosen_file != '':
+            if chosen_file[0] != '':
                 bites = open(chosen_file[0], "br").read()
                 if self.foto_tab.currentWidget() == self.cara_tab:
                     self.pacient.fotocara = bites
-                    pixmap = QPixmap()
-                    pixmap.loadFromData(bites)
-                    self.cara_image.setPixmap(pixmap)
-                    pass
+                    self.cara_image.setPixmap(get_pixmap_from_bytes(bites))
                 elif self.foto_tab.currentWidget() == self.cuerpo_tab:
                     self.pacient.fotocuerpo = bites
-                    pixmap = QPixmap()
-                    pixmap.loadFromData(bites)
-                    self.cuerpo_image.setPixmap(pixmap)
+                    self.cuerpo_image.setPixmap(get_pixmap_from_bytes(bites))
         else:
             pass
 
     def activate_calendar(self):
-        name = self.sender().objectName()
-        if name == "nacimiento_tool":
+        if self.sender() == self.nacimiento_tool:
             if self.nacimiento_calendar.isVisible():
                 self.nacimiento_calendar.setVisible(False)
                 self.current_calendar.setVisible(False)
@@ -411,7 +388,7 @@ class PacientWidget(QWidget, PacientInterface):
                 self.current_calendar.setText("Fecha de nacimiento:")
                 self.diagnostico_calendar.setVisible(False)
                 self.nacimiento_calendar.setVisible(True)
-        if name == "diagnostico_tool":
+        if self.sender() == self.diagnostico_tool:
             if self.diagnostico_calendar.isVisible():
                 self.diagnostico_calendar.setVisible(False)
                 self.current_calendar.setVisible(False)

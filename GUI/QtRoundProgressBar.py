@@ -5,6 +5,8 @@ from PyQt5.QtWidgets import QWidget
 
 
 # https://stackoverflow.com/a/33583019/12725251
+
+
 class QRoundProgressBar(QWidget):
     """ Clase sacada de un post de stack Overflow, enlace https://stackoverflow.com/a/33583019/12725251"""
     StyleDonut = 1

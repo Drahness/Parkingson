@@ -3,10 +3,12 @@ import datetime
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget, QSizePolicy, QTextEdit, QLabel, QFormLayout
 
+import Utils
 from GUI.GUI_Resources import get_cronometro_widget_ui, get_cronometro_bar_widget
 from GUI.cronometro import Timer
 from GUI.pacient_oriented_tab_interface import PacientInterface
-from database.Settings import UserSettings
+from GUI.static_actions import StaticActions
+from database.settings import UserSettings
 from database.prueba import Prueba
 
 
@@ -45,8 +47,11 @@ class Cronometro(QWidget, PacientInterface):
         self.vuelta2_label.setText(self.settings.value(self.settings.LAP1_NAME))
         self.vuelta3_label.setText(self.settings.value(self.settings.LAP2_NAME))
         self.crono_widget.addWidget(self.progress_bar)
-        self.stop_button.setEnabled(False)
+        self.stop_button.setVisible(False)
         self.cancel_button.setEnabled(False)
+        self.vuelta1_edit.setEnabled(False)
+        self.vuelta2_edit.setEnabled(False)
+        self.vuelta3_edit.setEnabled(False)
         self.prueba_actual: Prueba = ...
         # Conexiones de los botones
         self.start_and_lap.clicked.connect(self.start_and_lap_slot)
@@ -65,11 +70,15 @@ class Cronometro(QWidget, PacientInterface):
     def start_and_lap_slot(self):
         from main_window import UI
         if self.status == self.STOPPED:
+            self.vuelta1_edit.setEnabled(True)
+            self.vuelta2_edit.setEnabled(True)
+            self.vuelta3_edit.setEnabled(True)
+            StaticActions.vista_crono.setEnabled(False)
             self.sender().emit_again = True
             self.status = self.STARTED
             self.timer = Timer()
 
-            self.prueba_actual = Prueba(pacient_id=self.pacient.dni,
+            self.prueba_actual = Prueba(pacient_id=self.pacient.id,
                                         datetime_of_test=datetime.datetime.now(),
                                         laps=self.timer.laps)
 
@@ -80,12 +89,19 @@ class Cronometro(QWidget, PacientInterface):
         elif self.status == self.END:  # A acabado el ciclo.
             self.stop_slot()
             self.timer.lap()
+            StaticActions.vista_crono.setEnabled(True)
             self.status = self.STOPPED
             self.cancel_button.setEnabled(False)
             self.stop_button.setEnabled(False)
             self.prueba_actual.notas = [self.vuelta1_edit.toPlainText(),
-                                  self.vuelta2_edit.toPlainText(),
-                                  self.vuelta3_edit.toPlainText()]
+                                        self.vuelta2_edit.toPlainText(),
+                                        self.vuelta3_edit.toPlainText()]
+            self.vuelta1_edit.setText("")
+            self.vuelta2_edit.setText("")
+            self.vuelta3_edit.setText("")
+            self.vuelta1_edit.setEnabled(False)
+            self.vuelta2_edit.setEnabled(False)
+            self.vuelta3_edit.setEnabled(False)
             self.finishedSignal.emit(self.prueba_actual, self.index)
         else:  # Esta en ciclo.
             lap = self.timer.lap()
@@ -108,7 +124,6 @@ class Cronometro(QWidget, PacientInterface):
             self.stop_button.setEnabled(False)
             self.timer.stop()
             self.status = self.STOPPED
-
 
     def cancel_slot(self):  # Reseteas el timer
         self.stop_slot()

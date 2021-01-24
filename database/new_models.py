@@ -18,13 +18,14 @@ class AbstractEntityModel:
         self.__check_subclass(base)
         self.conn: ModelConnection = ModelConnection.get_instance(user, base)
         self.conn.init()
-        self.entities = base.load(self.conn)  # Al ser singleon, solo carga una vez y se matiene sincronizado.
+        self.entities = base.load(self.conn)
         self.showable_items = None
 
     def change_callback(self):
         ...
 
     def reload(self):
+        self.entities.clear()
         self.entities = self.entity_type.load(self.conn)
         self.change_callback()
 
@@ -41,6 +42,9 @@ class AbstractEntityModel:
                 self.change_callback()
 
     def get(self, index: int):
+        return self.showable_items[index]
+
+    def get_from_cache(self,index: int):
         return self.entities[index]
 
     def __check_instance(self, entity):
@@ -53,7 +57,7 @@ class AbstractEntityModel:
             entity.delete(self.conn)
             self.change_callback()
         except Exception as e:
-            string = f"""Error mientras se eliminaba la entidad {type(entity).__name__} con identificador {entity.get_id()}"""
+            string = f"""Error mientras se eliminaba la entidad {type(entity).__name__} con identificador {entity.id}"""
             get_error_dialog_msg(e, string, "Error de eliminacion").exec_()
 
     def update(self, entity, id_to_update):
@@ -62,7 +66,7 @@ class AbstractEntityModel:
             entity.update(self.conn, id_to_update)
             self.change_callback()
         except Exception as e:
-            string = f"""Error mientras se eliminaba la entidad {type(entity).__name__} con identificador {entity.get_id()}"""
+            string = f"""Error mientras se eliminaba la entidad {type(entity).__name__} con identificador {entity.id}"""
             get_error_dialog_msg(e, string, "Error de actualizacion").exec_()
 
     def append(self, entity):
@@ -72,7 +76,7 @@ class AbstractEntityModel:
             entity.insert(self.conn)
             self.change_callback()
         except Exception as e:
-            string = f"""Error mientras se agregaba la entidad {type(entity).__name__} con identificador {entity.get_id()}"""
+            string = f"""Error mientras se agregaba la entidad {type(entity).__name__} con identificador {entity.id}"""
             get_error_dialog_msg(e, string, "Error de insertacion").exec_()
 
     @classmethod
@@ -85,6 +89,24 @@ class AbstractEntityModel:
             cls.INSTANCES[user][type][implementation] = cls(user)
         return cls.INSTANCES[user][type][implementation]
 
+    @classmethod
+    def get_user_instances(cls,user) -> list:
+        user_instances = []
+        if user in cls.INSTANCES:
+            for type in cls.INSTANCES[user]:
+                for impl in cls.INSTANCES[user][type]:
+                    user_instances.append(cls.INSTANCES[user][type][impl])
+        return user_instances
+
+    @classmethod
+    def get_type_instances(cls,user):
+        type_instances = []
+        if user in cls.INSTANCES:
+            copy = cls.INSTANCES[user].copy()
+            for typpe in copy:
+                type_instances.append(copy[typpe].popitem()[1])
+        return type_instances
+
     @staticmethod
     def __check_subclass(type):
         """Private instance to check if a instance is in hierarchy of the class passed as parameter in __init__"""
@@ -92,14 +114,17 @@ class AbstractEntityModel:
             raise TypeError(f"Base class {type} must be a subclass of {type(Entity)}")
 
     def __len__(self) -> int:
-        return len(self.entities)
+        if self.showable_items:
+            return len(self.showable_items)
+        else:
+            return len(self.entities)
 
 
-class NewListModel(AbstractEntityModel, QAbstractListModel):
+class EntityListModel(AbstractEntityModel, QAbstractListModel):
     INSTANCES = {}
 
     def __init__(self, user: str, base: Type[Entity]):
-        super(NewListModel, self).__init__(user, base, QAbstractListModel)
+        super(EntityListModel, self).__init__(user, base, QAbstractListModel)
         QAbstractListModel.__init__(self)
 
     def data(self, index: QModelIndex, role: int = ...) -> typing.Any:
@@ -117,7 +142,7 @@ class NewListModel(AbstractEntityModel, QAbstractListModel):
 
     @classmethod
     def get_instance(cls, user: str, type: type, implementation=QAbstractListModel):
-        return super(NewListModel, cls).get_instance(user, type, implementation)
+        return super(EntityListModel, cls).get_instance(user, type, implementation)
 
     def change_callback(self):
         self.layoutChanged.emit()

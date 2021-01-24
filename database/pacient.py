@@ -16,21 +16,21 @@ class Pacient(Entity):
 
     def __gt__(self, other):
         if isinstance(other, Pacient):
-            return self.dni > other.dni
+            return self.id > other.dni
         if isinstance(other, str):
-            return self.dni > other
+            return self.id > other
 
     def __lt__(self, other):
         if isinstance(other, Pacient):
-            return self.dni < other.dni
+            return self.id < other.dni
         if isinstance(other, str):
-            return self.dni < other
+            return self.id < other
 
     def __eq__(self, other):
         if isinstance(other, Pacient):
-            return self.dni == other.dni
+            return self.id == other.dni
         if isinstance(other, str):
-            return self.dni == other
+            return self.id == other
 
     def __init__(self,
                  dni: str = None,
@@ -67,7 +67,6 @@ class Pacient(Entity):
             altura = dictionary.get("altura")
             fecha_diagnostico = dictionary.get("fecha_diagnostico")
         super().__init__(dni)
-        self.dni = dni
         self.apellidos = apellidos
         self.estadio = estadio
         self.nombre = nombre
@@ -84,7 +83,7 @@ class Pacient(Entity):
         self.altura = altura
 
     def insert(self, conexion):
-        attributes = [self.dni,
+        attributes = [self.id,
                       self.apellidos,
                       self.estadio,
                       self.nombre,
@@ -118,7 +117,7 @@ class Pacient(Entity):
         sql = (sql + "(" + ("?," * len(attributes)))[:-1] + ")"
         conexion.execute(sql, attributes)
         self.append()
-        return self.dni
+        return self.id
 
     def update(self, conexion, to_updated):
         if isinstance(to_updated, str):
@@ -127,8 +126,8 @@ class Pacient(Entity):
             dni = to_updated.dni
         else:
             raise AssertionError("argument type dont supported, type: " + str(type(to_updated)))
-        if self.dni != dni:
-            atributos = [self.dni,
+        if self.id != dni:
+            atributos = [self.id,
                          self.apellidos,
                          self.estadio,
                          self.nombre,
@@ -196,7 +195,7 @@ class Pacient(Entity):
         conexion.execute(sql, atributos)
 
     def delete(self, conexion):
-        conexion.execute(f"DELETE FROM {self.get_tablenames()[0]} WHERE dni = ?", [self.dni])
+        conexion.execute(f"DELETE FROM {self.get_tablenames()[0]} WHERE dni = ?", [self.id])
         self.remove()
 
     @staticmethod
@@ -224,7 +223,7 @@ class Pacient(Entity):
         return columns,
 
     def __str__(self):
-        return f"{self.dni}:{self.apellidos}, {self.nombre}"
+        return f"{self.id}:{self.apellidos}, {self.nombre}"
 
     @property
     def nacimiento(self):
@@ -247,3 +246,19 @@ class Pacient(Entity):
             self._fecha_diagnostico = value.toPyDate()
         else:
             self._fecha_diagnostico = value
+
+    def get_fomatted_name(self):
+        string = ""
+        if self.apellidos:
+            string += self.apellidos
+        if self.nombre and string == "":
+            string += self.nombre
+        elif self.nombre:
+            string += ", " + self.nombre
+        return string
+
+    def has_fotocara(self):
+        return self.fotocara
+
+    def has_fotocuerpo(self):
+        return self.fotocuerpo

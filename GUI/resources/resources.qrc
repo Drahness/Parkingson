@@ -1,5 +1,12 @@
 <RCC>
   <qresource prefix="icons">
+    <file alias="user">user.png</file>
+    <file alias="camera">camera.png</file>
+    <file alias="db">db.png</file>
+    <file alias="filesystem">filesystem.png</file>
+    <file alias="json">json.png</file>
+    <file alias="xml">xml.png</file>
+    <file>reload.png</file>
     <file alias="hidden">oculto.png</file>
     <file alias="shown">visible.png</file>
     <file>no_image.png</file>

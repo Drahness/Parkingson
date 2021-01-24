@@ -1,12 +1,9 @@
 import sys
 
-from PyQt5.QtWidgets import QMenuBar, QApplication, QAction, QMenu, QToolBar
+from PyQt5.QtWidgets import QMenuBar, QAction, QMenu, QToolBar
 
-from GUI.actions import StaticActions
-
-
-def _rep(string: str) -> str:
-    return string.replace("&", "").replace(" ", "_").lower()
+import Utils
+from GUI.static_actions import StaticActions
 
 
 class ToolBar(QToolBar):
@@ -15,6 +12,13 @@ class ToolBar(QToolBar):
         self.add_pacient = self.addAction(StaticActions.add_pacient_action)
         self.edit_pacient = self.addAction(StaticActions.edit_pacient_action)
         self.del_pacient = self.addAction(StaticActions.del_pacient_action)
+        self.addSeparator()
+        self.reload = self.addAction(StaticActions.recargar_action)
+
+        self.addSeparator()
+        self.add_prueba = self.addAction(StaticActions.add_prueba_action)
+        self.edit_prueba = self.addAction(StaticActions.edit_prueba_action)
+        self.del_prueba = self.addAction(StaticActions.del_prueba_action)
 
         """
         # DATA
@@ -29,7 +33,6 @@ class ToolBar(QToolBar):
         # AYUDA
         self.creditos = self.ayuda.addAction(StaticActions.creditos_action)
         """
-
     def addAction(self, action: 'QAction') -> None:
         super().addAction(action)
         action.setParent(self)
@@ -47,8 +50,8 @@ class MenuBar(QMenuBar):
         super().__init__()
         # INIT MENUS
         self.pacients = Menu(MenuBar._pacients)
-        self.data = Menu(MenuBar._data)
         self.pruebas = Menu(MenuBar._test)
+        self.data = Menu(MenuBar._data)
         self.ajustes = Menu(MenuBar._settings)
         self.ayuda = Menu(MenuBar._help)
         self.vista = Menu(MenuBar._view)
@@ -63,12 +66,13 @@ class MenuBar(QMenuBar):
         self.exportar_JSON = self.data.addAction(StaticActions.exportar_JSON_action)
         self.exportar_XML = self.data.addAction(StaticActions.exportar_XML_action)
         # PRUEBA
-        self.mod_prueba = self.pruebas.addAction(StaticActions.mod_prueba_action)
+        self.add_prueba = self.pruebas.addAction(StaticActions.add_prueba_action)
+        self.edit_prueba = self.pruebas.addAction(StaticActions.edit_prueba_action)
         self.del_prueba = self.pruebas.addAction(StaticActions.del_prueba_action)
         # AYUDA
         self.creditos = self.ayuda.addAction(StaticActions.creditos_action)
         # VISTA
-        self.view_toolbar: QAction = self.vista.addAction(StaticActions.vista_Toolbar)
+        self.view_toolbar: QAction = self.vista.addAction(StaticActions.vista_toolbar)
         self.view_crono: QAction = self.vista.addAction(StaticActions.vista_crono)
         self.view_rendimiento: QAction = self.vista.addAction(StaticActions.vista_rendimiento)
         self.view_pacientes: QAction = self.vista.addAction(StaticActions.vista_pacientes)
@@ -91,11 +95,3 @@ class Menu(QMenu):
         super(Menu, self).addAction(action)
         action.setParent(self)
         return action
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    window = MenuBar()
-    window.show()
-    m = Menu()
-    app.exec_()

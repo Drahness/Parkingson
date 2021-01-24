@@ -1,12 +1,44 @@
 import datetime
 import hashlib
+import inspect
 import math
 import threading
 import re
 
-import os
-from PyQt5.QtCore import Qt, QObject
-from PyQt5.QtWidgets import QWidget, QLabel, QTextEdit, QHBoxLayout, QFrame
+import traceback
+
+from PyQt5 import QtCore
+from PyQt5.QtCore import Qt, QObject, QPoint
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QWidget, QLabel, QTextEdit, QHBoxLayout, QFrame, QMessageBox, QMenu
+
+
+def throw_qt_error(e: Exception, string_before_trace: str = None, title: str = None):
+    title = title or type(e).__name__
+    string_before_trace = string_before_trace or ""
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Critical)
+    msg.setText(string_before_trace)
+    informative = "Error type: " + type(e).__name__
+    informative += "\n" + inspect.stack()[0][3] + "\n" + inspect.stack()[1][3]
+    msg.setInformativeText(informative)
+    msg.setDetailedText(traceback.format_exc())
+    msg.setWindowTitle(title)
+    traceback.print_exc()
+    msg.resize(1000, 3000)
+    return msg
+
+
+def function_error_safety(function):
+    def wrapper(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except Exception as e:
+            string = f"""Error args = {args}, kwars = {kwargs}"""
+            throw_qt_error(e, string, "Error").exec_()
+
+    return wrapper
+
 
 class KeyValueWidget(QWidget):
     def __init__(self, key: str, value: str):
@@ -41,56 +73,6 @@ class KeyValueMutable(KeyValueWidget):
         self.value: QTextEdit = QTextEdit("b")
 
 
-class TimerThreadingClass(threading.Thread):
-    def __init__(self, stop_at: datetime = None):
-        super().__init__()
-        if stop_at is not None:
-            self.stop_at = stop_at
-        else:
-            self.stop_at = datetime.datetime.now() + datetime.timedelta(hours=100)
-        self.start_point = datetime.datetime.now()
-        self.is_running = False
-        self.laps: list = []
-
-    def run(self):
-        self.is_running = True
-        while datetime.datetime.now() < self.stop_at and self.is_running:
-            pass
-        self.is_running = False
-
-    def lap(self):
-        self.laps.append(self.get_actual_time())
-        self.start_point = datetime.datetime.now()
-
-    def cancel(self):
-        self.stop_at = datetime.datetime.now()
-
-    def get_actual_time(self) -> datetime.timedelta:
-        return datetime.datetime.now() - self.start_point
-
-    def __str__(self):
-        returning = '{:02}:{:02}:{:02}'
-        now = self.get_actual_time().__format__('{:02}:{:02}:{:02}')
-        return str(now)
-
-
-def run_timer():
-    t = TimerThreadingClass()
-    t.start()
-    while t.is_running:
-        print("Hilo principal")
-        print(str(t))
-        s = input()
-        if s == "c":
-            t.cancel()
-        elif s == "l":
-            t.lap()
-        elif s == "get":
-            print(t.laps)
-            for x in t.laps:
-                print(type(x))
-
-
 def cypher(password: str) -> str:
     return hashlib.sha3_512(password.encode('utf-8')).hexdigest()
 
@@ -101,6 +83,10 @@ def format_list(lista: list) -> str:
 
 def format_dict(dictionary: dict, center="=") -> str:
     return str(dictionary)[1:-1].replace(":", center)
+
+
+def timedelta_to_float(delta: datetime.timedelta):
+    return delta.seconds + delta.microseconds / (10 ** 6)
 
 
 def get_from_dict(dictionary: dict, key: any) -> any or None:
@@ -119,7 +105,7 @@ def get_timedelta(real_number: float or datetime.timedelta, canbeNone=False):
             raise ValueError("the real_number cant be none.")
     if isinstance(real_number, float) or isinstance(real_number, int):
         micro, seconds = math.modf(real_number)
-        return datetime.timedelta(seconds=seconds, microseconds=micro*1000000)
+        return datetime.timedelta(seconds=seconds, microseconds=micro * 1000000)
     elif isinstance(real_number, datetime.timedelta):
         return real_number
     else:
@@ -142,5 +128,37 @@ def parse_timedelta(s: str):
     return {key: float(val) for key, val in m.groupdict().iteritems()}
 
 
-if __name__ == "__main__":
-    os.makedirs("aaaa/polaas/xd")
+def get_bytes_from_pixmap(pix: QPixmap):
+    if isinstance(pix, QPixmap):
+        barray = QtCore.QByteArray()
+        buff = QtCore.QBuffer(barray)
+        buff.open(QtCore.QIODevice.WriteOnly)
+        ok = pix.save(buff, "png")
+        return barray.data() if ok else None
+    else:
+        return None
+
+
+def get_pixmap_from_bytes(by: bytes):
+    if isinstance(by, bytes):
+        pix = QPixmap()
+        pix.loadFromData(by)
+        return pix
+    else:
+        return None
+
+
+def get_position(widget: QWidget, relative_point: QPoint = None, *args, **kwargs):
+    x = 0
+    y = 0
+    while widget.parent() is not None:
+        x += widget.pos().x()
+        y += widget.pos().y()
+        widget = widget.parent()
+    x += widget.pos().x() + (relative_point.x() if relative_point else 0)
+    y += widget.pos().y() + (relative_point.y() if relative_point else 0)
+    return QPoint(x, y)
+
+
+def popup_context_menu(sender: QWidget, menu: QMenu, relative_point: QPoint = None, *args, **kwargs):
+    menu.popup(get_position(sender, relative_point))

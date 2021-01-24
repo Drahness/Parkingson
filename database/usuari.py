@@ -75,7 +75,13 @@ class AuthConnection(ModelConnection):
     def valid_user(self, username, password):
         return len(self.dao.search_table(Usuari.get_tablenames()[0], {"username": username, "password": password})) > 0
 
+    def user_exists(self, username):
+        return not len(self.dao.search_table(self.model.get_tablenames()[0], {"username": username})) > 0
+
+    def register_user(self,username,password):
+        self.execute(f"INSERT INTO {self.model.get_tablenames()[0]} (username,password) VALUES (?,?)", (username, password))
+
     def init(self):
         super(AuthConnection, self).init()
         self.execute(f"INSERT OR IGNORE INTO {self.model.get_tablenames()[0]} (username,password) VALUES (?,?)",
-                     [self.default_user, self.default_password])
+                     (self.default_user, self.default_password))

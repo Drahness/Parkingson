@@ -271,13 +271,6 @@
                  </property>
                 </widget>
                </item>
-               <item>
-                <widget class="QLabel" name="error_altura">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
               </layout>
              </item>
              <item row="12" column="0">
@@ -303,23 +296,16 @@
                  </property>
                 </widget>
                </item>
-               <item>
-                <widget class="QLabel" name="error_peso">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
               </layout>
              </item>
-             <item row="13" column="0">
+             <item row="14" column="0">
               <widget class="QLabel" name="imc_label">
                <property name="text">
                 <string>IMC</string>
                </property>
               </widget>
              </item>
-             <item row="13" column="1">
+             <item row="14" column="1">
               <layout class="QHBoxLayout" name="horizontalLayout_4">
                <item>
                 <widget class="QLabel" name="imc_result">
@@ -337,21 +323,21 @@
                </item>
               </layout>
              </item>
-             <item row="15" column="0">
+             <item row="16" column="0">
               <widget class="QLabel" name="label_11">
                <property name="text">
                 <string>Telefono</string>
                </property>
               </widget>
              </item>
-             <item row="15" column="1">
+             <item row="16" column="1">
               <widget class="QLineEdit" name="telefono_edit">
                <property name="enabled">
                 <bool>false</bool>
                </property>
               </widget>
              </item>
-             <item row="16" column="1">
+             <item row="17" column="1">
               <widget class="QLabel" name="error_telefono">
                <property name="styleSheet">
                 <string notr="true">color:red</string>
@@ -361,21 +347,21 @@
                </property>
               </widget>
              </item>
-             <item row="17" column="0">
+             <item row="18" column="0">
               <widget class="QLabel" name="label_9">
                <property name="text">
                 <string>Email</string>
                </property>
               </widget>
              </item>
-             <item row="17" column="1">
+             <item row="18" column="1">
               <widget class="QLineEdit" name="email_edit">
                <property name="enabled">
                 <bool>false</bool>
                </property>
               </widget>
              </item>
-             <item row="18" column="1">
+             <item row="19" column="1">
               <widget class="QLabel" name="error_email">
                <property name="styleSheet">
                 <string notr="true">color:red</string>
@@ -385,35 +371,35 @@
                </property>
               </widget>
              </item>
-             <item row="19" column="0">
+             <item row="20" column="0">
               <widget class="QLabel" name="label_8">
                <property name="text">
                 <string>Direccion</string>
                </property>
               </widget>
              </item>
-             <item row="19" column="1">
+             <item row="20" column="1">
               <widget class="QLineEdit" name="direccion_edit">
                <property name="enabled">
                 <bool>false</bool>
                </property>
               </widget>
              </item>
-             <item row="20" column="0">
+             <item row="21" column="0">
               <widget class="QLabel" name="label_7">
                <property name="text">
                 <string>Genero</string>
                </property>
               </widget>
              </item>
-             <item row="20" column="1">
+             <item row="21" column="1">
               <widget class="QComboBox" name="gender_combo_box">
                <property name="enabled">
                 <bool>false</bool>
                </property>
               </widget>
              </item>
-             <item row="21" column="1">
+             <item row="22" column="1">
               <widget class="QLabel" name="error_gender">
                <property name="styleSheet">
                 <string notr="true">color:red</string>
@@ -423,14 +409,14 @@
                </property>
               </widget>
              </item>
-             <item row="22" column="0">
+             <item row="23" column="0">
               <widget class="QLabel" name="label_10">
                <property name="text">
                 <string>Fecha diagnostico</string>
                </property>
               </widget>
              </item>
-             <item row="22" column="1">
+             <item row="23" column="1">
               <layout class="QHBoxLayout" name="horizontalLayout_5">
                <item>
                 <widget class="QDateEdit" name="diagnostico_date_edit">
@@ -448,7 +434,7 @@
                </item>
               </layout>
              </item>
-             <item row="23" column="0">
+             <item row="24" column="0">
               <widget class="QLabel" name="label_5">
                <property name="minimumSize">
                 <size>
@@ -461,7 +447,7 @@
                </property>
               </widget>
              </item>
-             <item row="23" column="1">
+             <item row="24" column="1">
               <layout class="QHBoxLayout" name="horizontalLayout_7">
                <property name="sizeConstraint">
                 <enum>QLayout::SetMinimumSize</enum>
@@ -493,6 +479,26 @@
                 </widget>
                </item>
               </layout>
+             </item>
+             <item row="10" column="1">
+              <widget class="QLabel" name="error_altura">
+               <property name="styleSheet">
+                <string notr="true">color:red</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="13" column="1">
+              <widget class="QLabel" name="error_peso">
+               <property name="styleSheet">
+                <string notr="true">color:red</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -588,8 +594,14 @@
            </item>
            <item row="4" column="1">
             <widget class="QToolButton" name="context_button">
+             <property name="contextMenuPolicy">
+              <enum>Qt::CustomContextMenu</enum>
+             </property>
              <property name="text">
               <string>...</string>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::DelayedPopup</enum>
              </property>
             </widget>
            </item>

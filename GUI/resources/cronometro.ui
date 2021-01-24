@@ -162,6 +162,11 @@
          </property>
          <item row="0" column="0">
           <widget class="QLabel" name="vuelta1_label">
+           <property name="font">
+            <font>
+             <pointsize>14</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>TextLabel</string>
            </property>
@@ -172,6 +177,11 @@
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="vuelta2_label">
+           <property name="font">
+            <font>
+             <pointsize>14</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>TextLabel</string>
            </property>
@@ -182,6 +192,11 @@
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="vuelta3_label">
+           <property name="font">
+            <font>
+             <pointsize>14</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>TextLabel</string>
            </property>

@@ -1,7 +1,7 @@
 import os
 import traceback
 from pathlib import Path
-
+from . import resources
 from PyQt5 import uic
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QDialog, QWidget, QMessageBox
@@ -16,8 +16,6 @@ for parent in Path(os.path.abspath(__name__)).parents:
 if MAIN_FOLDER is None:
     raise ModuleNotFoundError("Malformed modules.")
 
-from . import resources
-
 GUI_FOLDER: Path = MAIN_FOLDER / Path("GUI")
 UIS_FOLDER: Path = GUI_FOLDER / Path("resources")
 LOGIN_DIALOG: Path = UIS_FOLDER / Path("login_dialog.ui")
@@ -30,26 +28,53 @@ NO_EDITABLE_PACIENT_WIDGET: Path = UIS_FOLDER / Path("pacients_widget_noeditable
 CONFIRMATION_DIALOG: Path = UIS_FOLDER / Path("confirmation_dialog.ui")
 GRAPH_WIDGET: Path = UIS_FOLDER / Path("graph_widget.ui")
 PIXMAP_NO_IMAGE: Path = UIS_FOLDER / Path("no_image.png")
+SELECTOR_WIDGET: Path = UIS_FOLDER / Path("selector_date_widget.ui")
 EVOLUTION_TAB: Path = UIS_FOLDER / Path("rendimiento.ui")
+PRUEBA_DIALOG: Path = UIS_FOLDER / Path("prueba_form.ui")
 
 def get_add_icon():
     return QIcon(":/icons/add")
 
+
 def get_delete_icon():
     return QIcon(":/icons/del")
+
+
+def get_reload_icon():
+    return QIcon(":/icons/reload")
+
 
 def get_hidden_icon():
     return QIcon(":/icons/hidden")
 
+
 def get_shown_icon():
     return QIcon(":/icons/shown")
+
 
 def get_edit_icon():
     return QIcon(":/icons/edit")
 
-
 def get_save_icon():
     return QIcon(":/icons/save")
+
+def get_json_icon():
+    return QIcon(":/icons/json")
+
+def get_xml_icon():
+    return QIcon(":/icons/xml")
+
+def get_filesystem_icon():
+    return QIcon(":/icons/filesystem")
+
+def get_db_icon():
+    return QIcon(":/icons/db")
+
+def get_user_icon():
+    return QIcon(":/icons/user")
+
+def get_camera_icon():
+    return QIcon(":/icons/camera")
 
 
 def get_no_image_pixmap():
@@ -120,6 +145,13 @@ def get_cronometro_widget_ui(to: QWidget = None):
         cronometro_ui: QWidget = uic.loadUi(CRONOMETRO_WIDGET, to)
     return cronometro_ui
 
+def get_prueba_dialog_ui(to: QDialog = None):
+    if to is None:
+        prueba_dialog: QDialog = uic.loadUi(PRUEBA_DIALOG, QWidget())
+    else:
+        prueba_dialog: QDialog = uic.loadUi(PRUEBA_DIALOG, to)
+    return prueba_dialog
+
 
 def get_cronometro_bar_widget():
     from .cronometro import ProgressCronometro  # Para evitar imports circulares
@@ -155,3 +187,11 @@ def get_confirmation_dialog_ui(msg: str, to: QDialog = None):
 
     confirmation_dialog.confirm_label.setText(msg)
     return confirmation_dialog
+
+
+def get_selector_widget(to: QWidget = None):
+    if to is None:
+        selector_widget = uic.loadUi(SELECTOR_WIDGET, QDialog())
+    else:
+        selector_widget = uic.loadUi(SELECTOR_WIDGET, to)
+    return selector_widget

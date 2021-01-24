@@ -1,36 +1,10 @@
-import sys
-
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPalette, QColor, QIcon
-from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTabWidget, QListView
+from PyQt5.QtWidgets import  QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTabWidget, QListView
 
+import Utils
 from GUI.grafica_tab import EvolutionTab
 from GUI.cronometro_tab import Cronometro
 from GUI.pacient_widget_tab import PacientWidget
-
-
-class Color(QWidget):
-    """No la voy a usar"""
-
-    def __init__(self, color):
-        super().__init__()
-        self.setAutoFillBackground(True)
-        palette = self.palette()
-        palette.setColor(QPalette.Window, QColor(color))
-        self.setPalette(palette)
-
-
-class App(QMainWindow):
-    """ Esta clase no la voy a usar """
-
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("CronometroOrtsLayouts")
-        self.central_widget = CentralWidgetParkingson(self)
-
-        self.setCentralWidget(self.central_widget)
-        self.show()
-
 
 class CentralWidgetParkingson(QWidget):
     pacients_tab: QWidget  # Una vez seleccionado paciente, mostrara sus datos
@@ -48,7 +22,8 @@ class CentralWidgetParkingson(QWidget):
     DELETE_button_key = "delete"
     EDIT_button_key = "edit"
 
-    def __init__(self, user:str, parent=None, debug=False):
+    @Utils.function_error_safety
+    def __init__(self, user:str, parent=None):
         super(QWidget, self).__init__(parent)
         self.general_layout = QVBoxLayout()
         self.buttons_layout = QHBoxLayout()
@@ -72,7 +47,7 @@ class CentralWidgetParkingson(QWidget):
         self.pacients_list_view.resize(200, 400)
         self.parent_tab_widget = QTabWidget()
         self.parent_tab_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.pacients_tab: PacientWidget = PacientWidget(debug)  # Tab1 Color
+        self.pacients_tab: PacientWidget = PacientWidget()  # Tab1 Color
 
         # self.rendimiento_tab = MplCanvas(self, width=5, height=4, dpi=100)  # Tab2 Grafica
         self.evolution_tab = EvolutionTab(user)

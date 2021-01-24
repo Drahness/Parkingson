@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>Dialog</class>
  <widget class="QDialog" name="Dialog">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -26,16 +29,6 @@
    <string>Dialog</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QLabel" name="label">
-     <property name="styleSheet">
-      <string notr="true">color:red</string>
-     </property>
-     <property name="text">
-      <string>WIP</string>
-     </property>
-    </widget>
-   </item>
    <item>
     <widget class="QLabel" name="title">
      <property name="styleSheet">
@@ -69,14 +62,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="usernamefield">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
+    <widget class="QLineEdit" name="usernamefield"/>
    </item>
    <item>
     <widget class="QFrame" name="frame_2">
@@ -110,14 +96,8 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLineEdit" name="passwordfield">
-       <property name="text">
-        <string/>
-       </property>
        <property name="echoMode">
         <enum>QLineEdit::Password</enum>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -131,11 +111,11 @@
          <normaloff>oculto.png</normaloff>oculto.png</iconset>
        </property>
        <property name="hidden" stdset="0">
-        <iconset resource="resources.qrc">
+        <iconset>
          <normaloff>:/icons/oculto.png</normaloff>:/icons/oculto.png</iconset>
        </property>
        <property name="shown" stdset="0">
-        <iconset resource="resources.qrc">
+        <iconset>
          <normaloff>:/icons/visible.png</normaloff>:/icons/visible.png</iconset>
        </property>
       </widget>
@@ -143,11 +123,64 @@
     </layout>
    </item>
    <item>
+    <widget class="QFrame" name="frame_3">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Confirmar contraseña</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLineEdit" name="confirm_password"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="oculto_confirm">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resources.qrc">
+         <normaloff>:/icons/hidden</normaloff>:/icons/hidden</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="error_label">
+     <property name="toolTipDuration">
+      <number>-5</number>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color:red</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QPushButton" name="Rpositive">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="text">
         <string>Registrar</string>
@@ -157,7 +190,7 @@
      <item>
       <widget class="QPushButton" name="Rnegative">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="text">
         <string>Cancelar</string>

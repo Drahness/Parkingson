@@ -2,20 +2,21 @@ import os
 import sys
 import threading
 
-from PyQt5 import QtGui, QtCore
-from PyQt5.QtCore import QThreadPool, pyqtSignal, QSize, QRect, QPoint
-from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy, QApplication
+from PyQt5 import QtGui
+from PyQt5.QtCore import QThreadPool, pyqtSignal, QSize, QPoint
+from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy
+from Tools.scripts import pysource
+from Tools.scripts.pysource import print_debug
 from cv2.cv2 import VideoCapture
 
 from GUI.MenuBar import MenuBar, ToolBar
-from GUI.actions import StaticActions
+from GUI.static_actions import StaticActions
 from GUI.main_window_javi import CentralWidgetParkingson
-from database.Settings import Settings, UserSettings
-from database.deprecated_data_controller import Connection  # TODO change to a new more basic Connection manager.
+from database.settings import UserSettings
 from database.new_models import AbstractEntityModel
-from database.usuari import Usuari, AuthConnection
+from database.usuari import AuthConnection
 from database.pacient import Pacient
-from database.models import PacientsListModel, ListModel, PruebasListModel
+from database.models import PacientsListModel, PruebasListModel
 from GUI import GUI_Resources
 
 
@@ -29,6 +30,7 @@ class UI(QMainWindow):
 
     def __init__(self, debug=False):
         super().__init__()
+        pysource.debug = debug
         self.setObjectName("Main_window")
         self.settings = None
         # TODO SINGLETONS ?¿?¿?¿?¿
@@ -43,7 +45,13 @@ class UI(QMainWindow):
         self.user_credentials = {"result": False}
         self.credentials()
         if self.user_credentials["result"]:
-            self.show()
+            if self.user_credentials["order"] == "login":
+                self.show()
+            elif self.user_credentials["order"] == "register":
+                self.connection.register_user(self.user_credentials["username"],self.user_credentials["password"])
+                self.show()
+            else:
+                sys.exit(1)
         else:
             sys.exit(0)
         # Recogemos el Central widget, lo añadimos y luego lo inicializamos
@@ -51,8 +59,8 @@ class UI(QMainWindow):
             self.user_credentials["username"] = AuthConnection.default_user
 
         self.settings = UserSettings(self.user_credentials["username"])
-
-        self.central = CentralWidgetParkingson(self.user_credentials["username"], debug=debug)
+        self.setWindowTitle(self.settings.applicationName())
+        self.central = CentralWidgetParkingson(self.user_credentials["username"])
         self.setCentralWidget(self.central)
         # Creamos el objeto settings
 
@@ -77,11 +85,7 @@ class UI(QMainWindow):
         self.setStatusBar(self.status_bar)
         self.setMenuBar(self.menu_bar)
 
-        self.menu_bar.add_pacient.triggered.connect(self.button_clicked)
-        self.menu_bar.edit_pacient.triggered.connect(self.button_clicked)
-        self.menu_bar.del_pacient.triggered.connect(self.button_clicked)
-        self.menu_bar.mod_prueba.triggered.connect(self.button_clicked)
-        self.menu_bar.del_prueba.triggered.connect(self.button_clicked)
+        self.set_up_actions()
 
         self.central.pacients_list_view.clicked.connect(self.on_listview_pacient_click)
         self.central.pacients_list_view.doubleClicked.connect(self.on_pacient_double_click)
@@ -89,14 +93,6 @@ class UI(QMainWindow):
         self.central.pacients_tab.resultSignal.connect(self.on_result)
         self.central.cronometro_tab.finishedSignal.connect(self.on_crono_finished)
         self.changeStatusBar.connect(self.changeStatus)
-
-        self.menu_bar.data.setEnabled(False)
-        self.menu_bar.ajustes.setEnabled(False)
-        self.menu_bar.ayuda.setEnabled(False)
-        # self.menu_bar.pruebas.setEnabled(False)
-        StaticActions.mod_prueba_action.setEnabled(False)
-        self.menu_bar.edit_pacient.setEnabled(False)
-        self.menu_bar.del_pacient.setEnabled(False)
 
         self.central.pacients_tab.set_signal_pacient_selected(self.pacientSelected)
         self.central.cronometro_tab.set_signal_pacient_selected(self.pacientSelected)
@@ -154,6 +150,7 @@ class UI(QMainWindow):
         self.login_form.show()
         if not self.DEBUG:
             self.login_form.login_validator = self.connection.valid_user
+            self.login_form.user_checker = self.connection.user_exists
         result = self.login_form.exec_()
         if result == 1 and self.login_form.result.get("result", False):
             self.user_credentials = self.login_form.result
@@ -172,14 +169,13 @@ class UI(QMainWindow):
         self.menu_bar.del_pacient.setEnabled(True)
 
     def hide_view(self, *args):
-        name = self.sender().objectName()
-        if "action_view_toolbar" == name:
+        if self.menu_bar.view_toolbar == self.sender():
             if not self.sender().isChecked():
                 self.removeToolBar(self.toolbar)
             else:
                 self.addToolBar(self.toolbar)
                 self.toolbar.setVisible(True)
-        elif "action_view_crono" == name:
+        elif self.menu_bar.view_crono == self.sender():
             self.central.cronometro_tab.setVisible(self.sender().isChecked())
             self.central.parent_tab_widget.currentChanged.emit(self.central.parent_tab_widget.currentIndex())
             if not self.sender().isChecked():
@@ -189,7 +185,7 @@ class UI(QMainWindow):
                 self.central.parent_tab_widget.setTabVisible(2, True)
                 self.central.cronometro_tab.setVisible(self.central.cronometro_tab.is_on_focus())
             pass
-        elif "action_view_pacientes" == name:
+        elif self.menu_bar.view_pacientes == self.sender():
             self.central.pacients_tab.setVisible(self.sender().isChecked())
             self.central.parent_tab_widget.currentChanged.emit(self.central.parent_tab_widget.currentIndex())
             if not self.sender().isChecked():
@@ -199,7 +195,7 @@ class UI(QMainWindow):
             else:
                 self.central.parent_tab_widget.setTabVisible(0, True)
                 self.central.pacients_tab.setVisible(self.central.cronometro_tab.is_on_focus())
-        elif "action_view_rendimiento" == name:
+        elif self.menu_bar.view_rendimiento == self.sender():
             self.central.evolution_tab.setVisible(self.sender().isChecked())
             self.central.parent_tab_widget.currentChanged.emit(self.central.parent_tab_widget.currentIndex())
             if not self.sender().isChecked():
@@ -208,7 +204,6 @@ class UI(QMainWindow):
             else:
                 self.central.parent_tab_widget.setTabVisible(1, True)
                 self.central.evolution_tab.setVisible(self.central.evolution_tab.is_on_focus())
-        #  slf.update()
 
     @staticmethod
     def get_instance():
@@ -220,8 +215,6 @@ class UI(QMainWindow):
         self.central.actions_buttons[self.central.DELETE_button_key].setEnabled(enable)
         self.central.actions_buttons[self.central.EDIT_button_key].setEnabled(enable)
         self.central.pacients_list_view.setEnabled(enable)
-
-    """Slots"""
 
     def on_result(self, acepted: bool, row: int):
         if acepted:  # si es true, significa que han acabado de editar
@@ -242,32 +235,31 @@ class UI(QMainWindow):
     def changeStatus(self, string, microseconds):
         self.status_bar.showMessage(string, microseconds * 1000)
 
-    def button_clicked(self, *args):
+    def button_clicked(self, *args):  # Llevar esto a la clase pacientsform
         pacient_index = self.central.parent_tab_widget.indexOf(self.central.pacients_tab)
         self.central.parent_tab_widget.setCurrentIndex(pacient_index)
-        if self.sender() == StaticActions.add_pacient_action:
+        if self.sender() == self.menu_bar.add_pacient:
             self.central.pacients_tab.pacientSelected(Pacient(), -1)
             self.central.pacients_tab.set_enabled(True)
             self.central.parent_tab_widget.setEnabled(True)
-        elif self.sender() == StaticActions.del_pacient_action:
+        elif self.sender() == self.menu_bar.del_pacient:
             if len(self.listview_model) > 0 and self.central.pacients_tab.pacient_selected():
                 pacient = self.listview_model.entities[self.central.pacients_tab.index]
                 dialog = GUI_Resources.get_confirmation_dialog_ui(f"Quieres eliminar el usuario {pacient}")
                 if dialog.exec_() == 1:
                     self.listview_model.delete(pacient)
-        elif self.sender() == StaticActions.edit_pacient_action:
+        elif self.sender() == self.menu_bar.edit_pacient:
             if len(self.listview_model.entities) > 0 and self.central.pacients_tab.pacient_selected():
                 self.central.pacients_tab.set_enabled(True)
-        elif self.sender() == StaticActions.del_prueba_action:
-            dialog = GUI_Resources.get_confirmation_dialog_ui(
-                f"Quieres eliminar la prueba de rendimiento del paciente")
-            if dialog.exec_() == 1:
-                PruebasListModel.get_instance().delete(self.central.evolution_tab.selected_prueba)
+        elif self.sender() == self.menu_bar.recargar:
+            instances = self.listview_model.get_type_instances(self.user_credentials["username"])
+            for instance in instances:
+                instance.reload()
 
     def on_crono_finished(self, prueba, row):
         PruebasListModel.get_instance(self.user_credentials["username"]).append(prueba)
         p = self.listview_model.get(row)
-        self.status_bar.showMessage(f"Insertada nueva prueba a {p}")
+        self.status_bar.showMessage(f"Insertada nueva prueba: {p}")
 
     def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
         super().resizeEvent(a0)
@@ -276,7 +268,7 @@ class UI(QMainWindow):
         if self.inited:
             self.settings.setValue(self.settings.SIZE, a0.size())
             self.settings.setValue(self.settings.FULLSCREEN, self.isFullScreen())
-        print(f"{size} {old_size}")
+        print_debug(f"{size} {old_size}")
 
     def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
         super().keyPressEvent(a0)
@@ -291,3 +283,34 @@ class UI(QMainWindow):
         super().moveEvent(a0)
         if self.inited:
             self.settings.setValue(self.settings.POSITION, self.pos())
+
+    def export_to(self):
+        if self.sender() == self.menu_bar.exportar_JSON:
+            type_models = AbstractEntityModel.get_type_instances(self.user_credentials["username"])
+            for type_model in type_models:
+                #type_model.get_as_json()
+                pass
+        elif self.sender() == self.menu_bar.exportar_XML:
+            type_models = AbstractEntityModel.get_type_instances(self.user_credentials["username"])
+            for type_model in type_models:
+                #type_model.get_as_xml()
+                pass
+
+    def set_up_actions(self):
+        self.menu_bar.ajustes.setEnabled(False)
+        self.menu_bar.ayuda.setEnabled(False)
+        self.menu_bar.pruebas.setEnabled(True)
+        self.menu_bar.edit_prueba.setEnabled(False)
+        self.menu_bar.edit_pacient.setEnabled(False)
+        self.menu_bar.del_pacient.setEnabled(False)
+
+        self.menu_bar.add_pacient.triggered.connect(self.button_clicked)
+        self.menu_bar.edit_pacient.triggered.connect(self.button_clicked)
+        self.menu_bar.del_pacient.triggered.connect(self.button_clicked)
+        self.menu_bar.edit_prueba.triggered.connect(self.button_clicked)
+        self.menu_bar.del_prueba.triggered.connect(self.button_clicked)
+        self.menu_bar.recargar.triggered.connect(self.button_clicked)
+
+        self.menu_bar.consultar_tablas.setEnabled(False)
+        self.menu_bar.exportar_XML.setEnabled(False)
+        self.menu_bar.exportar_JSON.setEnabled(False)

@@ -9,7 +9,7 @@ class Entity:
 
     def __init__(self, id: any, dictionary: dict = None):
         self.dictionary = dictionary
-        self.id = id
+        self._id = id
         pass
 
     @classmethod
@@ -67,8 +67,13 @@ class Entity:
         list_of_instances = self._get_list_of_instances()
         list_of_instances.remove(self)
 
-    def get_id(self):
-        return self.id
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, id):
+        self._id = id
 
     @classmethod
     def get_definitions(cls):

@@ -2,8 +2,9 @@ import datetime
 
 from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QObject
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QApplication, QSizePolicy, QFrame
+from PyQt5.QtWidgets import QApplication, QSizePolicy
 
+import Utils
 from GUI.QtRoundProgressBar import QRoundProgressBar, QRoundTimer
 
 
@@ -15,7 +16,7 @@ class Signaler(QObject):
 
 
 class Timer(QRunnable):
-
+    @Utils.function_error_safety
     def __init__(self, stop_at: datetime = None):
         super().__init__()
         if stop_at is not None:
@@ -30,6 +31,7 @@ class Timer(QRunnable):
         self.stops = []
 
     @pyqtSlot()
+    @Utils.function_error_safety
     def run(self):
         self.is_running = True
         now = last_emision = datetime.datetime.now()
@@ -45,24 +47,29 @@ class Timer(QRunnable):
         self.is_running = False
         self.signaler.on_progress.emit(datetime.timedelta(seconds=0))
 
+    @Utils.function_error_safety
     def lap(self) -> datetime.timedelta:
         lap = len(self.laps)
         self.laps.append(self.get_actual_time())
         self.start_point = datetime.datetime.now()
         return self.laps[lap]
 
+    @Utils.function_error_safety
     def stop(self):
         self.stop_at = datetime.datetime.now()
 
+    @Utils.function_error_safety
     def get_actual_time(self) -> datetime.timedelta:
         return datetime.datetime.now() - self.start_point
 
+    @Utils.function_error_safety
     def __str__(self):
         now = self.get_actual_time().__format__('{:02}:{:02}:{:02}')
         return str(now)
 
 
 class ProgressCronometro(QRoundTimer):
+    @Utils.function_error_safety
     def __init__(self):
         super().__init__()
         self.setBarStyle(QRoundProgressBar.StyleDonut)
@@ -85,6 +92,7 @@ class ProgressCronometro(QRoundTimer):
         self.value = 0.0
         self.max = 10.0
 
+    @Utils.function_error_safety
     def changeYellowThereshold(self, time: datetime.timedelta):
         self.colors = [
                 (0., QColor.fromRgb(0, 255, 0)),
@@ -93,6 +101,7 @@ class ProgressCronometro(QRoundTimer):
             ]
         self.setDataColors(self.colors)
 
+    @Utils.function_error_safety
     def changeRedThreshold(self, time: datetime.timedelta):
         self.colors = [
                 (0., QColor.fromRgb(0, 255, 0)),
