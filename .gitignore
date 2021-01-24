@@ -3,3 +3,6 @@ Linuxvenv
 .idea
 /test/
 /main.spec
+/dist/main/
+/data/
+/build/main/
