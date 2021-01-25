@@ -85,7 +85,6 @@ class EvolutionTab(QWidget, PacientInterface):
         self.mensual.clicked.connect(self.radio_handler)
         self.semanal.clicked.connect(self.radio_handler)
         self.todos.clicked.connect(self.radio_handler)
-
         self.graph = Grafica()
         self.prueba: Prueba = ...
         self.pruebas: list = ...
@@ -96,16 +95,13 @@ class EvolutionTab(QWidget, PacientInterface):
         self.graph_lay_1: QVBoxLayout = self.graph_lay_1
         self.graph_lay_2: QVBoxLayout = self.graph_lay_2
         self.graph_lay_3: QVBoxLayout = self.graph_lay_3
-
         self.graph_lay_1.addWidget(self.graph_test_1)
         self.graph_lay_2.addWidget(self.graph_test_2)
         self.graph_lay_3.addWidget(self.graph_test_3)
         self.target_layout.addWidget(self.graph)
-
         self.notas_lap3.setVisible(False)
         self.notas_lap2.setVisible(False)
         self.notas_lap1.setVisible(False)
-
         self.model: PruebasListModel = PruebasListModel.get_instance(user)
         self.evolution_listview.setModel(self.model)
         self.model.change_model_list([])
