@@ -6,7 +6,6 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from sqlite3 import Connection
 from typing import Type, Iterable
 
-from Tools.scripts.pysource import print_debug
 from sqlitedao import SqliteDao, ColumnDict
 
 from database.entities_interface import Entity
@@ -97,7 +96,7 @@ class ModelConnection:
 
     def execute(self, sql, parameters: Iterable = None) -> list:
         """Executes the given statement withouts searching if it is correct."""
-        print_debug(f"DB:{self.path}/{self.dbname} - Operation: {sql} ¦ {parameters}")
+        print(f"DB:{self.path}/{self.dbname} - Operation: {sql} ¦ {parameters}")
         if parameters is None:
             self.cursor.execute(sql)
         else:

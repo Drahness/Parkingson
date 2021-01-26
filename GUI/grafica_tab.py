@@ -401,11 +401,13 @@ class EvolutionTab(QWidget, PacientInterface):
             Utils.popup_context_menu(self.sender(), self.menu, args[0])
 
     def handle_actions(self):
+        something_changed = False
         if self.sender() == self.edit_prueba and self.prueba:
             dialog = PruebaDialog(self.user)
             dialog.set_prueba(self.pacient, self.prueba)
             if dialog.exec_() == 1:
                 self.model.update(dialog.get_prueba(), self.prueba)
+                something_changed = True
             StaticActions.del_prueba_action.setEnabled(False)
             StaticActions.edit_prueba_action.setEnabled(False)
         elif self.sender() == self.add_prueba:
@@ -413,15 +415,18 @@ class EvolutionTab(QWidget, PacientInterface):
             dialog.set_prueba(self.pacient)
             if dialog.exec_() == 1:
                 prueba = dialog.get_prueba()
+                something_changed = True
                 self.model.append(prueba)
                 self.pruebas.append(prueba)
         elif self.sender() == self.del_prueba and self.prueba:
             dialog = GUI_Resources.get_confirmation_dialog_ui(f"Quieres eliminar la prueba:\n{self.prueba}\n Paciente: {self.pacient.get_fomatted_name()}")
             if dialog.exec_() == 1:
+                something_changed = True
                 StaticActions.del_prueba_action.setEnabled(False)
                 StaticActions.edit_prueba_action.setEnabled(False)
                 self.pruebas.remove(self.prueba)
                 self.model.delete(self.prueba)
                 self.prueba = None
-        self.pruebas.sort()
-        self.load_graph(self.pruebas)
+        if something_changed:
+            self.pruebas.sort()
+            self.load_graph(self.pruebas)
