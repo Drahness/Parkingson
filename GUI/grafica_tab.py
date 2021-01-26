@@ -91,6 +91,7 @@ class EvolutionTab(QWidget, PacientInterface):
         self.graph_test_1 = Grafica()
         self.graph_test_2 = Grafica()
         self.graph_test_3 = Grafica()
+        self.graph_test_total = Grafica()
         self.user = user
         self.graph_lay_1: QVBoxLayout = self.graph_lay_1
         self.graph_lay_2: QVBoxLayout = self.graph_lay_2
@@ -98,10 +99,16 @@ class EvolutionTab(QWidget, PacientInterface):
         self.graph_lay_1.addWidget(self.graph_test_1)
         self.graph_lay_2.addWidget(self.graph_test_2)
         self.graph_lay_3.addWidget(self.graph_test_3)
+        self.graph_lay_total.addWidget(self.graph_test_total)
         self.target_layout.addWidget(self.graph)
         self.notas_lap3.setVisible(False)
         self.notas_lap2.setVisible(False)
         self.notas_lap1.setVisible(False)
+        self.tiempo_total: QLabel = self.tiempo_total
+        self.tiempo_1: QLabel = self.tiempo_1
+        self.tiempo_2: QLabel = self.tiempo_2
+        self.tiempo_3: QLabel = self.tiempo_3
+        #self.notas_lap_total.setVisible(False)
         self.model: PruebasListModel = PruebasListModel.get_instance(user)
         self.evolution_listview.setModel(self.model)
         self.model.change_model_list([])
@@ -109,9 +116,11 @@ class EvolutionTab(QWidget, PacientInterface):
         self.title_test1: QLabel = self.title_test1
         self.title_test2: QLabel = self.title_test2
         self.title_test3: QLabel = self.title_test3
+        self.title_test_total: QLabel = self.title_test_total
         self.title_test1.setText(self.settings.value(self.settings.LAP0_NAME))
         self.title_test2.setText(self.settings.value(self.settings.LAP1_NAME))
         self.title_test3.setText(self.settings.value(self.settings.LAP2_NAME))
+        self.title_test_total.setText("Total")
         self.filter = get_selector_widget()
         self.buscar.clicked.connect(self.handle_filter)
         self.filter.buscar.clicked.connect(self.handle_filter)
@@ -178,6 +187,7 @@ class EvolutionTab(QWidget, PacientInterface):
             self.graph_test_1.marker[0].set_marker(None)
             self.graph_test_2.marker[0].set_marker(None)
             self.graph_test_3.marker[0].set_marker(None)
+            self.graph_test_total.marker[0].set_marker(None)
         row = args[0].row()
         self.prueba: Prueba = self.model.get(row)
         self.notas_lap3.setVisible(True)
@@ -212,10 +222,20 @@ class EvolutionTab(QWidget, PacientInterface):
                                                              marker="+",
                                                              markersize=10,
                                                              color="black")
+        self.graph_test_total.marker = self.graph_test_total.ax.plot(row % len(self.pruebas),
+                                                                     (prueba.laps[2] + prueba.laps[1] + prueba.laps[0]).total_seconds(),
+                                                             marker="+",
+                                                             markersize=10,
+                                                             color="black")
+        self.tiempo_total.setText(str(prueba.laps[2] + prueba.laps[1] + prueba.laps[0]))
+        self.tiempo_1.setText(str(prueba.laps[0]))
+        self.tiempo_2.setText(str(prueba.laps[1]))
+        self.tiempo_3.setText(str(prueba.laps[2]))
         self.graph.draw()
         self.graph_test_1.draw()
         self.graph_test_2.draw()
         self.graph_test_3.draw()
+        self.graph_test_total.draw()
 
     def load_graph(self, pruebas):
         test1 = []
@@ -229,16 +249,19 @@ class EvolutionTab(QWidget, PacientInterface):
                 self.graph.ax.clear()
                 self.graph_test_1.ax.clear()
                 self.graph_test_2.ax.clear()
+                self.tiempo_total.setText("")
+                self.tiempo_1.setText("")
+                self.tiempo_2.setText("")
+                self.tiempo_3.setText("")
                 self.graph_test_3.ax.clear()
+                self.graph_test_total.ax.clear()
                 for x in range(0, len(pruebas)):
                     prueba = pruebas[x]
                     dates.append(prueba.datetime)
-
                     test1.append(prueba.laps[0].total_seconds())
                     test2.append(prueba.laps[1].total_seconds())
                     test3.append(prueba.laps[2].total_seconds())
                     total.append(test1[x] + test2[x] + test3[x])
-
                 self.graph.line_lap0 = self.graph.ax.plot(date2num(dates), matplotlib.dates.num2date(test1), lw=0.75,
                                                           label=self.settings.get_lap_name(0),
                                                           color="blue",
@@ -277,6 +300,7 @@ class EvolutionTab(QWidget, PacientInterface):
                 self.graph_test_1.ax.clear()
                 self.graph_test_2.ax.clear()
                 self.graph_test_3.ax.clear()
+                self.graph_test_total.ax.clear()
             self.graph.draw()
             try:
                 test1_lowmid_limit = self.settings.value(self.settings.LAP0_LOWMEDIUM_START).total_seconds()
@@ -286,6 +310,9 @@ class EvolutionTab(QWidget, PacientInterface):
                 test1_midhigh_limit = self.settings.value(self.settings.LAP0_MEDIUMHARD_START).total_seconds()
                 test2_midhigh_limit = self.settings.value(self.settings.LAP1_MEDIUMHARD_START).total_seconds()
                 test3_midhigh_limit = self.settings.value(self.settings.LAP2_MEDIUMHARD_START).total_seconds()
+
+                test_total_lowmid_limit = test1_lowmid_limit + test2_lowmid_limit + test3_lowmid_limit
+                test_total_midhigh_limit = test3_midhigh_limit + test2_midhigh_limit + test1_midhigh_limit
 
                 self.graph_test_1.ax.plot((0,
                                            len(test1)),
@@ -310,7 +337,15 @@ class EvolutionTab(QWidget, PacientInterface):
                                           color="red",
                                           markersize=1)
 
+                self.graph_test_total.ax.plot((0, len(test3)), (test_total_lowmid_limit, test_total_lowmid_limit),
+                                          color="orange",
+                                          markersize=1)
+                self.graph_test_total.ax.plot((0, len(test3)), (test_total_midhigh_limit, test_total_midhigh_limit),
+                                          color="red",
+                                          markersize=1)
+
                 for x in range(0, len(dates)):
+                    test_total = test1[x] + test2[x] + test3[x]
                     if test1[x] < test1_lowmid_limit:
                         self.graph_test_1.ax.plot(x, test1[x], color="green", marker="o", markersize=2)
                     elif test1[x] < test1_midhigh_limit:
@@ -329,25 +364,35 @@ class EvolutionTab(QWidget, PacientInterface):
                         self.graph_test_3.ax.plot(x, test3[x], color="orange", marker="o", markersize=2)
                     else:
                         self.graph_test_3.ax.plot(x, test3[x], color="red", marker="o", markersize=2)
+                    if test_total < test_total_lowmid_limit:
+                        self.graph_test_total.ax.plot(x, test3[x], color="green", marker="o", markersize=2)
+                    elif test_total < test_total_midhigh_limit:
+                        self.graph_test_total.ax.plot(x, test_total, color="orange", marker="o", markersize=2)
+                    else:
+                        self.graph_test_total.ax.plot(x, test_total, color="red", marker="o", markersize=2)
 
                 self.graph_test_1.ax.yaxis.set_major_formatter(Grafica.funcformatter)
                 self.graph_test_1.ax.yaxis.set_label("Tiempo de prueba")
                 self.graph_test_1.ax.grid(True)
-                self.graph_test_1.ax.legend(frameon=False)
+                #self.graph_test_1.ax.legend(frameon=False)
 
                 self.graph_test_2.ax.yaxis.set_major_formatter(Grafica.funcformatter)
                 self.graph_test_2.ax.yaxis.set_label("Tiempo de prueba")
                 self.graph_test_2.ax.grid(True)
-                self.graph_test_2.ax.legend(frameon=False)
+                #self.graph_test_2.ax.legend(frameon=False)
 
                 self.graph_test_3.ax.yaxis.set_major_formatter(Grafica.funcformatter)
                 self.graph_test_3.ax.yaxis.set_label("Tiempo de prueba")
                 self.graph_test_3.ax.grid(True)
-                self.graph_test_3.ax.legend(frameon=False)
+                #self.graph_test_3.ax.legend(frameon=False)
+                self.graph_test_total.ax.yaxis.set_major_formatter(Grafica.funcformatter)
+                self.graph_test_total.ax.yaxis.set_label("Tiempo de prueba")
+                self.graph_test_total.ax.grid(True)
 
                 self.graph_test_1.draw()
                 self.graph_test_2.draw()
                 self.graph_test_3.draw()
+                self.graph_test_total.draw()
             except Exception as e:
                 string = f"Error en la matrices secundarias. {type(e).__name__} paciente {self.pacient.dni}\n"
                 string += "Valores:\n"
@@ -358,7 +403,7 @@ class EvolutionTab(QWidget, PacientInterface):
                 get_error_dialog_msg(e, string, "Error de insertacion").exec_()
 
         except Exception as e:
-            string = f"Error en la matriz {type(e).__name__} paciente {self.pacient.dni}\n"
+            string = f"Error en la matriz {type(e).__name__} paciente {self.pacient.id}\n"
             string += "Valores:\n"
             string += f"{dates}\n"
             string += f"{test1}\n"
@@ -391,6 +436,13 @@ class EvolutionTab(QWidget, PacientInterface):
                 if es_mayor_que_el_principio and es_menor_que_el_final:
                     new_pruebas.append(prueba)
         self.load_graph(new_pruebas)
+
+    def on_reload(self):
+        super().get_on_reload_signal()
+        self.todos.setChecked(True)
+        self.notas_lap3.setText("")
+        self.notas_lap2.setText("")
+        self.notas_lap1.setText("")
 
     def custom_conext_menu(self, *args) -> None:
         if self.sender() == self.evolution_listview:

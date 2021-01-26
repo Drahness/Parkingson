@@ -26,6 +26,7 @@ class UI(QMainWindow):
     changeStatusBar = pyqtSignal(str, int)
     hideViews = pyqtSignal(bool)
     key_press = pyqtSignal(QtGui.QKeyEvent)
+    on_reload = pyqtSignal(bool)
     inited = False
 
     def __init__(self, debug=False):
@@ -35,7 +36,6 @@ class UI(QMainWindow):
         self.settings = None
         # TODO SINGLETONS ?¿?¿?¿?¿
         UI.instance = self
-        UI.DB = "db" + os.sep + f"default.db"
         UI.threadpool = QThreadPool()
         UI.DEBUG = debug
         # TODO SINGLETONS ?¿?¿?¿?¿ THEY ARE REALLY NEEDED?
@@ -57,7 +57,6 @@ class UI(QMainWindow):
         # Recogemos el Central widget, lo añadimos y luego lo inicializamos
         if debug:
             self.user_credentials["username"] = AuthConnection.default_user
-
         self.settings = UserSettings(self.user_credentials["username"])
         self.setWindowTitle(self.settings.applicationName())
         self.central = CentralWidgetParkingson(self.user_credentials["username"])
@@ -109,6 +108,10 @@ class UI(QMainWindow):
         self.central.pacients_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
         self.central.cronometro_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
         self.central.evolution_tab.set_signal_current_changed(self.central.parent_tab_widget.currentChanged)
+
+        self.central.evolution_tab.set_on_reload_signal(self.on_reload)
+        self.central.pacients_tab.set_on_reload_signal(self.on_reload)
+        self.central.cronometro_tab.set_on_reload_signal(self.on_reload)
 
         self.hideViews.connect(self.hide_view)
 
@@ -252,9 +255,10 @@ class UI(QMainWindow):
             if len(self.listview_model.entities) > 0 and self.central.pacients_tab.pacient_selected():
                 self.central.pacients_tab.set_enabled(True)
         elif self.sender() == self.menu_bar.recargar:
-            instances = self.listview_model.get_type_instances(self.user_credentials["username"])
+            instances = self.listview_model.get_user_instances(self.user_credentials["username"])
             for instance in instances:
                 instance.reload()
+            self.on_reload.emit(True)
 
     def on_crono_finished(self, prueba, row):
         PruebasListModel.get_instance(self.user_credentials["username"]).append(prueba)

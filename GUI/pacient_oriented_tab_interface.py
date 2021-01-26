@@ -21,6 +21,7 @@ class PacientInterface:
         self.pacientSelectedSignal: pyqtSignal = ...
         self.currentChangedSignal: pyqtSignal = ...
         self.key_pressedSignal: pyqtSignal = ...
+        self.on_reloadSignal: pyqtSignal = ...
         pass
 
     def set_key_pressed(self, signal: pyqtSignal):
@@ -49,11 +50,18 @@ class PacientInterface:
         self.pacient = pacient
         self.index = index
 
+    def set_on_reload_signal(self, on_reload):
+        self.on_reloadSignal = on_reload
+
+    def get_on_reload_signal(self):
+        return self.on_reloadSignal
+
     def init(self):
         """Inicializas el widget. Concretamente las señales desde el mainWindow."""
         self.pacientSelectedSignal.connect(self.pacientSelected)
         self.currentChangedSignal.connect(self.currentChanged)
         self.key_pressedSignal.connect(self.key_pressed)
+        self.on_reloadSignal.connect(self.on_reload)
 
     def set_change_status_bar(self, signal: pyqtSignal):
         self.statusChangeSlot = signal
@@ -66,6 +74,9 @@ class PacientInterface:
         self.sender().currentWidget().on_focus = True
 
     def key_pressed(self, key: QtGui.QKeyEvent, *args):
+        pass
+
+    def on_reload(self):
         pass
 
     def sender(self) -> QObject: ...
