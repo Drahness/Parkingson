@@ -8,7 +8,6 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QIntValidator, QPixmap, QImage
 from PyQt5.QtWidgets import QWidget, QCalendarWidget, QDateEdit, QLabel, QComboBox, QLineEdit, QDoubleSpinBox, \
     QPushButton, QTabWidget, QToolButton, QFileDialog
-from Tools.scripts import pysource
 
 import Utils
 from GUI.GUI_Resources import get_pacient_widget_ui, get_no_image_pixmap
@@ -145,31 +144,31 @@ class PacientWidget(QWidget, PacientInterface):
         errored = False
         combo_index = self.estadio_combo_box.currentIndex()
         gender_index = self.gender_combo_box.currentIndex()
-        if not re.fullmatch(self.dni_regex,self.dni_field.text()) and not pysource.debug:
+        if not re.fullmatch(self.dni_regex,self.dni_field.text()) and not Utils.debug:
             errored = True
             self.error_dni.setText("No has introducido un documento de identidad valido.")
-        if not len(self.apellidos_field.text()) > 0 and not pysource.debug:
+        if not len(self.apellidos_field.text()) > 0 and not Utils.debug:
             errored = True
             self.error_apellidos.setText("Este campo no debe estar vacio.")
-        if not len(self.nombre_field.text()) > 0 and not pysource.debug:
+        if not len(self.nombre_field.text()) > 0 and not Utils.debug:
             errored = True
             self.error_nombre.setText("Este campo no debe estar vacio.")
-        if self.estadio_combo_box.itemText(combo_index) == "" and not pysource.debug:
+        if self.estadio_combo_box.itemText(combo_index) == "" and not Utils.debug:
             errored = True
             self.error_estadio.setText("No has introducido un estadio valido.")
-        if not re.fullmatch(self.email_regex, self.email_edit.text()) and not pysource.debug:  # TODO
+        if not re.fullmatch(self.email_regex, self.email_edit.text()) and not Utils.debug:
             errored = True
             self.error_email.setText("No has introducido un email valido.")
-        if self.gender_combo_box.itemText(gender_index) == "" and not pysource.debug:
+        if self.gender_combo_box.itemText(gender_index) == "" and not Utils.debug:
             errored = True
             self.error_gender.setText("No has introducido un genero valido.")
-        if self.altura_edit.value() == 0 and not pysource.debug:
+        if self.altura_edit.value() == 0 and not Utils.debug:
             errored = True
             self.error_altura.setText("No has introducido la altura del paciente.")
-        if self.peso_edit.value() == 0 and not pysource.debug:
+        if self.peso_edit.value() == 0 and not Utils.debug:
             errored = True
             self.error_peso.setText("No has introducido el peso del paciente.")
-        if self.telefono_edit.text() == "" and not pysource.debug:
+        if self.telefono_edit.text() == "" and not Utils.debug:
             errored = True
             self.error_telefono.setText("No has introducido el telefono del paciente.")
         return not errored

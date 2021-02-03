@@ -42,7 +42,6 @@ class LoginRegisterWindow(QDialog):
         self.setLayout(layout)
         self.shown: QIcon = get_shown_icon()
         self.hidden: QIcon = get_hidden_icon()
-        self.debug = False
         self.login_widget.positive.clicked.connect(self.__positive_login)
         self.login_widget.negative.clicked.connect(self.__cancel_buttons)
         self.register_widget.Rnegative.clicked.connect(self.__cancel_buttons)
@@ -61,7 +60,7 @@ class LoginRegisterWindow(QDialog):
         sys.exit(0)
 
     def __positive_register(self):
-        print("REGISTER")
+        Utils.print_debug("REGISTER")
         if self._user_checker(self.register_widget.usernamefield.text()):
             if self.register_widget.passwordfield.text() == self.register_widget.confirm_password.text():
                 self.result = { "result":True,
@@ -76,12 +75,12 @@ class LoginRegisterWindow(QDialog):
 
 
     def __positive_login(self):
-        print("LOGIN")
+        Utils.print_debug("LOGIN")
         if self.login_validator is None:
             raise AttributeError("You need to set the property self.login_validator to a method parametrized with 2 "
                                  "arguments username and password")
         self.result = {"order": "login",
-                       "username": "Admin" if self.debug else self.login_widget.usernamefield.text(),
+                       "username": "Admin" if Utils.debug else self.login_widget.usernamefield.text(),
                        "password": Utils.cypher(self.login_widget.passwordfield.text())
                        }
         self.result["result"] = self._login_validator(self.result["username"], self.result["password"])

@@ -1,14 +1,12 @@
-import os
 import sys
 import threading
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThreadPool, pyqtSignal, QSize, QPoint
 from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy
-from Tools.scripts import pysource
-from Tools.scripts.pysource import print_debug
 from cv2.cv2 import VideoCapture
 
+import Utils
 from GUI.MenuBar import MenuBar, ToolBar
 from GUI.static_actions import StaticActions
 from GUI.main_window_javi import CentralWidgetParkingson
@@ -31,9 +29,9 @@ class UI(QMainWindow):
 
     def __init__(self, debug=False):
         super().__init__()
-        pysource.debug = debug
         self.setObjectName("Main_window")
         self.settings = None
+        Utils.debug = debug
         # TODO SINGLETONS ?¿?¿?¿?¿
         UI.instance = self
         UI.threadpool = QThreadPool()
@@ -272,7 +270,7 @@ class UI(QMainWindow):
         if self.inited:
             self.settings.setValue(self.settings.SIZE, a0.size())
             self.settings.setValue(self.settings.FULLSCREEN, self.isFullScreen())
-        print_debug(f"{size} {old_size}")
+        Utils.print_debug(f"{size} {old_size}")
 
     def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
         super().keyPressEvent(a0)

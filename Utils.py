@@ -12,6 +12,13 @@ from PyQt5.QtCore import Qt, QObject, QPoint
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QWidget, QLabel, QTextEdit, QHBoxLayout, QFrame, QMessageBox, QMenu
 
+debug = False
+
+
+def print_debug(msg: str):
+    if debug:
+        print(msg)
+
 
 def throw_qt_error(e: Exception, string_before_trace: str = None, title: str = None):
     title = title or type(e).__name__

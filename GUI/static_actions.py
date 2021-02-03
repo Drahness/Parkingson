@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import QAction
 from .GUI_Resources import *
 
 class StaticActions:
-    print("something")
     add = get_add_icon()
     edit = get_edit_icon()
     delete = get_delete_icon()
