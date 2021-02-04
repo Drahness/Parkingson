@@ -39,7 +39,7 @@ class Pacient(Entity):
                  nombre: str = None,
                  nacimiento: datetime.date = None,
                  notas: str = None,
-                 telefono: int = None,
+                 telefono: str = None,
                  mail: str = None,
                  fotocara: bytes = None,
                  fotocuerpo: bytes = None,
@@ -211,7 +211,7 @@ class Pacient(Entity):
         columns.add_column("estadio", "float")
         columns.add_column("nacimiento", "date")
         columns.add_column("notas", "text")
-        columns.add_column("telefono", "integer")
+        columns.add_column("telefono", "text")
         columns.add_column("mail", "text")
         columns.add_column("fotocara", "blob")
         columns.add_column("fotocuerpo", "blob")

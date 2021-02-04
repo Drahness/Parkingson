@@ -273,7 +273,7 @@ class PacientWidget(QWidget, PacientInterface):
         self.nacimiento_field.setDate(nacimiento)
         self.notas_field.setText(notas)
         self.nacimiento_calendar.setSelectedDate(nacimiento)
-        telf_validator = QIntValidator()
+        telf_validator = QIntValidator() # TODO cambiar telefono a texto plano.
         telf_validator.setRange(0,2147483647)
         self.telefono_edit.setValidator(telf_validator)
         self.diagnostico_date_edit.setDate(fecha_diagnostico)
