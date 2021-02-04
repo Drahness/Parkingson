@@ -32,6 +32,7 @@ class PacientWidget(QWidget, PacientInterface):
         # Variables.
         self.email_regex = re.compile(u'(?:[a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])')
         self.dni_regex = re.compile("((([X-Z])|([LM])){1}([-]?)((\d){7})([-]?)([A-Z]{1}))|((\d{8})([-]?)([A-Z]))")
+        self.telefono_regex = re.compile("^(?:6[0-9]|9[0-9]|7[1-9])[0-9]{7}$")
         self.combo_items = ["", "1", "1.5", "2", "2.5", "3", "4", "5", "0"]
         self.gender_items = ["", "Hombre", "Mujer"]
         self.on_focus = True
@@ -168,9 +169,9 @@ class PacientWidget(QWidget, PacientInterface):
         if self.peso_edit.value() == 0 and not Utils.debug:
             errored = True
             self.error_peso.setText("No has introducido el peso del paciente.")
-        if self.telefono_edit.text() == "" and not Utils.debug:
+        if self.telefono_edit.text() == "" or not re.fullmatch(self.telefono_regex, self.telefono_edit.text()) or Utils.debug:
             errored = True
-            self.error_telefono.setText("No has introducido el telefono del paciente.")
+            self.error_telefono.setText("No has introducido un telefono válido.")
         return not errored
 
     def buttons(self, *args):
