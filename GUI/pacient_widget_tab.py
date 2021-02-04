@@ -156,7 +156,7 @@ class PacientWidget(QWidget, PacientInterface):
         if self.estadio_combo_box.itemText(combo_index) == "" and not Utils.debug:
             errored = True
             self.error_estadio.setText("No has introducido un estadio valido.")
-        if not re.fullmatch(self.email_regex, self.email_edit.text()) and not Utils.debug:
+        if self.email_edit.text() != "" and not re.fullmatch(self.email_regex, self.email_edit.text()) and not Utils.debug:
             errored = True
             self.error_email.setText("No has introducido un email valido.")
         if self.gender_combo_box.itemText(gender_index) == "" and not Utils.debug:
@@ -273,7 +273,9 @@ class PacientWidget(QWidget, PacientInterface):
         self.nacimiento_field.setDate(nacimiento)
         self.notas_field.setText(notas)
         self.nacimiento_calendar.setSelectedDate(nacimiento)
-        self.telefono_edit.setValidator(QIntValidator())
+        telf_validator = QIntValidator()
+        telf_validator.setRange(0,2147483647)
+        self.telefono_edit.setValidator(telf_validator)
         self.diagnostico_date_edit.setDate(fecha_diagnostico)
         self.direccion_edit.setText(direccion)
         self.altura_edit.setValue(altura)
