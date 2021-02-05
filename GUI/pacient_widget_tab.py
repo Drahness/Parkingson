@@ -91,11 +91,11 @@ class PacientWidget(QWidget, PacientInterface):
         self.estadio_combo_box.addItems(self.combo_items)
         self.diagnostico_calendar.setVisible(False)
         self.nacimiento_calendar.setVisible(False)
-        self.altura_edit.setDecimals(2)
-        self.peso_edit.setDecimals(2)
-        self.altura_edit.setSingleStep(0.01)
-        self.peso_edit.setRange(0, 500)
-        self.altura_edit.setRange(0, 3.0)
+        self.altura_edit.setDecimals(0)
+        self.peso_edit.setDecimals(0)
+        self.altura_edit.setSingleStep(1)
+        self.peso_edit.setRange(0, 250)
+        self.altura_edit.setRange(0, 300)
         self.menu = Menu()
         self.action_select_pic = self.menu.addAction(StaticActions.seleccionar_foto)
         self.action_select_pic.triggered.connect(self.take_picture)
@@ -209,13 +209,13 @@ class PacientWidget(QWidget, PacientInterface):
                 nacimiento = pacient.get("nacimiento", default=self.default_date)
                 notas = pacient.get("notas")
                 genero = pacient.get("genero")
-                altura = pacient.get("altura", default=0)
+                altura = pacient.get("altura")
                 mail = pacient.get("mail")
                 fotocuerpo = pacient.get("fotocuerpo")
                 fotocara = pacient.get("fotocara")
                 telefono = pacient.get("telefono")
                 direccion = pacient.get("direccion")
-                peso = pacient.get("peso", default=0)
+                peso = pacient.get("peso")
                 fecha_diagnostico = pacient.get("fecha_diagnostico", default=self.default_date)
             elif isinstance(pacient, Pacient):
                 dni = pacient.id
@@ -225,13 +225,13 @@ class PacientWidget(QWidget, PacientInterface):
                 nacimiento = pacient.nacimiento or self.default_date
                 notas = pacient.notas
                 genero = pacient.genero
-                altura = pacient.altura or 0
+                altura = pacient.altura or 160
                 mail = pacient.mail
                 fotocuerpo = pacient.fotocuerpo  # TODO
                 fotocara = pacient.fotocara  # TODO
                 telefono = pacient.telefono
                 direccion = pacient.direccion
-                peso = pacient.peso or 0
+                peso = pacient.peso or 60
                 fecha_diagnostico = pacient.fecha_diagnostico or self.default_date
             else:
                 raise AssertionError("Pasale un paciente a la funcion pacientSelected")
@@ -243,13 +243,13 @@ class PacientWidget(QWidget, PacientInterface):
             nacimiento = self.default_date
             notas = None
             genero = None
-            altura = 0
+            altura = 160
             mail = None
             fotocuerpo = None  # TODO
             fotocara = None  # TODO
             telefono = ""
             direccion = None
-            peso = 0
+            peso = 60
             fecha_diagnostico = self.default_date
 
         if estadio is not None and self.combo_items.count(str(estadio)):
@@ -320,7 +320,7 @@ class PacientWidget(QWidget, PacientInterface):
 
     def calculate_imc(self):
         peso = self.peso_edit.value()
-        altura = self.altura_edit.value()
+        altura = self.altura_edit.value()/100
         if altura != 0:
             self.imc_result.setText(str(round(peso / (altura * altura), 3)))
         else:
