@@ -47,7 +47,7 @@ class PruebasListModel(EntityListModel):
     def data(self, index: QModelIndex, role: int = ...):
         prueba = super(PruebasListModel, self).data(index, role)
         if prueba is not None:
-            return str(str(index.row())+": "+prueba.datetime.strftime("%m/%d/%Y, %H:%M:%S"))
+            return str(str(index.row()+1)+": "+prueba.datetime.strftime("%m/%d/%Y, %H:%M:%S"))
 
     @classmethod
     def get_instance(cls, user, typee=Prueba, implementation=None) -> PruebasListModel:
