@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>929</width>
-    <height>872</height>
+    <height>873</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
         <x>0</x>
         <y>0</y>
         <width>909</width>
-        <height>852</height>
+        <height>853</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -262,12 +262,24 @@
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
+                 <property name="decimals">
+                  <number>0</number>
+                 </property>
+                 <property name="minimum">
+                  <double>0.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>300.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>160.000000000000000</double>
+                 </property>
                 </widget>
                </item>
                <item>
                 <widget class="QLabel" name="label_14">
                  <property name="text">
-                  <string> m</string>
+                  <string>cm</string>
                  </property>
                 </widget>
                </item>
@@ -286,6 +298,18 @@
                 <widget class="QDoubleSpinBox" name="peso_edit">
                  <property name="enabled">
                   <bool>false</bool>
+                 </property>
+                 <property name="decimals">
+                  <number>0</number>
+                 </property>
+                 <property name="minimum">
+                  <double>0.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>200.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>60.000000000000000</double>
                  </property>
                 </widget>
                </item>
@@ -715,7 +739,7 @@
  </widget>
  <resources>
   <include location="resources.qrc"/>
-  <include location="C:/Users/Catalan Renegado/.designer/backup/resources.qrc"/>
+  <include location="resources.qrc"/>
  </resources>
  <connections/>
 </ui>
