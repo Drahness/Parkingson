@@ -16,19 +16,19 @@ class Pacient(Entity):
 
     def __gt__(self, other):
         if isinstance(other, Pacient):
-            return self.id > other.dni
+            return self.id > other.id
         if isinstance(other, str):
             return self.id > other
 
     def __lt__(self, other):
         if isinstance(other, Pacient):
-            return self.id < other.dni
+            return self.id < other.id
         if isinstance(other, str):
             return self.id < other
 
     def __eq__(self, other):
         if isinstance(other, Pacient):
-            return self.id == other.dni
+            return self.id == other.id
         if isinstance(other, str):
             return self.id == other
 

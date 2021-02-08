@@ -61,6 +61,7 @@ class CentralWidgetParkingson(QWidget):
 
         self.pacients_list_view.setMinimumSize(200, 400)
         self.pacients_list_view.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.pacients_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.content_layout.addWidget(self.pacients_list_view, stretch=3, alignment=Qt.AlignTop)
         self.content_layout.addWidget(self.parent_tab_widget, stretch=9)
