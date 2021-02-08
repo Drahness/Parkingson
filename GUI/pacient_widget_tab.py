@@ -169,7 +169,7 @@ class PacientWidget(QWidget, PacientInterface):
         if self.peso_edit.value() == 0 and not Utils.debug:
             errored = True
             self.error_peso.setText("No has introducido el peso del paciente.")
-        if self.telefono_edit.text() == "" or not re.fullmatch(self.telefono_regex, self.telefono_edit.text()) or Utils.debug:
+        if self.telefono_edit.text() == "" or not re.fullmatch(self.telefono_regex, self.telefono_edit.text()) and not Utils.debug:
             errored = True
             self.error_telefono.setText("No has introducido un telefono válido.")
         return not errored
