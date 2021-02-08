@@ -104,6 +104,7 @@ class EvolutionTab(QWidget, PacientInterface):
         self.notas_lap3.setVisible(False)
         self.notas_lap2.setVisible(False)
         self.notas_lap1.setVisible(False)
+        self.notas_total.setVisible(False)
         self.tiempo_total: QLabel = self.tiempo_total
         self.tiempo_1: QLabel = self.tiempo_1
         self.tiempo_2: QLabel = self.tiempo_2
@@ -193,6 +194,7 @@ class EvolutionTab(QWidget, PacientInterface):
         self.notas_lap3.setVisible(True)
         self.notas_lap2.setVisible(True)
         self.notas_lap1.setVisible(True)
+        self.notas_total.setVisible(True)
         self.notas_lap3.setText(self.prueba.notas[2])
         self.notas_lap2.setText(self.prueba.notas[1])
         self.notas_lap1.setText(self.prueba.notas[0])
@@ -440,9 +442,17 @@ class EvolutionTab(QWidget, PacientInterface):
     def on_reload(self):
         super().get_on_reload_signal()
         self.todos.setChecked(True)
+        self.tiempo_1.setText("")
+        self.tiempo_2.setText("")
+        self.tiempo_3.setText("")
+        self.tiempo_total.setText("")
         self.notas_lap3.setText("")
         self.notas_lap2.setText("")
         self.notas_lap1.setText("")
+        self.notas_lap3.setVisible(False)
+        self.notas_lap2.setVisible(False)
+        self.notas_lap1.setVisible(False)
+        self.notas_total.setVisible(False)
 
     def custom_conext_menu(self, *args) -> None:
         if self.sender() == self.evolution_listview:
@@ -475,5 +485,6 @@ class EvolutionTab(QWidget, PacientInterface):
                 self.pruebas.remove(self.prueba)
                 self.model.delete(self.prueba)
                 self.prueba = None
+                self.on_reload()
         self.pruebas.sort()
         self.load_graph(self.pruebas)
