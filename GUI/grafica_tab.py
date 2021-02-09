@@ -468,7 +468,7 @@ class EvolutionTab(QWidget, PacientInterface):
                 self.model.append(prueba)
                 self.pruebas.append(prueba)
         elif self.sender() == self.del_prueba and self.prueba:
-            dialog = GUI_Resources.get_confirmation_dialog_ui(f"Quieres eliminar la prueba:\n{self.prueba}\n Paciente: {self.pacient.get_fomatted_name()}")
+            dialog = GUI_Resources.get_confirmation_dialog_ui(f"Quieres eliminar la prueba seleccionada? \nPaciente: {self.pacient.get_fomatted_name()}")
             if dialog.exec_() == 1:
                 StaticActions.del_prueba_action.setEnabled(False)
                 StaticActions.edit_prueba_action.setEnabled(False)
