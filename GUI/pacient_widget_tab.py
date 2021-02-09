@@ -7,7 +7,7 @@ import numpy
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QIntValidator, QPixmap, QImage
 from PyQt5.QtWidgets import QWidget, QCalendarWidget, QDateEdit, QLabel, QComboBox, QLineEdit, QDoubleSpinBox, \
-    QPushButton, QTabWidget, QToolButton, QFileDialog
+    QPushButton, QTabWidget, QToolButton, QFileDialog, QMessageBox
 
 import Utils
 from GUI.GUI_Resources import get_pacient_widget_ui, get_no_image_pixmap
@@ -32,11 +32,13 @@ class PacientWidget(QWidget, PacientInterface):
         # Variables.
         self.email_regex = re.compile(u'(?:[a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])')
         self.dni_regex = re.compile("((([X-Z])|([LM])){1}([-]?)((\d){7})([-]?)([A-Z]{1}))|((\d{8})([-]?)([A-Z]))")
+        self.dniValid = False
         self.telefono_regex = re.compile("^(?:6[0-9]|9[0-9]|7[1-9])[0-9]{7}$")
         self.combo_items = ["", "1", "1.5", "2", "2.5", "3", "4", "5", "0"]
         self.gender_items = ["", "Hombre", "Mujer"]
         self.on_focus = True
         # Declaramos los objetos
+        self.showMessageBox = QMessageBox()
         self.nacimiento_calendar: QCalendarWidget = self.nacimiento_calendar
         self.nacimiento_field: QDateEdit = self.nacimiento_field
         self.estadio_combo_box: QComboBox = self.estadio_combo_box
@@ -77,6 +79,8 @@ class PacientWidget(QWidget, PacientInterface):
         self.altura_edit.valueChanged.connect(self.calculate_imc)
         self.accept_button.clicked.connect(self.buttons)
         self.cancel_button.clicked.connect(self.buttons)
+        #Comprobamos la letra del dni
+        self.dni_field.textChanged.connect(self.comprueba_dni)
         # Fin conexion
         # Conexion Calendarios.
         self.nacimiento_calendar.clicked.connect(self.on_calendar_changed)
@@ -106,6 +110,27 @@ class PacientWidget(QWidget, PacientInterface):
         self.consejo_imc.setVisible(False)  # TODO Cambiar cuando acabe con el objeto settings
         self.pacientSelected(None)
         self.set_enabled(False)
+
+    #Per a comprobar la lletra del dni
+    def comprueba_dni(self):
+        nif = self.dni_field.text()
+
+        if (len(nif) == 9):
+            dni = ""
+            for i in range(0, 8):
+                dni += nif[i]
+
+            palabra = 'TRWAGMYFPDXBNJZSQVHLCKE'
+            letra = palabra[int(dni) % 23]
+            if (nif[8] == letra):
+                self.dni_field.setStyleSheet("background-color: green;")
+                self.dniValid = True
+            else:
+                self.dni_field.setStyleSheet("background-color: red;")
+                self.dniValid = False
+        else:
+            self.dni_field.setStyleSheet("")
+            self.dniValid = False
 
     def popup_context_menu(self):
         Utils.popup_context_menu(self.sender(),self.menu)
@@ -145,9 +170,22 @@ class PacientWidget(QWidget, PacientInterface):
         errored = False
         combo_index = self.estadio_combo_box.currentIndex()
         gender_index = self.gender_combo_box.currentIndex()
+        text_dni = str(self.dni_field.text())
+
         if not re.fullmatch(self.dni_regex,self.dni_field.text()) and not Utils.debug:
             errored = True
             self.error_dni.setText("No has introducido un documento de identidad valido.")
+
+        # Comprueba que el dni tenga 9 carácteres de longitud
+        if (len(text_dni) != 9):
+            errored = True
+            self.error_dni.setText("Debes escribir los 9 caracteres de dni")
+
+        # Comprueba que la letra del dni coincida
+        if (self.dniValid == False):
+            errored = True
+            self.error_dni.setText("La letra del dni no coincide")
+
         if not len(self.apellidos_field.text()) > 0 and not Utils.debug:
             errored = True
             self.error_apellidos.setText("Este campo no debe estar vacio.")
@@ -169,7 +207,7 @@ class PacientWidget(QWidget, PacientInterface):
         if self.peso_edit.value() == 0 and not Utils.debug:
             errored = True
             self.error_peso.setText("No has introducido el peso del paciente.")
-        if self.telefono_edit.text() == "" or not re.fullmatch(self.telefono_regex, self.telefono_edit.text()) and not Utils.debug:
+        if self.telefono_edit.text() == "" or not re.fullmatch(self.telefono_regex, self.telefono_edit.text()) or Utils.debug:
             errored = True
             self.error_telefono.setText("No has introducido un telefono válido.")
         return not errored
