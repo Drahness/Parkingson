@@ -164,7 +164,6 @@ class Cronometro(QWidget, PacientInterface):
             #self.cancel_button.setEnabled(False)
             self.stop_button.setEnabled(False)
             self.timer.stop()
-            
 
 
     def cancel_slot(self):  # Reseteas el timer

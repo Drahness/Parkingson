@@ -6,6 +6,8 @@ from PyQt5.QtCore import QThreadPool, pyqtSignal, QSize, QPoint
 from PyQt5.QtWidgets import QMainWindow, QStatusBar, QSizePolicy
 from cv2.cv2 import VideoCapture
 
+from GUI.MenuBar import Menu
+
 import Utils
 from GUI.MenuBar import MenuBar, ToolBar
 from GUI.static_actions import StaticActions
@@ -42,12 +44,26 @@ class UI(QMainWindow):
         self.login_form = GUI_Resources.get_login_register_dialog(self.connection)
         self.user_credentials = {"result": False}
         self.credentials()
+
+        self.menu = Menu()
+        self.edit_patient = self.menu.addAction(StaticActions.edit_pacient_action)
+        self.del_patient = self.menu.addAction(StaticActions.del_pacient_action)
+        self.add_patient = self.menu.addAction(StaticActions.add_pacient_action)
+        self.add_patient.setEnabled(False)
+        self.edit_patient.setEnabled(False)
+        self.del_patient.setEnabled(False)
+        #self.add_patient.triggered.connect(self.handle_actions)
+        #self.edit_patient.triggered.connect(self.handle_actions)
+        #self.del_patient.triggered.connect(self.handle_actions)
+
         if self.user_credentials["result"]:
             if self.user_credentials["order"] == "login":
-                self.show()
+                self.showMinimized()
+                self.showMaximized()
             elif self.user_credentials["order"] == "register":
                 self.connection.register_user(self.user_credentials["username"],self.user_credentials["password"])
-                self.show()
+                self.showMinimized()
+                self.showMaximized()
             else:
                 sys.exit(1)
         else:
@@ -65,6 +81,7 @@ class UI(QMainWindow):
             rect = self.settings.value(self.settings.SIZE, type=QSize)
             self.resize(rect.width(), rect.height())
         if self.settings.value(self.settings.FULLSCREEN, False, bool):
+            self.showMinimized()
             self.showMaximized()
 
         pos = self.settings.value(self.settings.POSITION, QPoint(50, 50), QPoint)
@@ -86,6 +103,8 @@ class UI(QMainWindow):
 
         self.central.pacients_list_view.clicked.connect(self.on_listview_pacient_click)
         self.central.pacients_list_view.doubleClicked.connect(self.on_pacient_double_click)
+        self.central.pacients_list_view.customContextMenuRequested.connect(self.custom_context_menu)
+        
         self.central.pacients_tab.finishedSignal.connect(self.on_finished)
         self.central.pacients_tab.resultSignal.connect(self.on_result)
         self.central.cronometro_tab.finishedSignal.connect(self.on_crono_finished)
@@ -144,6 +163,22 @@ class UI(QMainWindow):
 
         threading.Thread(target=self.check_camera_worker).start()
         self.inited = True
+
+    def custom_context_menu(self, *args) -> None:
+        if self.sender() == self.central.pacients_list_view:
+            index = self.central.pacients_list_view.indexAt(args[0]).row()
+            self.paciente = self.listview_model.get(index)
+            StaticActions.del_pacient_action.setEnabled(True)
+            StaticActions.edit_pacient_action.setEnabled(True)
+            Utils.popup_context_menu(self.sender(), self.menu, args[0])
+
+    def handle_actions(self):
+        if self.sender() == self.edit_pacient and self.prueba:
+            pass
+        elif self.sender() == self.add_pacient:
+            pass
+        elif self.sender() == self.del_prueba and self.prueba:
+            pass
 
     def credentials(self):
         """ Funcion que pide las credenciales. Si le dan a cancelar, sale del programa. Si son incorrectas
@@ -305,6 +340,7 @@ class UI(QMainWindow):
         self.menu_bar.edit_prueba.setEnabled(False)
         self.menu_bar.edit_pacient.setEnabled(False)
         self.menu_bar.del_pacient.setEnabled(False)
+        self.menu_bar.add_pacient.setEnabled(True)
 
         self.menu_bar.add_pacient.triggered.connect(self.button_clicked)
         self.menu_bar.edit_pacient.triggered.connect(self.button_clicked)
