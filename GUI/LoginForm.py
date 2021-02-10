@@ -56,6 +56,14 @@ class LoginRegisterWindow(QDialog):
         self.register_widget.passwordfield.textEdited.connect(self.hide_handler)
         self.register_widget.confirm_password.textEdited.connect(self.hide_handler)
 
+        self.login_widget.usernamefield.returnPressed.connect(self.__positive_login)
+        self.login_widget.passwordfield.returnPressed.connect(self.__positive_login)
+
+        self.register_widget.passwordfield.returnPressed.connect(self.__positive_register)
+        self.register_widget.confirm_password.returnPressed.connect(self.__positive_register)
+        self.register_widget.usernamefield.returnPressed.connect(self.__positive_register)
+
+
     def __cancel_buttons(self):
         sys.exit(0)
 
