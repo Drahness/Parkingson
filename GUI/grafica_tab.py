@@ -124,7 +124,7 @@ class EvolutionTab(QWidget, PacientInterface):
         self.filter = get_selector_widget()
         self.buscar.clicked.connect(self.handle_filter)
         self.filter.buscar.clicked.connect(self.handle_filter)
-        self.evolution_listview.customContextMenuRequested.connect(self.custom_conext_menu)
+        self.evolution_listview.customContextMenuRequested.connect(self.custom_context_menu)
         self.menu = Menu()
         self.edit_prueba = self.menu.addAction(StaticActions.edit_prueba_action)
         self.del_prueba = self.menu.addAction(StaticActions.del_prueba_action)
@@ -444,7 +444,7 @@ class EvolutionTab(QWidget, PacientInterface):
         self.notas_lap2.setText("")
         self.notas_lap1.setText("")
 
-    def custom_conext_menu(self, *args) -> None:
+    def custom_context_menu(self, *args) -> None:
         if self.sender() == self.evolution_listview:
             index = self.evolution_listview.indexAt(args[0]).row()
             self.prueba = self.model.get(index)

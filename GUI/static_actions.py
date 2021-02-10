@@ -15,9 +15,9 @@ class StaticActions:
     user = get_user_icon()
     filesystem = get_filesystem_icon()
     camera = get_camera_icon()
-    add_pacient_action = QAction(add, "&Añadir paciente")
-    edit_pacient_action = QAction(edit,"&Editar paciente")
-    del_pacient_action = QAction(delete,"&Eliminar paciente")
+    add_pacient_action = QAction(add, "&Añadir paciente")       ##
+    edit_pacient_action = QAction(edit,"&Editar paciente")      ##
+    del_pacient_action = QAction(delete,"&Eliminar paciente")   ##
     #add_pacient_action = QAction( "&Añadir")
     #edit_pacient_action = QAction("&Editar")
     #del_pacient_action = QAction("&Eliminar")
