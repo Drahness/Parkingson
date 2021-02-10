@@ -44,10 +44,12 @@ class UI(QMainWindow):
         self.credentials()
         if self.user_credentials["result"]:
             if self.user_credentials["order"] == "login":
-                self.show()
+                self.showMinimized()
+                self.showMaximized()
             elif self.user_credentials["order"] == "register":
                 self.connection.register_user(self.user_credentials["username"],self.user_credentials["password"])
-                self.show()
+                self.showMinimized()
+                self.showMaximized()
             else:
                 sys.exit(1)
         else:
@@ -65,6 +67,7 @@ class UI(QMainWindow):
             rect = self.settings.value(self.settings.SIZE, type=QSize)
             self.resize(rect.width(), rect.height())
         if self.settings.value(self.settings.FULLSCREEN, False, bool):
+            self.showMinimized()
             self.showMaximized()
 
         pos = self.settings.value(self.settings.POSITION, QPoint(50, 50), QPoint)
